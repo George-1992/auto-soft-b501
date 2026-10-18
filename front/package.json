@@ -1,0 +1,53 @@
+{
+  "name": "vite-test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@ai-sdk/react": "^4.0.145",
+    "@tailwindcss/vite": "^4.3.3",
+    "ai": "^7.0.141",
+    "dexie": "^4.4.6",
+    "i18next": "^26.4.5",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "lodash": "^4.18.1",
+    "lucide-react": "^1.49.0",
+    "pulltorefreshjs": "^0.1.22",
+    "react": "^18",
+    "react-datepicker": "^9.1.0",
+    "react-dom": "^18",
+    "react-i18next": "^17.0.17",
+    "react-markdown": "^10.1.0",
+    "react-router": "^7.18.4",
+    "react-turnstile": "^1.1.5",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "sass": "^1.105.1",
+    "sonner": "^2.0.8",
+    "vite-plugin-pwa": "^2.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "sharp": "^0.35.5",
+    "sharp-ico": "^0.1.5",
+    "tailwindcss": "^4.3.3",
+    "vite": "^7.3.1"
+  }
+}
