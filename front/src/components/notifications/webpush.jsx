@@ -41,7 +41,7 @@ export default function WebpushButton() {
                 action: 'get',
                 method: 'POST',
             })
-            logger.info('WebpushButton: webpush config response:', response);
+            // logger.info('WebpushButton: webpush config response:', response);
 
             if (response.success && response.data) {
                 setPermission('granted');
@@ -162,7 +162,7 @@ export default function WebpushButton() {
             {permission !== 'granted' &&
                 <button
                     type="button"
-                    className="flex items-center gap-2 p-2 px-4 rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 ease-in-out border border-gray-300"
+                    className="flex items-center gap-2 p-2 px-4 rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 ease-in-out border border-gray-300 bg-white"
                     onClick={requestPermission}
                 >
                     {/* <Notificat className="size-5 opacity-75" /> */}

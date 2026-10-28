@@ -31,7 +31,7 @@ export const Textarea = React.forwardRef(({
     disabled = false,
     ...props
 }, ref) => {
-    const baseClass = 'w-full h-9 rounded-md border p-2 focus:outline-none focus:ring-0';
+    const baseClass = 'w-full min-h-20 rounded-md border p-2 focus:outline-none focus:ring-0';
     const stateClass = error
         ? 'border-red-400'
         : 'border-gray-300';

@@ -63,6 +63,7 @@ module.exports = {
 	plugins: [require("tailwindcss-animate")],
 	safelist: [
 		'flex', 'flex-col', 'flex-row', 'flex-shrink-0', 'gap-1', 'gap-2', 'gap-3', 'gap-4',
+		'inline-flex items-center justify-center gap-2 font-medium rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-0 hover:[background-color:var(--hover-bg)] hover:scale-[0.99] transition-all duration-200 ease-in-out',
 		// // Display utilities
 		// 'block', 'inline-block', 'inline', 'flex', 'inline-flex', 'table', 'inline-table', 'table-cell', 'table-row', 'table-column', 'table-column-group', 'table-header-group', 'table-row-group', 'table-footer-group', 'flow-root', 'grid', 'inline-grid', 'contents', 'list-item', 'hidden',
 

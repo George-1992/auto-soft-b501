@@ -133,7 +133,7 @@ export const Table = ({
     const Modal = modalType === 'expandable' ? ExpandableModal : PopupModal;
 
     // console.log('_originalData: ', _originalData);
-    
+
     const modifiedRowIds = (_originalData || [])
         .filter(origRow => {
             // Find matching current row by id
@@ -1262,5 +1262,202 @@ export const Table = ({
         </div>
     )
 }
+
+
+export const Table2 = ({
+    className = '',
+    columns = [],            // { key, title, width, Component, EditComponent, editable }
+    data = [],
+    rowKey = 'id',
+    emptyText = 'No data available',
+
+    // sorting (controlled)
+    sortKey = null,
+    sortOrder = 'asc',
+    onSort = null,           // (key) => void
+
+    // selection (controlled)
+    selectedIds = [],
+    onSelect = null,         // (id) => void
+    onSelectAll = null,      // () => void
+
+    // row actions
+    actions = [],            // [{ name, Icon, tooltipText, onClick(row) }]
+    isRowDisabled = (row) => !!row.disabled,
+    modifiedIds = [],        // rows to highlight
+    onSave = null,           // (row) => void, shown for modified rows
+    onDismiss = null,        // (row) => void, shown for modified rows
+
+    // inline editing (controlled)
+    editingCell = null,      // { id, key }
+    onCellClick = null,      // (row, column) => void
+    onCellChange = null,     // (row, column, value) => void
+
+    // pagination (controlled)
+    page = null,             // { skip, itemsPerPage, total }
+    onPageChange = null,     // (skip) => void
+}) => {
+    const showActions = actions.length > 0 || onSave;
+    const totalPages = page ? Math.max(1, Math.ceil(page.total / page.itemsPerPage)) : 1;
+    const currentPage = page ? Math.floor(page.skip / page.itemsPerPage) + 1 : 1;
+    const goTo = (p) => onPageChange && onPageChange((p - 1) * page.itemsPerPage);
+
+    const renderCell = (row, column) => {
+        const value = row[column.key];
+        const isEditing = editingCell && editingCell.id === row[rowKey] && editingCell.key === column.key;
+
+        if (isEditing) {
+            if (column.EditComponent) {
+                return <column.EditComponent value={value} row={row} column={column} onChange={(v) => onCellChange && onCellChange(row, column, v)} />;
+            }
+            return (
+                <input
+                    autoFocus
+                    className='w-full border border-gray-300 rounded p-0.5 text-sm focus:outline-none'
+                    value={value ?? ''}
+                    onChange={(e) => onCellChange && onCellChange(row, column, e.target.value)}
+                />
+            );
+        }
+
+        if (column.Component) return <column.Component value={value} row={row} column={column} />;
+        if (Array.isArray(value)) return value.join(', ');
+        if (value && typeof value === 'object') return JSON.stringify(value);
+        return value ?? '';
+    };
+
+    return (
+        <div className={`cs-table ${className}`}>
+            <div className='overflow-x-auto border rounded-lg border-gray-200'>
+                <table className='table-fixed w-full'>
+                    <thead className='border-b border-gray-200 bg-gray-50'>
+                        <tr>
+                            {onSelect && (
+                                <th className='w-10'>
+                                    <input
+                                        type='checkbox'
+                                        className='w-4 h-4 cursor-pointer accent-blue-500'
+                                        checked={data.length > 0 && selectedIds.length === data.length}
+                                        onChange={() => onSelectAll && onSelectAll()}
+                                    />
+                                </th>
+                            )}
+                            {showActions && <th className='w-32 px-2 py-2 text-left text-sm font-medium text-gray-500'>Actions</th>}
+                            {columns.map((col) => (
+                                <th key={col.key} className={`${col.width || ''} px-2 py-2 text-left text-sm font-medium text-gray-500`}>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='text-nowrap'>{col.title}</span>
+                                        {onSort && (
+                                            <button onClick={() => onSort(col.key)}>
+                                                {sortKey === col.key && sortOrder === 'asc'
+                                                    ? <ChevronUp className='w-4 h-4 text-gray-900' />
+                                                    : <ChevronDown className={`w-4 h-4 ${sortKey === col.key ? 'text-gray-900' : 'text-gray-400'}`} />}
+                                            </button>
+                                        )}
+                                    </div>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.map((row) => {
+                            const id = row[rowKey];
+                            const disabled = isRowDisabled(row);
+                            const modified = modifiedIds.includes(id);
+
+                            return (
+                                <tr key={id} className={`border-b border-gray-200 ${modified ? 'bg-yellow-100' : ''} ${disabled ? 'opacity-55' : ''}`}>
+                                    {onSelect && (
+                                        <td className='w-10 text-center'>
+                                            {!disabled && (
+                                                <input
+                                                    type='checkbox'
+                                                    className='w-4 h-4 cursor-pointer accent-blue-500'
+                                                    checked={selectedIds.includes(id)}
+                                                    onChange={() => onSelect(id)}
+                                                />
+                                            )}
+                                        </td>
+                                    )}
+
+                                    {showActions && (
+                                        <td className='w-32'>
+                                            {!disabled && (
+                                                <div className='flex items-center gap-3 ml-2'>
+                                                    {modified ? (
+                                                        <>
+                                                            <button onClick={() => onDismiss && onDismiss(row)}><X className='size-4 text-gray-500' /></button>
+                                                            <button onClick={() => onSave && onSave(row)}><Check className='size-4 text-gray-500' /></button>
+                                                        </>
+                                                    ) : (
+                                                        actions.map((a) => (
+                                                            <button
+                                                                key={a.name}
+                                                                title={a.tooltipText || a.name}
+                                                                onClick={() => a.onClick && a.onClick(row)}
+                                                                className='p-1.5 bg-gray-200 border border-gray-100 rounded-md hover:bg-gray-300'
+                                                            >
+                                                                {a.Icon && <a.Icon className={`size-4 ${a.name === 'delete' ? 'text-red-500' : 'text-gray-500'}`} />}
+                                                            </button>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            )}
+                                        </td>
+                                    )}
+
+                                    {columns.map((col) => {
+                                        const isEditing = editingCell && editingCell.id === id && editingCell.key === col.key;
+                                        const clickable = onCellClick && col.editable && !isEditing && !disabled;
+                                        return (
+                                            <td key={col.key} className={col.width || ''}>
+                                                <div
+                                                    onClick={() => clickable && onCellClick(row, col)}
+                                                    className={`h-10 px-2 py-2 text-sm text-gray-700 flex items-center whitespace-nowrap
+                                                        ${isEditing ? 'relative z-10 bg-blue-100 overflow-visible' : 'overflow-hidden text-ellipsis'}
+                                                        ${clickable ? 'cursor-pointer' : ''}`}
+                                                >
+                                                    {renderCell(row, col)}
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                {data.length === 0 && (
+                    <div className='p-4 text-center text-gray-500 bg-white'>{emptyText}</div>
+                )}
+            </div>
+
+            {page && totalPages > 1 && (
+                <div className='w-full my-2 flex items-center justify-end gap-1'>
+                    <button disabled={currentPage === 1} onClick={() => goTo(currentPage - 1)} className='px-1.5 py-0.5 rounded-md border border-gray-300 disabled:opacity-40'>
+                        <ChevronLeft className='w-4' />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                        .map((p, i, arr) => (
+                            <React.Fragment key={p}>
+                                {i > 0 && p - arr[i - 1] > 1 && <span className='px-2 text-gray-500'>...</span>}
+                                <button
+                                    onClick={() => goTo(p)}
+                                    className={`px-2 py-0.5 rounded-md border border-gray-300 ${p === currentPage ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                                >
+                                    {p}
+                                </button>
+                            </React.Fragment>
+                        ))}
+                    <button disabled={currentPage === totalPages} onClick={() => goTo(currentPage + 1)} className='px-1.5 py-0.5 rounded-md border border-gray-300 disabled:opacity-40'>
+                        <ChevronRight className='w-4' />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default Table;

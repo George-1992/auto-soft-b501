@@ -15,7 +15,7 @@ export const auth = async () => {
         const _profile = await db.all.where('itsFor').equals('signin').toArray();
         const profile = _profile?.[0] || null;
         // const profileData = await db.all.toArray();
-        logger.info("auth: profile", profile);
+        // logger.info("auth: profile", profile);
 
         if (profile) {
             resObj.success = true;

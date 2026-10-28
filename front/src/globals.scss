@@ -7,8 +7,8 @@
   --background: #fcfcfc;
   --foreground: #384052;
 
-  --primary: #d8eaff;
-  --primary-foreground: #0c182b;
+  --primary: #3c3c3c;
+  --primary-foreground: #ffffff;
   --primary-hover: #acc5e2;
 
   --secondary: #f4f4f5;
@@ -57,7 +57,7 @@ body,
   margin: 0;
   padding: 0;
 
-  background-color: var(--background);
+  // background-color: var(--background);
   color: var(--foreground);
 }
 

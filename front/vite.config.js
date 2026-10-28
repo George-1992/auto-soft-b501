@@ -18,8 +18,8 @@ export default defineConfig({
       },
 
       manifest: {
-        name: env.VITE_PROJECT_NAME || 'example',
-        short_name: env.VITE_PROJECT_NAME || 'example',
+        name: process.env.VITE_PROJECT_NAME || 'example',
+        short_name: process.env.VITE_PROJECT_NAME || 'example',
         description: '',
         start_url: '/',
         display: 'standalone',

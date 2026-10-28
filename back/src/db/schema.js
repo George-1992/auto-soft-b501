@@ -1,10 +1,13 @@
 import {
     pgTable, pgEnum, text, uuid,
-    timestamp, index, unique,jsonb
+    timestamp, index, unique, jsonb,
+    integer,
+    numeric,
+    boolean
 } from 'drizzle-orm/pg-core';
 import { defineRelations } from 'drizzle-orm';
 import { nanoid } from "nanoid";
-  
+
 // --- Enums ---
 export const accountStatusEnum = pgEnum('account_status', [
     'active',
@@ -34,15 +37,34 @@ export const workspaceRoleEnum = pgEnum('workspace_role', [
     'viewer',
 ]);
 
+const id = () => text().primaryKey().$defaultFn(() => nanoid(25));
+const timestamps = {
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
+};
+
+const workspaceRef = () =>
+    text().notNull().references(() => workspacesTable.id, { onDelete: 'cascade' });
+const accountRef = () =>
+    text().notNull().references(() => accountsTable.id, { onDelete: 'cascade' });
+export const memberRoleEnum = pgEnum('member_role', ['owner', 'manager', 'advisor', 'technician']);
+export const appointmentStatusEnum = pgEnum('appointment_status', ['scheduled', 'confirmed', 'checked_in', 'completed', 'no_show', 'cancelled']);
+export const workOrderStatusEnum = pgEnum('work_order_status', ['estimate', 'approved', 'in_progress', 'waiting_parts', 'ready', 'completed', 'cancelled']);
+export const paymentStatusEnum = pgEnum('payment_status', ['unpaid', 'partial', 'paid', 'refunded']);
+export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'declined']);
+export const lineTypeEnum = pgEnum('line_type', ['labor', 'part', 'tire', 'fee', 'sublet']);
+export const paymentMethodEnum = pgEnum('payment_method', ['cash', 'card', 'bank_transfer', 'other']);
+
+
 // --- Tables ---
 export const accountsTable = pgTable(
     'accounts',
     {
-        id: text().primaryKey().$defaultFn(() => nanoid(25)),
+        id: id(),
         name: text().default('Default Account').notNull(),
+        country: text(),
         status: accountStatusEnum('status').default('inactive').notNull(),
-        createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
+        ...timestamps,
     },
     (table) => [
         index('accounts_name_idx').on(table.name),
@@ -53,7 +75,7 @@ export const accountsTable = pgTable(
 export const usersTable = pgTable(
     'users',
     {
-        id: text().primaryKey().$defaultFn(() => nanoid(25)),
+        id: id(),
         status: usersStatusEnum('status').default('pending').notNull(),
         email: text().notNull().unique(),
         firstName: text().default(''),
@@ -61,8 +83,7 @@ export const usersTable = pgTable(
         password: text(),
         provider: text().default('email'),
         config: jsonb('config').default({}),
-        createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
+        ...timestamps,
     },
     (table) => [
         index('users_email_idx').on(table.email),
@@ -76,7 +97,7 @@ export const usersTable = pgTable(
 export const usersAndAccountsTable = pgTable(
     'users_and_accounts',
     {
-        id: text().primaryKey().$defaultFn(() => nanoid(25)),
+        id: id(),
         role: accountRoleEnum('role').default('admin').notNull(),
         createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
         updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
@@ -97,10 +118,9 @@ export const usersAndAccountsTable = pgTable(
 export const workspacesTable = pgTable(
     'workspaces',
     {
-        id: text().primaryKey().$defaultFn(() => nanoid(25)),
+        id: id(),
         name: text().notNull(),
-        createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
+        ...timestamps,
         accountId: text().references(() => accountsTable.id, {
             onDelete: 'cascade',
         }),
@@ -111,11 +131,10 @@ export const workspacesTable = pgTable(
 export const notesTable = pgTable(
     'notes',
     {
-        id: text().primaryKey().$defaultFn(() => nanoid(25)),
+        id: id(),
         title: text().notNull(),
         content: text().notNull(),
-        createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
+        ...timestamps,
         workspaceId: text().notNull().references(() => workspacesTable.id, {
             onDelete: 'cascade',
         }),
@@ -127,6 +146,94 @@ export const notesTable = pgTable(
 );
 
 
+
+
+export const locationsTable = pgTable(
+    'locations',
+    {
+        id: id(),
+        name: text().notNull(),
+        country: text(),
+        state: text(),
+        city: text(),
+        address: text(),
+        phone: text(),
+        timezone: text().notNull().default('UTC'),
+        nextWorkOrderNumber: integer().notNull().default(1),
+        accountId: accountRef(),
+        workspaceId: workspaceRef(),
+        ...timestamps,
+    },
+    (table) => [index('locations_workspace_idx').on(table.workspaceId)]
+);
+
+export const customersTable = pgTable(
+    'customers',
+    {
+        id: id(),
+        firstName: text().notNull(),
+        lastName: text(),
+        companyName: text(),
+        email: text(),
+        phone: text(),
+        address: text(),
+        notes: text(),
+        accountId: accountRef(),
+        workspaceId: workspaceRef(),
+        ...timestamps,
+    },
+    (table) => [
+        index('customers_workspace_idx').on(table.workspaceId),
+        index('customers_phone_idx').on(table.workspaceId, table.phone),
+        index('customers_email_idx').on(table.workspaceId, table.email),
+    ]
+);
+
+export const vehiclesTable = pgTable(
+    'vehicles',
+    {
+        id: id(),
+        vin: text(),
+        licensePlate: text(),
+        year: integer(),
+        make: text(),
+        model: text(),
+        trim: text(),
+        engine: text(),
+        color: text(),
+        odometer: integer(),
+        notes: text(),
+        customerId: text().notNull().references(() => customersTable.id, { onDelete: 'cascade' }),
+        accountId: accountRef(),
+        workspaceId: workspaceRef(),
+        ...timestamps,
+    },
+    (table) => [
+        index('vehicles_customer_idx').on(table.customerId),
+        index('vehicles_vin_idx').on(table.workspaceId, table.vin),
+        index('vehicles_plate_idx').on(table.workspaceId, table.licensePlate),
+    ]
+);
+
+
+export const servicesTable = pgTable(
+    'services',
+    {
+        id: id(),
+        name: text().notNull(),
+        description: text(),
+        category: text(),
+        defaultLaborHours: numeric({ precision: 6, scale: 2, mode: 'number' }),
+        defaultPriceCents: integer().notNull().default(0),
+        isActive: boolean().notNull().default(true),
+        accountId: accountRef(),
+        workspaceId: workspaceRef(),
+        ...timestamps,
+    },
+    (table) => [index('services_workspace_idx').on(table.workspaceId, table.category)]
+);
+
+
 // --- Relations ---
 export const relations = defineRelations(
     {
@@ -135,6 +242,10 @@ export const relations = defineRelations(
         usersAndAccountsTable,
         workspacesTable,
         notesTable,
+        locationsTable,
+        customersTable,
+        vehiclesTable,
+        servicesTable,
     },
     (r) => ({
         accountsTable: {
@@ -172,11 +283,79 @@ export const relations = defineRelations(
                 from: r.workspacesTable.id,
                 to: r.notesTable.workspaceId,
             }),
+            locations: r.many.locationsTable({
+                from: r.workspacesTable.id,
+                to: r.locationsTable.workspaceId,
+            }),
+            customers: r.many.customersTable({
+                from: r.workspacesTable.id,
+                to: r.customersTable.workspaceId,
+            }),
+            vehicles: r.many.vehiclesTable({
+                from: r.workspacesTable.id,
+                to: r.vehiclesTable.workspaceId,
+            }),
+            services: r.many.servicesTable({
+                from: r.workspacesTable.id,
+                to: r.servicesTable.workspaceId,
+            }),
         },
         notesTable: {
             workspace: r.one.workspacesTable({
                 from: r.notesTable.workspaceId,
                 to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.notesTable.accountId,
+                to: r.accountsTable.id,
+            }),
+        },
+        locationsTable: {
+            workspace: r.one.workspacesTable({
+                from: r.locationsTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.locationsTable.accountId,
+                to: r.accountsTable.id,
+            }),
+        },
+        customersTable: {
+            workspace: r.one.workspacesTable({
+                from: r.customersTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.customersTable.accountId,
+                to: r.accountsTable.id,
+            }),
+            vehicles: r.many.vehiclesTable({
+                from: r.customersTable.id,
+                to: r.vehiclesTable.customerId,
+            }),
+        },
+        vehiclesTable: {
+            customer: r.one.customersTable({
+                from: r.vehiclesTable.customerId,
+                to: r.customersTable.id,
+            }),
+            workspace: r.one.workspacesTable({
+                from: r.vehiclesTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.vehiclesTable.accountId,
+                to: r.accountsTable.id,
+            }),
+        },
+        servicesTable: {
+            workspace: r.one.workspacesTable({
+                from: r.servicesTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.servicesTable.accountId,
+                to: r.accountsTable.id,
             }),
         },
     })

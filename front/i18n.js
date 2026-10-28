@@ -8,6 +8,24 @@ export const languages = [
     { code: 'es', label: 'Español' },
 ];
 
+export const countries = [
+    { code: 'am', label: 'Armenia' },
+    { code: 'by', label: 'Belarus' },
+    { code: 'ee', label: 'Estonia' },
+    { code: 'ge', label: 'Georgia' },
+    { code: 'kz', label: 'Kazakhstan' },
+    { code: 'kg', label: 'Kyrgyzstan' },
+    { code: 'lv', label: 'Latvia' },
+    { code: 'lt', label: 'Lithuania' },
+    { code: 'md', label: 'Moldova' },
+    // { code: 'ru', label: 'Russia' },
+    { code: 'tj', label: 'Tajikistan' },
+    { code: 'tm', label: 'Turkmenistan' },
+    { code: 'ua', label: 'Ukraine' },
+    { code: 'uz', label: 'Uzbekistan' },
+    { code: 'us', label: 'United States' },
+];
+
 i18n
     .use(LanguageDetector)
     .use(initReactI18next)

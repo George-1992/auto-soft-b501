@@ -9,12 +9,14 @@ import Header from '@/src/components/ui/header.jsx';
 import Sidebar from '@/src/components/ui/sidebar.jsx';
 import { setMetas } from '@/src/services/metas';
 import Notes from '@/src/pages/notes';
-import { BotIcon, HomeIcon, ListChevronsUpDownIcon, NotebookTabsIcon, StretchHorizontalIcon, TestTubeDiagonalIcon } from 'lucide-react';
+import { BotIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, UsersRoundIcon } from 'lucide-react';
 import ToasterSonnar from '@/src/components/ui/sonnar/sonnar';
 import Profile from '@/src/pages/profile';
 import Settings from '@/src/pages/settings';
 import Home from '@/src/pages/home';
 import AiChatPage from '@/src/pages/aiChat';
+import LocationsPage from '@/src/pages/locations';
+import CustomersPage from '@/src/pages/customers';
 
 // const AUTH_PATHS = GLOBALS.AUTH_PATHS || [];
 // const authRes = await auth();
@@ -71,32 +73,44 @@ const sidebarItems = [
         subItems: []
     },
     {
-        name: 'Notes',
-        icon: (props) => <NotebookTabsIcon {...props} />,
-        path: '/notes',
+        name: 'Locations',
+        icon: (props) => <MapPinned {...props} />,
+        path: '/locations',
         subItems: []
     },
     {
-        name: 'AI Chat',
-        icon: (props) => <BotIcon {...props} />,
-        path: '/ai-chat',
+        name: 'Customers',
+        icon: (props) => <UsersRoundIcon {...props} />,
+        path: '/customers',
         subItems: []
     },
-    {
-        name: 'Test 1',
-        icon: (props) => <TestTubeDiagonalIcon {...props} />,
-        path: '/test',
-        subItems: []
-    },
-    {
-        name: 'Test 2',
-        icon: (props) => <ListChevronsUpDownIcon {...props} />,
-        path: '/test-2',
-        expanded: true,
-        subItems: [
-            { name: 'sub-test', path: '/test/sub-test', icon: (props) => <StretchHorizontalIcon {...props} /> },
-        ]
-    },
+    // {
+    //     name: 'Notes',
+    //     icon: (props) => <NotebookTabsIcon {...props} />,
+    //     path: '/notes',
+    //     subItems: []
+    // },
+    // {
+    //     name: 'AI Chat',
+    //     icon: (props) => <BotIcon {...props} />,
+    //     path: '/ai-chat',
+    //     subItems: []
+    // },
+    // {
+    //     name: 'Test 1',
+    //     icon: (props) => <TestTubeDiagonalIcon {...props} />,
+    //     path: '/test',
+    //     subItems: []
+    // },
+    // {
+    //     name: 'Test 2',
+    //     icon: (props) => <ListChevronsUpDownIcon {...props} />,
+    //     path: '/test-2',
+    //     expanded: true,
+    //     subItems: [
+    //         { name: 'sub-test', path: '/test/sub-test', icon: (props) => <StretchHorizontalIcon {...props} /> },
+    //     ]
+    // },
 ]
 
 
@@ -121,6 +135,9 @@ const router = createBrowserRouter([
             { path: 'ai-chat', element: <AiChatPage /> },
             { path: 'profile', element: <Profile /> },
             { path: 'settings', element: <Settings /> },
+            { path: 'locations', element: <LocationsPage /> },
+            { path: 'customers', element: <CustomersPage /> },
+
             { path: 'test', element: <Test /> },
             { path: 'test-2/:id', element: <Test2 /> },
             { path: '*', element: <NotFound /> },

@@ -1,7 +1,8 @@
 import db, { desc, getErrorMessage } from '#src/db/index.js';
 import {
     accountsTable, notesTable,
-    usersAndAccountsTable, usersTable, workspacesTable
+    usersAndAccountsTable, usersTable, workspacesTable,
+    locationsTable, customersTable, vehiclesTable
 } from '#src/db/schema.js';
 import HandleAiRequest from '#src/services/ai/aiSdk.js';
 import { createJwtToken } from '#src/services/jwt.service.js';
@@ -100,6 +101,8 @@ export const handleAppRequest = async (req, res) => {
 
         // logger.info('handleAppRequest: account:', account);
 
+        data.accountId = accountId;
+        data.workspaceId = workspace?.id || null;
 
         if (itsFor === 'signup') {
             const requiredFields = ['email', 'firstName', 'lastName', 'password'];
@@ -115,8 +118,14 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'error';
                 return res.json(resObj);
             } else {
+                const existingAccountsCount = await db.$count(accountsTable)
                 const hashedPassword = bcrypt.hashSync(data.password, 10);
-                logger.info('handleAppRequest: hashedPassword:', hashedPassword);
+                const status = existingAccountsCount === 0 ? 'active' : 'pending'; // First account is active, others are pending
+
+                // console.log('handleAppRequest: :', {
+                //     existingAccountsCount,
+                //     status,
+                // });
 
                 // Handle user creation logic here
                 const result = await db.transaction(async (tx) => {
@@ -128,10 +137,12 @@ export const handleAppRequest = async (req, res) => {
                             firstName: data.firstName,
                             lastName: data.lastName,
                             password: hashedPassword,
-                            status: 'pending', // Account under review status
+                            status: status, // Account under review status
                         })
                         .returning({
                             id: usersTable.id,
+                            firstName: usersTable.firstName,
+                            lastName: usersTable.lastName,
                             email: usersTable.email,
                             status: usersTable.status,
                         });
@@ -141,7 +152,7 @@ export const handleAppRequest = async (req, res) => {
                         .insert(accountsTable)
                         .values({
                             name: `${user.firstName}'s Account`,
-                            status: 'inactive', // Pending admin approval
+                            status: status, // Pending admin approval
                         })
                         .returning({ id: accountsTable.id });
 
@@ -434,6 +445,32 @@ export const handleAppRequest = async (req, res) => {
                 resObj.message = 'Unknown profile action';
                 resObj.status = 'error';
             }
+        } else if (itsFor === 'settings') {
+            if (action === 'get') {
+                // get user.config.settings 
+                resObj.success = true;
+                resObj.message = 'Settings config retrieved successfully';
+                resObj.data = account;
+                resObj.status = 'success';
+            } else if (action === 'update' || action === 'create') {
+                // update user.config.settings
+                await db.update(accountsTable)
+                    .set({
+                        name: data.name || account.name,
+                        country: data.country || account.country,
+                    })
+                    .where((eq(accountsTable.id, account.id)))
+                    .returning();
+
+                resObj.success = true;
+                resObj.message = 'Settings config updated successfully';
+                resObj.data = {
+                    ...account,
+                    ...data,
+                };
+                resObj.status = 'success';
+            }
+
         } else if (itsFor === 'webpush') {
             if (action === 'get') {
                 // get user.config.webpush 
@@ -538,6 +575,128 @@ export const handleAppRequest = async (req, res) => {
             }
         } else if (itsFor === 'ai-chat') {
             return HandleAiRequest(req, res, account, user, workspace);
+        } else if (itsFor === 'locations') {
+
+            if (action === 'get') {
+                // Handle location retrieval logic here
+                const locations = await db.query.locationsTable.findMany({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    orderBy: {
+                        updatedAt: 'desc',
+                        createdAt: 'desc',
+                    },
+                    limit: limit,
+                    offset: offset,
+                });
+
+                resObj.success = true;
+                resObj.message = 'Locations retrieved successfully';
+                resObj.data = locations;
+                resObj.status = 'success';
+            } else if (action === 'create') {
+                // Handle location creation logic here
+                const response = await db.insert(locationsTable).values(data).returning();
+                resObj.success = true;
+                resObj.message = 'Location created successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'update') {
+                // Handle location update logic here
+                const response = await db
+                    .update(locationsTable)
+                    .set(data)
+                    .where(
+                        and(
+                            eq(locationsTable.id, data.id),
+                            eq(locationsTable.accountId, accountId),
+                            eq(locationsTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Location updated successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'delete') {
+                // Handle location deletion logic here
+                const response = await db.delete(locationsTable)
+                    .where(
+                        and(
+                            eq(locationsTable.id, data.id),
+                            eq(locationsTable.accountId, accountId),
+                            eq(locationsTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Location deleted successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            }
+
+
+        } else if (itsFor === 'customers') {
+
+            if (action === 'get') {
+                const customers = await db.query.customersTable.findMany({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    orderBy: {
+                        updatedAt: 'desc',
+                        createdAt: 'desc',
+                    },
+                    limit: limit,
+                    offset: offset,
+                });
+
+                resObj.success = true;
+                resObj.message = 'Customers retrieved successfully';
+                resObj.data = customers;
+                resObj.status = 'success';
+            } else if (action === 'create') {
+                const response = await db.insert(customersTable).values(data).returning();
+                resObj.success = true;
+                resObj.message = 'Customer created successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'update') {
+                const response = await db
+                    .update(customersTable)
+                    .set(data)
+                    .where(
+                        and(
+                            eq(customersTable.id, data.id),
+                            eq(customersTable.accountId, accountId),
+                            eq(customersTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Customer updated successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'delete') {
+                const response = await db.delete(customersTable)
+                    .where(
+                        and(
+                            eq(customersTable.id, data.id),
+                            eq(customersTable.accountId, accountId),
+                            eq(customersTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Customer deleted successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            }
+
+
         } else {
             resObj.message = 'invalid request:itsFor';
             resObj.status = 'error';

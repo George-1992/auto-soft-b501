@@ -1,8 +1,8 @@
 import Select from "@/src/components/ui/select";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logger } from "@/src/services/logger";
-import { languages } from "@/i18n";
+import { languages, countries } from "@/i18n";
 import Image from "@/src/components/wraps/image";
 
 export default function LanguageSwitch() {
@@ -58,5 +58,57 @@ export default function LanguageSwitch() {
                 )}
             />
         </div>
+    );
+}
+
+export const CountriesSelect = ({ value, onChange, className }) => {
+    // const { t } = useTranslation();
+    const [currentCountry, setCurrentCountry] = useState(value || 'us');
+
+    const handleCountryChange = (e) => {
+        const selectedCountry = e.target.value;
+        setCurrentCountry(selectedCountry);
+        if (onChange) {
+            onChange(selectedCountry);
+        }
+    };
+
+    useEffect(() => {
+        setCurrentCountry(value || 'us');
+    }, [value]);
+
+
+    return (
+        <Select
+            className={className || "w-40"}
+            value={currentCountry}
+            options={countries.map((country) => ({
+                value: country.code,
+                label: country.label || country.code.toUpperCase(),
+                flag: country.flag,
+            }))}
+            defaultValue="us"
+            onChange={handleCountryChange}
+            renderOption={(option) => (
+                <div className="flex items-center gap-2">
+                    <Image
+                        src={'/images/flags/' + option.value + '.svg'}
+                        alt={option.label}
+                        className="rounded-sm w-4 h-auto"
+                    />
+                    <span>{option.label}</span>
+                </div>
+            )}
+            renderValue={(option) => (
+                <div className="flex items-center gap-2 min-w-0">
+                    <Image
+                        src={'/images/flags/' + option.value + '.svg'}
+                        alt={option.label}
+                        className="rounded-sm w-4 h-auto"
+                    />
+                    <span className="truncate">{option.label}</span>
+                </div>
+            )}
+        />
     );
 }

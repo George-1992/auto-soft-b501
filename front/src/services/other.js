@@ -1,6 +1,7 @@
 import { logger } from "@/src/services/logger";
+import { cloneDeep } from "lodash";
 
- 
+
 /**
  * Detects the device category based on the user agent and device capabilities.
  * @returns {'mobile' | 'tablet' | 'desktop'} The detected device category
@@ -8,7 +9,7 @@ import { logger } from "@/src/services/logger";
 export const deviceCategory = () => {
     try {
         let d = 'desktop';
- 
+
         // Guard for SSR environments (Next.js, Nuxt, etc.)
         if (typeof window === 'undefined' || typeof navigator === 'undefined') {
             d = 'desktop';
@@ -35,7 +36,7 @@ export const deviceCategory = () => {
 
         d = isMobile ? 'mobile' : d;
 
-         return d;
+        return d;
     } catch (error) {
         logger.error('Error detecting device category:', error);
         return 'desktop'; // Default to desktop on error
@@ -117,3 +118,52 @@ export const toDisplayStr = (value) => {
         return value;
     }
 }
+
+export const clearObjectValues = (obj) => {
+    try {
+        return clearValue(obj);
+    } catch (error) {
+        logger.error('clearObjectValues error ==> ', error);
+        return obj;
+    }
+};
+
+const clearValue = (value) => {
+    const EMPTY_VALUES = {
+        string: '',
+        number: 0,
+        boolean: false,
+        bigint: 0n,
+    };
+    // Arrays → empty array (preserves "array" type)
+    if (Array.isArray(value)) {
+        return [];
+    }
+
+    // Plain objects → recurse into keys
+    if (value !== null && typeof value === 'object' && value.constructor === Object) {
+        return Object.fromEntries(
+            Object.entries(value).map(([key, val]) => [key, clearValue(val)])
+        );
+    }
+
+    // Preserve prototype-based objects (class instances, Date, Map, etc.)
+    // by returning a shallow clone with cleared primitive props, or null.
+    if (value !== null && typeof value === 'object') {
+        // Option A: keep the same "shape" for class instances
+        const cloned = cloneDeep(value);
+        for (const key of Object.keys(cloned)) {
+            cloned[key] = clearValue(cloned[key]);
+        }
+        return cloned;
+    }
+
+    // Primitives
+    const type = typeof value;
+    if (type in EMPTY_VALUES) {
+        return EMPTY_VALUES[type];
+    }
+
+    // null, undefined, symbol, function → null
+    return null;
+};

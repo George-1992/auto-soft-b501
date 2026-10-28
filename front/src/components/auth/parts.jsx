@@ -14,7 +14,7 @@ import { handleSignin, handleSignup } from "@/src/components/auth";
 
 
 // temp
-const NEXT_PUBLIC_PROJECT_NAME = 'Dashboard';
+const PROJECT_NAME =  import.meta.env.VITE_PROJECT_NAME || 'example';
 
 export default function AuthEl({ type = 'signin' }) {
 
@@ -319,7 +319,7 @@ export default function AuthEl({ type = 'signin' }) {
         <div className="w-full h-full flex justify-center overflow-auto"  >
 
             {/* gird */}
-            <GridPattern
+            {/* <GridPattern
                 width={40}
                 height={40}
                 x={-1}
@@ -327,7 +327,7 @@ export default function AuthEl({ type = 'signin' }) {
                 strokeDasharray={"0"}
                 squares={[[0, 0], [2, 2], [4, 4], [6, 6], [8, 8], [10, 10], [12, 12], [14, 14], [16, 16], [18, 18]]}
                 className={'z-0 opacity-30'}
-            />
+            /> */}
 
             <div className="w-[90%] md:w-[450px] md:min-h-60 mt-5 md:mt-10 ">
                 {/* branding */}
@@ -335,16 +335,15 @@ export default function AuthEl({ type = 'signin' }) {
                     <Image
                         src={GLOBALS.LOGO.MAIN}
                         alt="Logo"
-                        width={42}
-                        height={42}
-                        className="size-10 md:size-14"
+                        width={60}
+                        height={60}
+                        className="w-20 h-auto"
                     />
-                    <div className="text-2xl md:text-3xl">
+                    {/* <div className="text-2xl md:text-3xl">
                         <span className="font-light" >
-                            {NEXT_PUBLIC_PROJECT_NAME}
+                            {PROJECT_NAME}
                         </span>
-
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* body */}
