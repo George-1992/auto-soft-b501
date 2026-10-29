@@ -121,11 +121,16 @@ const router = createBrowserRouter([
         loader: requireAuth,
         errorElement: <ErrorEl />,
         element: (
-            <div className='flex w-full h-full'>
+            <div className='flex h-screen w-full overflow-hidden'>
                 <Sidebar items={sidebarItems} />
-                <div className='flex-1 px-4 overflow-auto'>
-                    <Header items={[]} />
-                    <Outlet />
+                <div className='flex min-w-0 flex-1 flex-col'>
+                    <div className='shrink-0'>
+                        <Header items={[]} />
+                    </div>
+                    <div className='min-h-0 flex-1 w-full px-3 pb-3 overflow-auto'>
+                        <Outlet />
+                        {/* <div className='h-10 md:h-20'></div> */}
+                    </div>
                 </div>
             </div>
         ),

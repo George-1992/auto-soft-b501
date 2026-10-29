@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const Input = React.forwardRef(({
-    className = '',
+    className = 'bg-white',
     error = '',
     disabled = false,
     ...props

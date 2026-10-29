@@ -10,6 +10,7 @@ const VARIANT_STYLES = {
         backgroundColor: 'var(--secondary)',
         color: 'var(--secondary-foreground)',
         '--hover-bg': 'var(--secondary-hover)',
+        'border': '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
     },
     accent: {
         backgroundColor: 'var(--accent)',

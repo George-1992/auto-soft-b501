@@ -45,8 +45,9 @@ export const localDataSync = async ({
         } else if (action === 'delete') {
             await db.all.bulkDelete(items.map(item => [tableName, item.id]))
 
-        } else {
-            logger.error('dataSync: unknown action');
+        }
+        else {
+            logger.warn('dataSync: unknown action');
             resObj.message = 'no action';
         }
 

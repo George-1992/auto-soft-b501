@@ -75,7 +75,6 @@ body {
 
 
 
-
 @layer base {
   :root {
 
@@ -193,6 +192,16 @@ body {
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  .max-h-scroll {
+    max-height: calc(100svh - 12rem);
+  }
+
+  @media (min-width: 768px) {
+    .max-h-scroll {
+      max-height: calc(100dvh - 12rem);
+    }
   }
 }
 

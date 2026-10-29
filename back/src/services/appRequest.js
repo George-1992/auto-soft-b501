@@ -8,8 +8,9 @@ import HandleAiRequest from '#src/services/ai/aiSdk.js';
 import { createJwtToken } from '#src/services/jwt.service.js';
 import { logger } from '#src/utils/logger.js';
 import bcrypt from 'bcrypt';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, getTableColumns, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 import webPush from 'web-push';
+import { de } from 'zod/locales';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -20,6 +21,32 @@ const authCookieOptions = {
     sameSite: IS_PROD ? 'none' : 'lax',
     path: '/',
 };
+
+const getIdsFromData = (data) => {
+    try {
+        const ids = [];
+        if (Array.isArray(data)) {
+            for (const item of data) {
+                if (item?.id) {
+                    ids.push(item.id);
+                }
+                if (item?.ids && Array.isArray(item.ids)) {
+                    ids.push(...item.ids);
+                }
+            }
+        } else if (data?.id) {
+            ids.push(data.id);
+        } else if (data?.ids && Array.isArray(data.ids)) {
+            ids.push(...data.ids);
+        }
+
+        return ids;
+
+    } catch (error) {
+        logger.error('getIdsFromData: error:', error);
+        return [];
+    }
+}
 
 export const handleAppRequest = async (req, res) => {
 
@@ -37,6 +64,7 @@ export const handleAppRequest = async (req, res) => {
         const itsFor = reqObj.itsFor || '';
         const action = reqObj.action || '';
         const data = reqObj.data || {};
+        const searchQuery = reqObj.searchQuery || '';
 
         const accountId = reqObj?.auth?.accountId || null;
         const userId = reqObj?.auth?.userId || null;
@@ -46,8 +74,8 @@ export const handleAppRequest = async (req, res) => {
         let workspace = null;
 
         // optional vars
-        const offset = data.startIndex || 0;
-        const limit = data.pageSize || 50;
+        const offset = reqObj.offset || 0;
+        const limit = reqObj.limit || 50;
 
         if (!itsFor) {
             resObj.message = 'Missing itsFor in request';
@@ -597,6 +625,23 @@ export const handleAppRequest = async (req, res) => {
                 resObj.data = locations;
                 resObj.status = 'success';
             } else if (action === 'create') {
+                // check if location with the same name already exists for the account and workspace
+                const existingLocation = await db.query.locationsTable.findFirst({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                        name: data.name,
+                    },
+                });
+
+                if (existingLocation) {
+                    resObj.success = false;
+                    resObj.message = 'Location already exists with the same name';
+                    resObj.data = existingLocation;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
                 // Handle location creation logic here
                 const response = await db.insert(locationsTable).values(data).returning();
                 resObj.success = true;
@@ -640,30 +685,102 @@ export const handleAppRequest = async (req, res) => {
 
         } else if (itsFor === 'customers') {
 
+            const ids = getIdsFromData(data);
             if (action === 'get') {
-                const customers = await db.query.customersTable.findMany({
-                    where: {
-                        accountId: accountId,
-                        workspaceId: workspace?.id || null,
-                    },
-                    orderBy: {
-                        updatedAt: 'desc',
-                        createdAt: 'desc',
-                    },
-                    limit: limit,
-                    offset: offset,
-                });
+                const buildWhere = (t) => {
+                    return and(
+                        eq(t.accountId, accountId),
+                        ids.length ? inArray(t.id, ids) : undefined,
+                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
+                        searchQuery
+                            ? or(
+                                like(t.firstName, `%${searchQuery}%`),
+                                like(t.lastName, `%${searchQuery}%`),
+                                like(t.email, `%${searchQuery}%`),
+                                like(t.phone, `%${searchQuery}%`),
+                            )
+                            : undefined,
+                    );
+                };
 
+                const [customers, totalCount] = await Promise.all([
+                    db.query.customersTable.findMany({
+                        where: { RAW: buildWhere },
+                        // with: {
+                        //     vehicles: true,
+                        // },
+                        extras: {
+                            vehicleCount: (t) =>
+                                sql`(
+                                        SELECT COUNT(*) 
+                                        FROM ${vehiclesTable} 
+                                        WHERE ${vehiclesTable.customerId} = ${t.id}
+                                    )`
+                                    .mapWith(Number)
+                                    .as('vehicleCount'),
+                        },
+                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
+                        limit,
+                        offset,
+                    }),
+                    db.$count(customersTable, buildWhere(customersTable)),
+                ]);
+
+                resObj.totalCount = totalCount;
                 resObj.success = true;
                 resObj.message = 'Customers retrieved successfully';
                 resObj.data = customers;
                 resObj.status = 'success';
             } else if (action === 'create') {
-                const response = await db.insert(customersTable).values(data).returning();
+                // check if already exists either by email or phone
+                const existingCustomer = await db.query.customersTable.findFirst({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                        OR: [
+                            { email: data.email },
+                            { phone: data.phone },
+                        ],
+                    },
+                });
+
+                if (existingCustomer) {
+                    resObj.success = false;
+                    resObj.message = 'Customer already exists with the same email or phone';
+                    resObj.data = existingCustomer;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                // if (!IS_PROD) {
+                //     dummyCustomersCreation({ count: 1000, accountId: accountId, workspaceId: workspace?.id || null });
+                // }
+
+                const result = await db.transaction(async (tx) => {
+                    // 1. Insert customer using the transaction instance (tx)
+                    const response = await tx.insert(customersTable).values(data).returning();
+                    const createdCustomer = response[0];
+
+                    // 2. Insert related vehicles if present
+                    if (data.vehicles && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
+                        const vehiclesToInsert = data.vehicles.map((vehicle) => ({
+                            ...vehicle,
+                            customerId: createdCustomer.id,
+                            accountId: accountId,
+                            workspaceId: workspace?.id || null,
+                        }));
+
+                        await tx.insert(vehiclesTable).values(vehiclesToInsert);
+                    }
+
+                    return response;
+                });
+
                 resObj.success = true;
                 resObj.message = 'Customer created successfully';
-                resObj.data = response;
+                resObj.data = result;
                 resObj.status = 'success';
+
             } else if (action === 'update') {
                 const response = await db
                     .update(customersTable)
@@ -681,23 +798,169 @@ export const handleAppRequest = async (req, res) => {
                 resObj.data = response;
                 resObj.status = 'success';
             } else if (action === 'delete') {
+
+                const idsToDelete = Array.isArray(data)
+                    ? data.map(item => typeof item === 'object' && item.id ? item.id : item)
+                    : [data.id];
+
                 const response = await db.delete(customersTable)
                     .where(
                         and(
-                            eq(customersTable.id, data.id),
+                            inArray(customersTable.id, idsToDelete),
                             eq(customersTable.accountId, accountId),
                             eq(customersTable.workspaceId, workspace?.id)
                         )
                     )
                     .returning();
+
+                if (response.length === 0) {
+                    resObj.success = false;
+                    resObj.message = 'No customers found to delete';
+                    resObj.data = null;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                // console.log('handleAppRequest: delete customers response:', response);
+
                 resObj.success = true;
                 resObj.message = 'Customer deleted successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'uniques') {
+
+                const columns = getTableColumns(customersTable);
+
+                const validFields = data
+                    .map(field => field.name)
+                    .filter(fieldName => fieldName in columns);
+
+                const entries = await Promise.all(
+                    validFields.map(async (field) => {
+                        const rows = await db
+                            .selectDistinct({ value: columns[field] })
+                            .from(customersTable)
+                            .where(and(
+                                eq(customersTable.accountId, accountId),
+                                workspace?.id
+                                    ? eq(customersTable.workspaceId, workspace.id)
+                                    : isNull(customersTable.workspaceId),
+                                isNotNull(columns[field])
+                            ));
+
+                        return [field, rows.map(row => row.value)];
+                    })
+                );
+
+                const uniqueValuesObject = Object.fromEntries(entries);
+
+                resObj.success = true;
+                resObj.message = 'Unique values retrieved successfully';
+                resObj.data = uniqueValuesObject;
+                resObj.status = 'success';
+
+
+
+            }
+
+
+        } else if (itsFor === 'vehicles') {
+
+            const ids = getIdsFromData(data);
+            const customerId = data.customerId || null;
+
+            if (action === 'get') {
+                const buildWhere = (t) => {
+                    return and(
+                        eq(t.accountId, accountId),
+                        ids.length ? inArray(t.id, ids) : undefined,
+                        customerId ? eq(t.customerId, customerId) : undefined,
+                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
+                        searchQuery
+                            ? or(
+                                like(t.make, `%${searchQuery}%`),
+                                like(t.model, `%${searchQuery}%`),
+                                like(t.year, `%${searchQuery}%`),
+                                like(t.vin, `%${searchQuery}%`),
+                            )
+                            : undefined,
+                    );
+                };
+
+                const [vehicles, totalCount] = await Promise.all([
+                    db.query.vehiclesTable.findMany({
+                        where: { RAW: buildWhere },
+                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
+                        limit,
+                        offset,
+                    }),
+                    db.$count(vehiclesTable, buildWhere(vehiclesTable)),
+                ]);
+
+                resObj.totalCount = totalCount;
+                resObj.success = true;
+                resObj.message = 'Vehicles retrieved successfully';
+                resObj.data = vehicles;
+                resObj.status = 'success';
+                
+            } else if (action === 'create') {
+                // check if already exists either by vin
+                const existingVehicle = await db.query.vehiclesTable.findFirst({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                        vin: data.vin,
+                    },
+                });
+            } else if (action === 'update') {
+                const response = await db
+                    .update(vehiclesTable)
+                    .set(data)
+                    .where(
+                        and(
+                            eq(vehiclesTable.id, data.id),
+                            eq(vehiclesTable.accountId, accountId),
+                            eq(vehiclesTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Vehicle updated successfully';
                 resObj.data = response;
                 resObj.status = 'success';
             }
 
 
-        } else {
+        } else if (itsFor === 'vehiclesMakes') {
+            const makesAndModels = await import('../../data/vehicleMakes.json', { with: { type: 'json' } });
+            const toSendData = makesAndModels.default.map(item => {
+                const { models, ...rest } = item;
+                return rest;
+            });
+
+            resObj.success = true;
+            resObj.message = 'Vehicle makes retrieved successfully';
+            resObj.data = toSendData;
+            resObj.status = 'success';
+        } else if (itsFor === 'vehiclesModels') {
+            const make = data.make || '';
+            const makesAndModels = await import('../../data/vehicleMakes.json', { with: { type: 'json' } });
+            const toSendData = makesAndModels.default.find(item => {
+                if (item.makeName.toLowerCase() === make.id.toLowerCase()) {
+                    return true;
+                } else if (item.id.toLowerCase() === make.id.toLowerCase()) {
+                    return true;
+                }
+                return false;
+            });
+            const models = toSendData?.models || [];
+
+            resObj.success = true;
+            resObj.message = 'Vehicle models retrieved successfully';
+            resObj.data = models;
+            resObj.status = 'success';
+        }
+        else {
             resObj.message = 'invalid request:itsFor';
             resObj.status = 'error';
         }
@@ -723,7 +986,6 @@ export const setSessionCookie = (res, data) => {
         maxAge: 86400 * 1000 * 30, // 30 days  
     });
 };
-
 export const clearAuthUnauthorized = (res) => {
     res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
 
@@ -734,7 +996,6 @@ export const clearAuthUnauthorized = (res) => {
         data: null,
     });
 };
-
 export const clearAuthSuccess = (res) => {
     res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
 
@@ -745,3 +1006,35 @@ export const clearAuthSuccess = (res) => {
         data: null,
     });
 };
+
+
+const randomString = (length) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+};
+const dummyCustomersCreation = async ({ count, accountId, workspaceId }) => {
+    try {
+        const dummyCustomers = [];
+        const thisButchStr = randomString(8);
+
+        for (let i = 0; i < count; i++) {
+            dummyCustomers.push({
+                firstName: 'Customer_' + (i + 1) + '_' + thisButchStr,
+                lastName: `Last_${i + 1}_${thisButchStr}`,
+                email: `customer${i + 1}_${thisButchStr}@example.com`,
+                accountId: accountId,
+                workspaceId: workspaceId,
+            });
+        }
+        return await db.insert(customersTable).values(dummyCustomers).returning();
+
+
+    } catch (error) {
+        logger.error('dummyCustomersCreation error:', error);
+    }
+}
