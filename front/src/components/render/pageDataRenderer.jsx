@@ -11,6 +11,7 @@ import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import _, { cloneDeep } from "lodash";
 import { FunnelIcon, GhostIcon, Grid2x2Icon, ListIcon, MapPinHouseIcon, PencilIcon, PencilLine, PhoneIcon, PlusIcon, RotateCcwIcon, Rows4Icon, SearchIcon, SquareCheckBigIcon, SquareCheckIcon, SquareIcon, TimerResetIcon, Trash2, Trash2Icon } from "lucide-react";
+import { use } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -92,11 +93,6 @@ export default function DataRenderer({
     columns = [],
 }) {
 
-    setMetas({
-        title: itsFor.charAt(0).toUpperCase() + itsFor.slice(1),
-        description: `Manage your ${itsFor}`,
-    });
-
 
     // const itsFor = 'locations';
     const sampleData = cloneDeep(dataSamples[itsFor] || {});
@@ -113,11 +109,13 @@ export default function DataRenderer({
     const [_filterOptions, _setFilterOptions] = useState([]);
     const [_searchQuery, _setSearchQuery] = useState('');
 
-
     const [_totalCount, _setTotalCount] = useState(0);
     const [_itemsPerPage, _setItemsPerPage] = useState(20);
     const [_offset, _setOffset] = useState(0);
     const [_limit, _setLimit] = useState(_itemsPerPage);
+
+    const [_vehicleMakes, _setVehicleMakes] = useState([]);
+    const [_vehicleModels, _setVehicleModels] = useState([]);
 
     const { t } = useTranslation();
     const defaultColWidth = 180;
@@ -205,6 +203,62 @@ export default function DataRenderer({
         };
         body();
     }, []);
+
+
+    const handleFormSubmit = async (e) => {
+        if (e && e?.preventDefault) {
+            e.preventDefault();
+        }
+
+        // logger.info("handleFormSubmit _editItem", e);
+        // return
+
+        try {
+            const toSaveItem = e && typeof e === 'object' && e.target
+                ? Object.fromEntries(new FormData(e.target))
+                : _editItem;
+            _setLoading(true);
+            const action = _editType === 'new' ? 'create' : 'update';
+            // logger.info("handleFormSubmit toSaveItem", toSaveItem);
+
+            const response = await sendBackRequest({
+                itsFor: itsFor,
+                action: action,
+                data: toSaveItem,
+            });
+            logger.info("handleFormSubmit response", response);
+
+
+            if (response.success) {
+                notify({
+                    type: 'success',
+                    message: _editType === 'new' ? t('Added successfully') : t('Updated successfully'),
+                });
+
+                // merage data
+                const newData = [..._data];
+                newData.push(Array.isArray(response.data) ? response.data[0] : response.data);
+
+                _setData(newData);
+                dismissEditModal();
+            } else {
+                logger.error("handleFormSubmit error", response.message || 'Error saving item');
+                notify({
+                    type: 'error',
+                    message: response.message || 'Error saving item',
+                });
+            }
+
+        } catch (error) {
+            logger.error("handleFormSubmit error", error);
+            notify({
+                type: 'error',
+                message: 'Error saving item',
+            });
+        } finally {
+            _setLoading(false);
+        }
+    };
 
     const handleInputChange = (field, value) => {
         _setEditItem((prev) => ({
@@ -294,50 +348,7 @@ export default function DataRenderer({
             });
         }
     };
-    const handleFormSubmit = async (e) => {
-        if (e && e?.preventDefault) {
-            e.preventDefault();
-        }
 
-        try {
-            _setLoading(true);
-            const action = _editType === 'new' ? 'create' : 'update';
-            const response = await sendBackRequest({
-                action: action,
-                itsFor: itsFor,
-                data: _editItem,
-            });
-
-            if (response.success) {
-                notify({
-                    type: 'success',
-                    message: _editType === 'new' ? t('Location added successfully') : t('Location updated successfully'),
-                });
-
-                // merage data
-                const newData = [..._data];
-                newData.push(Array.isArray(response.data) ? response.data[0] : response.data);
-
-                _setData(newData);
-                dismissEditModal();
-            } else {
-                logger.error("handleFormSubmit error", response.message || 'Error saving location');
-                notify({
-                    type: 'error',
-                    message: response.message || 'Error saving location',
-                });
-            }
-
-        } catch (error) {
-            logger.error("handleFormSubmit error", error);
-            notify({
-                type: 'error',
-                message: 'Error saving location',
-            });
-        } finally {
-            _setLoading(false);
-        }
-    };
     const handleSelectItem = (itemId) => {
         if (_selectedItems.includes(itemId)) {
             _setSelectedItems(_selectedItems.filter((id) => id !== itemId));
@@ -512,7 +523,33 @@ export default function DataRenderer({
     };
     // logger.info("applyFilters filters", _filters);
 
+    const getCellValue = (row, col) => {
+        try {
+            if (!row || !col) return '';
 
+            // logger.info("getCellValue row, col", row, col);
+            let v = row[col.name];
+
+            if (col.name === 'make') {
+                const makeObj = _vehicleMakes.find(m => m.id === v);
+                v = makeObj?.makeName || makeObj?.name || v;
+            }
+            if (col.name === 'model') {
+                const modelObj = _vehicleModels.find(m => m.id === v);
+                v = modelObj?.modelName || modelObj?.name || v;
+            }
+            // if (v === 0) {
+            //     return 'n/a';
+            // }
+            return v !== undefined && v !== null ? String(v) : '';
+        } catch (error) {
+            logger.error("getCellValue error", error);
+            return 'err';
+        }
+    };
+
+
+    // inital fetch data
     useEffect(() => {
         const handleFetchData = async (term) => {
             try {
@@ -555,6 +592,72 @@ export default function DataRenderer({
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, []);
+
+
+    //vehicle makes and models
+    const dataVehicleMakes = (() => {
+        let v = _data?.map(item => item.make).filter(Boolean);
+        return Array.from(new Set(v));
+    })();
+    const dataVehicleModels = (() => {
+        let v = _data?.map(item => item.model).filter(Boolean);
+        return Array.from(new Set(v));
+    })();
+    useEffect(() => {
+        // logger.info("useEffect _data", _data);
+        const body = async () => {
+            try {
+                if (dataVehicleMakes.length > 0) {
+                    const makeResponse = await sendBackRequest({
+                        itsFor: 'vehiclesMakes',
+                        action: 'get',
+                        data: { ids: dataVehicleMakes },
+                    });
+                    // logger.info("useEffect makeResponse", makeResponse);
+
+                    if (makeResponse.success) {
+                        _setVehicleMakes(makeResponse.data);
+                    } else {
+                        logger.error("useEffect makeResponse error", makeResponse.message || 'Error fetching vehicle makes');
+                        notify({
+                            type: 'error',
+                            message: makeResponse.message || 'Error fetching vehicle makes',
+                        });
+                    }
+                }
+
+                if (dataVehicleModels.length > 0) {
+                    const modelResponse = await sendBackRequest({
+                        itsFor: 'vehiclesModels',
+                        action: 'get',
+                        data: { ids: dataVehicleModels },
+                    });
+                    // logger.info("useEffect modelResponse", modelResponse);
+
+                    if (modelResponse.success) {
+                        _setVehicleModels(modelResponse.data);
+                    } else {
+                        logger.error("useEffect modelResponse error", modelResponse.message || 'Error fetching vehicle models');
+                        notify({
+                            type: 'error',
+                            message: modelResponse.message || 'Error fetching vehicle models',
+                        });
+                    }
+                }
+
+
+            } catch (error) {
+                logger.error("useEffect error", error);
+                notify({
+                    type: 'error',
+                    message: 'Error fetching vehicle makes or models',
+                });
+            }
+        };
+        body();
+    }, [dataVehicleMakes.length, dataVehicleModels.length]);
+
+
 
 
     // logger.info('_data', _data);
@@ -640,6 +743,14 @@ export default function DataRenderer({
 
             <div className="w-full relative rounded-md">
                 <LoaderShimmer isLoading={_loading} />
+                {/* empty card */}
+                {_data && _data.length === 0 && (
+                    <Card className="w-full flex flex-col items-center justify-center gap-3 py-10">
+                        <LoaderShimmer isLoading={_loading} />
+                        <GhostIcon className="size-10 text-gray-400" />
+                        <p className="text-gray-500">{t('No data found')}</p>
+                    </Card>
+                )}
 
                 {/* data table */}
                 {_data && _data.length > 0 && _dataViewType === 'table' && (
@@ -715,7 +826,7 @@ export default function DataRenderer({
                                                         className="text-gray-600 flex-shrink-0 truncate overflow-hidden"
                                                         style={{ width: `${colWidth}px` }}
                                                     >
-                                                        {row[col.name]}
+                                                        {getCellValue(row, col)}
                                                     </div>
                                                 );
                                             })}
@@ -760,61 +871,56 @@ export default function DataRenderer({
                 )}
 
                 {/* pagination */}
-                <div className="w-full flex items-center rounded-b-md justify-between gap-3 px-3 py-2 bg-gray-50 border-t border-gray-200">
-                    <div className="text-gray-600">
-                        {t('Total')}: {_totalCount}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {(() => {
-                            const currentPage = getCurrentPageNumber();
-                            const totalPages = getTotalPages();
-                            const hasPrev = currentPage > 1;
-                            const hasNext = currentPage < totalPages;
+                {_data && _data.length > 0 && (
+                    <div className={"w-full flex items-center rounded-b-md justify-between gap-3 px-3 py-2 bg-gray-50 border-t border-gray-200"}>
+                        <div className="text-gray-600">
+                            {t('Total')}: {_totalCount}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {(() => {
+                                const currentPage = getCurrentPageNumber();
+                                const totalPages = getTotalPages();
+                                const hasPrev = currentPage > 1;
+                                const hasNext = currentPage < totalPages;
 
-                            return (
-                                <>
-                                    <button
-                                        disabled={!hasPrev}
-                                        onClick={() => prevPage()}
-                                        className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {t('Prev')}
-                                    </button>
-                                    {
-                                        getVisiblePages().map((page) => (
-                                            <button
-                                                key={page.pageNumber}
-                                                onClick={() => {
-                                                    handlePageChange(page);
-                                                }}
-                                                className={"px-3 py-1 rounded-md border border-gray-300" + (_offset === page.offset ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}
-                                            >
-                                                {page.pageNumber}
-                                            </button>
-                                        ))
-                                    }
-                                    <button
-                                        disabled={!hasNext}
-                                        onClick={() => nextPage()}
-                                        className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {t('Next')}
-                                    </button>
-                                </>
-                            );
-                        })()}
+                                return (
+                                    <>
+                                        <button
+                                            disabled={!hasPrev}
+                                            onClick={() => prevPage()}
+                                            className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {t('Prev')}
+                                        </button>
+                                        {
+                                            getVisiblePages().map((page) => (
+                                                <button
+                                                    key={page.pageNumber}
+                                                    onClick={() => {
+                                                        handlePageChange(page);
+                                                    }}
+                                                    className={"px-3 py-1 rounded-md border border-gray-300" + (_offset === page.offset ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}
+                                                >
+                                                    {page.pageNumber}
+                                                </button>
+                                            ))
+                                        }
+                                        <button
+                                            disabled={!hasNext}
+                                            onClick={() => nextPage()}
+                                            className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {t('Next')}
+                                        </button>
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
-            {/* empty card */}
-            {_data && _data.length === 0 && (
-                <Card className="w-full flex flex-col items-center justify-center gap-3 py-10">
-                    <LoaderShimmer isLoading={_loading} />
-                    <GhostIcon className="size-10 text-gray-400" />
-                    <p className="text-gray-500">{t('No data found')}</p>
-                </Card>
-            )}
+
 
             {EditComponent && _editItem !== null && (
                 <EditComponent

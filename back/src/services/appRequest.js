@@ -2,7 +2,8 @@ import db, { desc, getErrorMessage } from '#src/db/index.js';
 import {
     accountsTable, notesTable,
     usersAndAccountsTable, usersTable, workspacesTable,
-    locationsTable, customersTable, vehiclesTable
+    locationsTable, customersTable, vehiclesTable,
+    servicesTable
 } from '#src/db/schema.js';
 import HandleAiRequest from '#src/services/ai/aiSdk.js';
 import { createJwtToken } from '#src/services/jwt.service.js';
@@ -10,7 +11,7 @@ import { logger } from '#src/utils/logger.js';
 import bcrypt from 'bcrypt';
 import { and, eq, getTableColumns, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 import webPush from 'web-push';
-import { de } from 'zod/locales';
+import makesAndModels from '../../data/vehicleMakes.json' with { type: 'json' };
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -131,6 +132,20 @@ export const handleAppRequest = async (req, res) => {
 
         data.accountId = accountId;
         data.workspaceId = workspace?.id || null;
+
+        // ==== TEST =======
+
+        const workspaces = await db.query.workspacesTable.findMany({
+            where: {
+                accountId: accountId,
+            },
+            with: {
+                notes: true
+            }
+        });
+        console.log('handleAppRequest: workspaces:', workspaces);
+
+        // === TEST END ====
 
         if (itsFor === 'signup') {
             const requiredFields = ['email', 'firstName', 'lastName', 'password'];
@@ -902,16 +917,43 @@ export const handleAppRequest = async (req, res) => {
                 resObj.message = 'Vehicles retrieved successfully';
                 resObj.data = vehicles;
                 resObj.status = 'success';
-                
+
             } else if (action === 'create') {
                 // check if already exists either by vin
+                const orConditions = [];
+                if (data.vin) {
+                    orConditions.push({ vin: data.vin });
+                }
+                if (data.licensePlate) {
+                    orConditions.push({ licensePlate: data.licensePlate });
+                }
                 const existingVehicle = await db.query.vehiclesTable.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
-                        vin: data.vin,
+                        OR: orConditions.length > 0 ? orConditions : undefined,
                     },
                 });
+
+                if (existingVehicle) {
+                    resObj.success = false;
+                    resObj.message = 'Vehicle already exists with the same VIN';
+                    resObj.data = existingVehicle;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                const result = await db.transaction(async (tx) => {
+                    // 1. Insert vehicle using the transaction instance (tx)
+                    const response = await tx.insert(vehiclesTable).values(data).returning();
+                    const createdVehicle = response[0];
+                    return createdVehicle;
+                });
+
+                resObj.success = true;
+                resObj.message = 'Vehicle created successfully';
+                resObj.data = result;
+                resObj.status = 'success';
             } else if (action === 'update') {
                 const response = await db
                     .update(vehiclesTable)
@@ -931,12 +973,141 @@ export const handleAppRequest = async (req, res) => {
             }
 
 
+        } else if (itsFor === 'services') {
+
+            const ids = getIdsFromData(data);
+            if (action === 'get') {
+                const buildWhere = (t) => {
+                    return and(
+                        eq(t.accountId, accountId),
+                        ids.length ? inArray(t.id, ids) : undefined,
+                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
+                        searchQuery
+                            ? or(
+                                like(t.name, `%${searchQuery}%`),
+                                like(t.description, `%${searchQuery}%`),
+                            )
+                            : undefined,
+                    );
+                };
+
+                const [services, totalCount] = await Promise.all([
+                    db.query.servicesTable.findMany({
+                        where: { RAW: buildWhere },
+                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
+                        limit,
+                        offset,
+                    }),
+                    db.$count(servicesTable, buildWhere(servicesTable)),
+                ]);
+
+                resObj.totalCount = totalCount;
+                resObj.success = true;
+                resObj.message = 'Services retrieved successfully';
+                resObj.data = services;
+                resObj.status = 'success';
+            } else if (action === 'create') {
+                const alreadyExists = await db.query.servicesTable.findFirst({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                        name: data.name,
+                    },
+                });
+
+                if (alreadyExists) {
+                    resObj.success = false;
+                    resObj.message = 'Service already exists with the same name';
+                    resObj.data = alreadyExists;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                const result = await db.transaction(async (tx) => {
+                    // 1. Insert service using the transaction instance (tx)
+                    const response = await tx.insert(servicesTable).values(data).returning();
+                    const createdService = response[0];
+                    return createdService;
+                });
+
+                resObj.success = true;
+                resObj.message = 'Service created successfully';
+                resObj.data = result;
+                resObj.status = 'success';
+            } else if (action === 'update') {
+
+                const existingService = await db.query.servicesTable.findFirst({
+                    where: {
+                        accountId: accountId,
+                        workspaceId: workspace?.id || null,
+                        name: data.name,
+                        id: not(eq(data.id)), // Exclude the current service being updated
+                    },
+                });
+
+                if (!existingService) {
+                    resObj.success = false;
+                    resObj.message = 'Service not found or does not exist';
+                    resObj.data = null;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                const response = await db
+                    .update(servicesTable)
+                    .set(data)
+                    .where(
+                        and(
+                            eq(servicesTable.id, data.id),
+                            eq(servicesTable.accountId, accountId),
+                            eq(servicesTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+                resObj.success = true;
+                resObj.message = 'Service updated successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            } else if (action === 'delete') {
+                const idsToDelete = Array.isArray(data)
+                    ? data.map(item => typeof item === 'object' && item.id ? item.id : item)
+                    : [data.id];
+
+                const response = await db.delete(servicesTable)
+                    .where(
+                        and(
+                            inArray(servicesTable.id, idsToDelete),
+                            eq(servicesTable.accountId, accountId),
+                            eq(servicesTable.workspaceId, workspace?.id)
+                        )
+                    )
+                    .returning();
+
+                if (response.length === 0) {
+                    resObj.success = false;
+                    resObj.message = 'No services found to delete';
+                    resObj.data = null;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                resObj.success = true;
+                resObj.message = 'Service deleted successfully';
+                resObj.data = response;
+                resObj.status = 'success';
+            }
+
+
         } else if (itsFor === 'vehiclesMakes') {
-            const makesAndModels = await import('../../data/vehicleMakes.json', { with: { type: 'json' } });
-            const toSendData = makesAndModels.default.map(item => {
+            const ids = getIdsFromData(data);
+            // const makesAndModels = await import('../../data/vehicleMakes.json', { with: { type: 'json' } });
+            let toSendData = makesAndModels.map(item => {
                 const { models, ...rest } = item;
                 return rest;
-            });
+            })
+            if (ids.length) {
+                toSendData = toSendData.filter(item => ids.includes(item.id));
+            }
 
             resObj.success = true;
             resObj.message = 'Vehicle makes retrieved successfully';
@@ -944,20 +1115,28 @@ export const handleAppRequest = async (req, res) => {
             resObj.status = 'success';
         } else if (itsFor === 'vehiclesModels') {
             const make = data.make || '';
-            const makesAndModels = await import('../../data/vehicleMakes.json', { with: { type: 'json' } });
-            const toSendData = makesAndModels.default.find(item => {
-                if (item.makeName.toLowerCase() === make.id.toLowerCase()) {
-                    return true;
-                } else if (item.id.toLowerCase() === make.id.toLowerCase()) {
-                    return true;
-                }
-                return false;
-            });
-            const models = toSendData?.models || [];
+            const ids = getIdsFromData(data);
+            let toSendData = [];
+            if (make) {
+                toSendData = makesAndModels.find(item => {
+                    if (item.makeName.toLowerCase() === make.id.toLowerCase()) {
+                        return true;
+                    } else if (item.id.toLowerCase() === make.id.toLowerCase()) {
+                        return true;
+                    }
+                    return false;
+                });
+                toSendData = toSendData?.models || [];
+            }
+            if (ids.length) {
+                const allModels = makesAndModels.flatMap(item => item.models || []);
+                toSendData = allModels.filter(item => ids.includes(item.id));
+            }
+
 
             resObj.success = true;
             resObj.message = 'Vehicle models retrieved successfully';
-            resObj.data = models;
+            resObj.data = toSendData || [];
             resObj.status = 'success';
         }
         else {

@@ -7,6 +7,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { defineRelations } from 'drizzle-orm';
 import { nanoid } from "nanoid";
+import { relations as dbRelations } from '#src/db/relationships.js';
 
 // --- Enums ---
 export const accountStatusEnum = pgEnum('account_status', [
@@ -54,7 +55,9 @@ export const paymentStatusEnum = pgEnum('payment_status', ['unpaid', 'partial', 
 export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'declined']);
 export const lineTypeEnum = pgEnum('line_type', ['labor', 'part', 'tire', 'fee', 'sublet']);
 export const paymentMethodEnum = pgEnum('payment_method', ['cash', 'card', 'bank_transfer', 'other']);
+export const discountTypeEnum = pgEnum('discount_type', ['fixed', 'percentage']);
 
+ 
 
 // --- Tables ---
 export const accountsTable = pgTable(
@@ -71,7 +74,6 @@ export const accountsTable = pgTable(
         index('accounts_status_idx').on(table.status),
     ]
 );
-
 export const usersTable = pgTable(
     'users',
     {
@@ -93,7 +95,6 @@ export const usersTable = pgTable(
         index('users_last_name_idx').on(table.lastName),
     ]
 );
-
 export const usersAndAccountsTable = pgTable(
     'users_and_accounts',
     {
@@ -114,7 +115,6 @@ export const usersAndAccountsTable = pgTable(
         index('users_and_accounts_role_idx').on(table.role),
     ]
 );
-
 export const workspacesTable = pgTable(
     'workspaces',
     {
@@ -127,7 +127,6 @@ export const workspacesTable = pgTable(
     },
     (table) => [index('workspaces_name_idx').on(table.name)]
 );
-
 export const notesTable = pgTable(
     'notes',
     {
@@ -144,7 +143,6 @@ export const notesTable = pgTable(
     },
     (table) => [index('notes_title_idx').on(table.title)]
 );
-
 
 
 
@@ -166,7 +164,6 @@ export const locationsTable = pgTable(
     },
     (table) => [index('locations_workspace_idx').on(table.workspaceId)]
 );
-
 export const customersTable = pgTable(
     'customers',
     {
@@ -188,7 +185,6 @@ export const customersTable = pgTable(
         index('customers_email_idx').on(table.workspaceId, table.email),
     ]
 );
-
 export const vehiclesTable = pgTable(
     'vehicles',
     {
@@ -214,8 +210,6 @@ export const vehiclesTable = pgTable(
         index('vehicles_plate_idx').on(table.workspaceId, table.licensePlate),
     ]
 );
-
-
 export const servicesTable = pgTable(
     'services',
     {
@@ -223,6 +217,7 @@ export const servicesTable = pgTable(
         name: text().notNull(),
         description: text(),
         category: text(),
+        price: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
         defaultLaborHours: numeric({ precision: 6, scale: 2, mode: 'number' }),
         defaultPriceCents: integer().notNull().default(0),
         isActive: boolean().notNull().default(true),
@@ -232,6 +227,77 @@ export const servicesTable = pgTable(
     },
     (table) => [index('services_workspace_idx').on(table.workspaceId, table.category)]
 );
+export const ordersTable = pgTable(
+    'orders',
+    {
+        id: id(),
+        orderNumber: integer().notNull(),
+        name: text().notNull(),
+        customerNotes: text(),
+        internalNotes: text(),
+        startDate: timestamp('start_date', { mode: 'date' }),
+        dueDate: timestamp('due_date', { mode: 'date' }),
+        paymentTerms: text(),
+        paymentStatus: text(),
+        tax: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+        discount: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+        discountType: discountTypeEnum('discount_type').default('fixed').notNull(),
+        totalPrice: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+
+        status: workOrderStatusEnum('status').default('estimate').notNull(),
+        totalAmount: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+        totalTax: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+        totalDiscount: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
+
+        accountId: accountRef(),
+        workspaceId: workspaceRef(),
+        customerId: text().references(() => customersTable.id, { onDelete: 'restrict' }),
+        vehicleId: text().references(() => vehiclesTable.id, { onDelete: 'restrict' }),
+        locationId: text().notNull().references(() => locationsTable.id),
+        ...timestamps,
+    },
+    (table) => [
+        unique('orders_location_number_unique').on(table.locationId, table.orderNumber),
+        index('orders_customer_idx').on(table.customerId),
+        index('orders_vehicle_idx').on(table.vehicleId),
+        index('orders_status_idx').on(table.status),
+        index('orders_workspace_idx').on(table.workspaceId),
+    ]
+);
+export const partsTable = pgTable('parts', {
+    id: id(),
+    sku: text().notNull(),
+    name: text().notNull(),
+    brand: text(),
+    costCents: integer().notNull().default(0),
+    priceCents: integer().notNull().default(0),
+    stockQty: integer().notNull().default(0),
+    accountId: accountRef(),
+    workspaceId: workspaceRef(),
+    ...timestamps,
+}, (t) => [unique('parts_ws_sku_unique').on(t.workspaceId, t.sku)]);
+// junktion tables for odrers
+export const ordersServicesTable = pgTable('orders_services', {
+    id: id(),
+    orderId: text().notNull().references(() => ordersTable.id, { onDelete: 'cascade' }),
+    serviceId: text().notNull().references(() => servicesTable.id, { onDelete: 'cascade' }),
+    ...timestamps,
+}, (t) => [
+    unique('orders_services_order_service_unique').on(t.orderId, t.serviceId),
+    index('orders_services_order_idx').on(t.orderId),
+    index('orders_services_service_idx').on(t.serviceId),
+]);
+export const ordersPartsTable = pgTable('orders_parts', {
+    id: id(),
+    orderId: text().notNull().references(() => ordersTable.id, { onDelete: 'cascade' }),
+    partId: text().notNull().references(() => partsTable.id, { onDelete: 'cascade' }),
+    quantity: integer().notNull().default(1),
+    ...timestamps,
+}, (t) => [
+    unique('orders_parts_order_part_unique').on(t.orderId, t.partId),
+    index('orders_parts_order_idx').on(t.orderId),
+    index('orders_parts_part_idx').on(t.partId),
+]);
 
 
 // --- Relations ---
@@ -246,6 +312,10 @@ export const relations = defineRelations(
         customersTable,
         vehiclesTable,
         servicesTable,
+        partsTable,
+        ordersTable,
+        ordersServicesTable,
+        ordersPartsTable,
     },
     (r) => ({
         accountsTable: {
@@ -283,22 +353,30 @@ export const relations = defineRelations(
                 from: r.workspacesTable.id,
                 to: r.notesTable.workspaceId,
             }),
-            locations: r.many.locationsTable({
-                from: r.workspacesTable.id,
-                to: r.locationsTable.workspaceId,
-            }),
-            customers: r.many.customersTable({
-                from: r.workspacesTable.id,
-                to: r.customersTable.workspaceId,
-            }),
-            vehicles: r.many.vehiclesTable({
-                from: r.workspacesTable.id,
-                to: r.vehiclesTable.workspaceId,
-            }),
-            services: r.many.servicesTable({
-                from: r.workspacesTable.id,
-                to: r.servicesTable.workspaceId,
-            }),
+            // locations: r.many.locationsTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.locationsTable.workspaceId,
+            // }),
+            // customers: r.many.customersTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.customersTable.workspaceId,
+            // }),
+            // vehicles: r.many.vehiclesTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.vehiclesTable.workspaceId,
+            // }),
+            // services: r.many.servicesTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.servicesTable.workspaceId,
+            // }),
+            // parts: r.many.partsTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.partsTable.workspaceId,
+            // }),
+            // orders: r.many.ordersTable({
+            //     from: r.workspacesTable.id,
+            //     to: r.ordersTable.workspaceId,
+            // }),
         },
         notesTable: {
             workspace: r.one.workspacesTable({
@@ -319,6 +397,10 @@ export const relations = defineRelations(
                 from: r.locationsTable.accountId,
                 to: r.accountsTable.id,
             }),
+            orders: r.many.ordersTable({
+                from: r.locationsTable.id,
+                to: r.ordersTable.locationId,
+            }),
         },
         customersTable: {
             workspace: r.one.workspacesTable({
@@ -332,6 +414,10 @@ export const relations = defineRelations(
             vehicles: r.many.vehiclesTable({
                 from: r.customersTable.id,
                 to: r.vehiclesTable.customerId,
+            }),
+            orders: r.many.ordersTable({
+                from: r.customersTable.id,
+                to: r.ordersTable.customerId,
             }),
         },
         vehiclesTable: {
@@ -347,6 +433,10 @@ export const relations = defineRelations(
                 from: r.vehiclesTable.accountId,
                 to: r.accountsTable.id,
             }),
+            orders: r.many.ordersTable({
+                from: r.vehiclesTable.id,
+                to: r.ordersTable.vehicleId,
+            }),
         },
         servicesTable: {
             workspace: r.one.workspacesTable({
@@ -357,6 +447,87 @@ export const relations = defineRelations(
                 from: r.servicesTable.accountId,
                 to: r.accountsTable.id,
             }),
+            orders: r.many.ordersTable({
+                from: r.servicesTable.id.through(r.ordersServicesTable.serviceId),
+                to: r.ordersTable.id.through(r.ordersServicesTable.orderId),
+            }),
+        },
+        partsTable: {
+            workspace: r.one.workspacesTable({
+                from: r.partsTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.partsTable.accountId,
+                to: r.accountsTable.id,
+            }),
+            orders: r.many.ordersTable({
+                from: r.partsTable.id.through(r.ordersPartsTable.partId),
+                to: r.ordersTable.id.through(r.ordersPartsTable.orderId),
+            }),
+        },
+        ordersTable: {
+            workspace: r.one.workspacesTable({
+                from: r.ordersTable.workspaceId,
+                to: r.workspacesTable.id,
+            }),
+            account: r.one.accountsTable({
+                from: r.ordersTable.accountId,
+                to: r.accountsTable.id,
+            }),
+            location: r.one.locationsTable({
+                from: r.ordersTable.locationId,
+                to: r.locationsTable.id,
+            }),
+            customer: r.one.customersTable({
+                from: r.ordersTable.customerId,
+                to: r.customersTable.id,
+            }),
+            vehicle: r.one.vehiclesTable({
+                from: r.ordersTable.vehicleId,
+                to: r.vehiclesTable.id,
+            }),
+            // many to many, straight to the other table
+            services: r.many.servicesTable({
+                from: r.ordersTable.id.through(r.ordersServicesTable.orderId),
+                to: r.servicesTable.id.through(r.ordersServicesTable.serviceId),
+            }),
+            parts: r.many.partsTable({
+                from: r.ordersTable.id.through(r.ordersPartsTable.orderId),
+                to: r.partsTable.id.through(r.ordersPartsTable.partId),
+            }),
+            // junction rows, use these when you need quantity
+            orderServices: r.many.ordersServicesTable({
+                from: r.ordersTable.id,
+                to: r.ordersServicesTable.orderId,
+            }),
+            orderParts: r.many.ordersPartsTable({
+                from: r.ordersTable.id,
+                to: r.ordersPartsTable.orderId,
+            }),
+        },
+        ordersServicesTable: {
+            order: r.one.ordersTable({
+                from: r.ordersServicesTable.orderId,
+                to: r.ordersTable.id,
+            }),
+            service: r.one.servicesTable({
+                from: r.ordersServicesTable.serviceId,
+                to: r.servicesTable.id,
+            }),
+        },
+        ordersPartsTable: {
+            order: r.one.ordersTable({
+                from: r.ordersPartsTable.orderId,
+                to: r.ordersTable.id,
+            }),
+            part: r.one.partsTable({
+                from: r.ordersPartsTable.partId,
+                to: r.partsTable.id,
+            }),
         },
     })
 );
+
+
+ 

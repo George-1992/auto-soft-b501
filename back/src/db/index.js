@@ -1,7 +1,7 @@
 import { logger } from '#src/utils/logger.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema.js';
- 
+
 export const getErrorMessage = (error) => {
     try {
         if (error == null) return 'Unknown error';

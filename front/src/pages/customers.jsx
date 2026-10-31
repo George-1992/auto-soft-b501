@@ -6,6 +6,7 @@ import { Input, Textarea } from "@/src/components/ui/inputs";
 import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
+import { setMetas } from "@/src/services/metas";
 import { BuildingComplexIcon, MailIcon, MapPinHouseIcon, PhoneIcon, SquareTextIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -246,12 +247,14 @@ function ThisEditComponent({
                             {t('Vehicles')}
                         </h3>
                     </div>
-                    <VehiclesManage
-                        customerId={data?.id ?? null}
-                        items={data?.vehicles ?? []}
-                        onSave={handleVehicleAddOrEdit}
-                        onDelete={handleVehicleDelete}
-                    />
+                    <div className="border border-gray-300 p-2 rounded-md">
+                        <VehiclesManage
+                            customerId={data?.id ?? null}
+                            items={data?.vehicles ?? []}
+                            onSave={handleVehicleAddOrEdit}
+                            onDelete={handleVehicleDelete}
+                        />
+                    </div>
                 </div>
             </div>
         </ExpandableModal >
@@ -261,9 +264,14 @@ function ThisEditComponent({
 
 export default function CustomersPage() {
     const { t } = useTranslation();
+    setMetas({
+        title: 'Customers',
+        description: 'Manage your customers',
+    });
+
     return (
         <>
-            {/* <div className="mt-10 mb-20">
+            {/* <div className="mt-10 mb-20 p-3 bg-white rounded-md shadow-md">
                 <VehiclesManage
                     items={[]}
                 />

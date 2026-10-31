@@ -9,7 +9,7 @@ import Header from '@/src/components/ui/header.jsx';
 import Sidebar from '@/src/components/ui/sidebar.jsx';
 import { setMetas } from '@/src/services/metas';
 import Notes from '@/src/pages/notes';
-import { BotIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, UsersRoundIcon } from 'lucide-react';
+import { BotIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
 import ToasterSonnar from '@/src/components/ui/sonnar/sonnar';
 import Profile from '@/src/pages/profile';
 import Settings from '@/src/pages/settings';
@@ -17,6 +17,8 @@ import Home from '@/src/pages/home';
 import AiChatPage from '@/src/pages/aiChat';
 import LocationsPage from '@/src/pages/locations';
 import CustomersPage from '@/src/pages/customers';
+import VehiclesPage from '@/src/pages/vehicles';
+import ServicesPage from '@/src/pages/services';
 
 // const AUTH_PATHS = GLOBALS.AUTH_PATHS || [];
 // const authRes = await auth();
@@ -84,6 +86,18 @@ const sidebarItems = [
         path: '/customers',
         subItems: []
     },
+    {
+        name: 'Vehicles',
+        icon: (props) => <CarFrontIcon {...props} />,
+        path: '/vehicles',
+        subItems: []
+    },
+    {
+        name: 'Services',
+        icon: (props) => <ToolboxIcon {...props} />,
+        path: '/services',
+        subItems: []
+    },
     // {
     //     name: 'Notes',
     //     icon: (props) => <NotebookTabsIcon {...props} />,
@@ -142,7 +156,9 @@ const router = createBrowserRouter([
             { path: 'settings', element: <Settings /> },
             { path: 'locations', element: <LocationsPage /> },
             { path: 'customers', element: <CustomersPage /> },
-
+            { path: 'vehicles', element: <VehiclesPage /> },
+            { path: 'services', element: <ServicesPage /> },
+            
             { path: 'test', element: <Test /> },
             { path: 'test-2/:id', element: <Test2 /> },
             { path: '*', element: <NotFound /> },

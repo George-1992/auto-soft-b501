@@ -12,6 +12,7 @@ import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { LoaderShimmer } from "@/src/components/ui/loader";
 import _, { cloneDeep } from "lodash";
 import { PopupModal } from "@/src/components/modals";
+import ColorPicker from "@/src/components/colorPicker";
 
 
 const vehicleYears = Array.from({ length: 80 }, (_, i) => {
@@ -19,7 +20,9 @@ const vehicleYears = Array.from({ length: 80 }, (_, i) => {
     return { value: year.toString(), label: year.toString() };
 });
 export default function VehiclesManage({
+    allowFetch = true,
     customerId = null,
+    sampleItem = false,
     items = [], allowedActions = ['add', 'edit', 'delete'],
     onSave = () => { }, onDelete = () => { }, onChange = () => { }
 }) {
@@ -38,9 +41,17 @@ export default function VehiclesManage({
         notes: '',
     }
 
+    const preItems = [...items];
+    if (sampleItem && preItems.length === 0) {
+        preItems.push({ ...cloneDeep(base), tempId: Date.now() + randomString(10) });
+    }
+    const preEditingItem = sampleItem && preItems.length > 0 ? { ...preItems[0] } : null;
+    // logger.log('VehiclesManage preItems:', preItems);
+    // logger.log('VehiclesManage preEditingItem:', preEditingItem);
+
     const [_isLoading, _setIsLoading] = useState(false);
-    const [_items, _setItems] = useState(items);
-    const [_editingItem, _setEditingItem] = useState(null);
+    const [_items, _setItems] = useState(preItems);
+    const [_editingItem, _setEditingItem] = useState(preEditingItem);
     const [_editingType, _setEditingType] = useState('new');
     const [_vehicleMakes, _setVehicleMakes] = useState([]);
     const [_deleteItem, _setDeleteItem] = useState(null);
@@ -178,6 +189,7 @@ export default function VehiclesManage({
             return item;
         });
         // logger.log('Updated items after form submission:', newItems);
+        // logger.log('_editingItem:', _editingItem);
         _setEditingItem(null);
         _setItems(newItems);
         onSave([_editingItem]);
@@ -271,7 +283,7 @@ export default function VehiclesManage({
 
     // fetch customers vehicles when customerId defined or changed
     useEffect(() => {
-        if (customerId) {
+        if (customerId && allowFetch) {
             // fetch vehicles for the given customerId
             const fetchCustomerVehicles = async () => {
                 try {
@@ -305,7 +317,7 @@ export default function VehiclesManage({
 
     return (
         <div className="w-full">
-            <div className="w-full min-h-40 rounded-md border border-gray-300 p-2 flex flex-col gap-2 bg-white">
+            <div className="w-full min-h-40 rounded-md flex flex-col gap-2 bg-white">
                 {
                     _items && _items.length > 0 && (
                         <div className="w-full flex gap-3 flex-col">
@@ -316,22 +328,30 @@ export default function VehiclesManage({
                                     const isEditing = _editingItem && (editingId === id);
                                     let thisItem = isEditing ? _editingItem : item;
 
-                                    // logger.log('isEditing:', isEditing, id);
+                                    // logger.log('thisItem:',thisItem);
                                     return (
                                         (
-                                            <form key={id} onSubmit={handleFormSubmit} className={`w-full flex gap-3 p-3 border border-gray-200 rounded-md shadow-sm ${isEditing ? 'bg-amber-50' : 'bg-white'}`}>
-                                                <div className="w-40 h-full shrink-0 shadow-sm bg-gray-100 rounded-md flex items-center justify-center">
-                                                    <Image
-                                                        src="/images/other/car.png"
-                                                        alt="Vehicle"
-                                                        className="size-35 object-cover rounded-md opacity-60"
+                                            <form key={id} onSubmit={handleFormSubmit} className={`w-full flex flex-col md:flex-row gap-3 p-3 border border-gray-200 rounded-md shadow-sm ${isEditing ? 'bg-amber-50' : 'bg-white'}`}>
+                                                <div className="w-full md:w-40 gap-2 flex flex-col justify-center items-center">
+                                                    <div className="w-40 h-40 shrink-0 shadow-sm bg-gray-100 rounded-md flex items-center justify-center">
+                                                        <Image
+                                                            src="/images/other/car.png"
+                                                            alt="Vehicle"
+                                                            className="size-35 object-cover rounded-md opacity-60"
+                                                        />
+
+                                                    </div>
+                                                    <LicensePlateEl
+                                                        className="text-lg font-semibold"
+                                                        disabled={!isEditing}
+                                                        value={thisItem?.licensePlate ?? ''}
+                                                        onChange={(v) => handleInputChange(item.tempId, 'licensePlate', v)}
                                                     />
                                                 </div>
                                                 <div className="w-full flex flex-col gap-3">
                                                     <div>
-                                                        <div className="w-full relative flex flex-col md:flex-row gap-2 items-center">
+                                                        <div className="w-full relative flex flex-row gap-2 items-center">
                                                             <LoaderShimmer isLoading={_isLoading} />
-                                                            <BarcodeIcon className="w-5 h-5 text-gray-500" />
                                                             {isEditing ?
                                                                 <Input
                                                                     type="text"
@@ -345,6 +365,7 @@ export default function VehiclesManage({
                                                                     {thisItem?.vin || 'n/a'}
                                                                 </span>
                                                             }
+                                                            <BarcodeIcon className="w-5 h-5 text-gray-500" />
                                                         </div>
                                                         <div className="w-full flex flex-col md:flex-row gap-2">
                                                             <div className="relative w-52 flex flex-col gap-1">
@@ -370,27 +391,6 @@ export default function VehiclesManage({
                                                             </div>
                                                             <div className="relative w-52 flex flex-col gap-1">
                                                                 <LoaderShimmer isLoading={_isLoading} />
-                                                                <label htmlFor="year">
-                                                                    {t('Year')}
-                                                                </label>
-                                                                {isEditing ?
-                                                                    <Select
-                                                                        name="year"
-                                                                        required={true}
-                                                                        searchable={true}
-                                                                        disabled={!isEditing}
-                                                                        value={thisItem?.year ?? ''}
-                                                                        onChange={(e) => handleInputChange(item.tempId, 'year', e.target.value)}
-                                                                        className="w-full"
-                                                                        options={vehicleYears}
-                                                                    />
-                                                                    : <span className="w-full h-9 rounded-md p-2 flex items-center">
-                                                                        {thisItem?.year ?? ''}
-                                                                    </span>
-                                                                }
-                                                            </div>
-                                                            <div className="relative w-52 flex flex-col gap-1">
-                                                                <LoaderShimmer isLoading={_isLoading} />
                                                                 <label htmlFor="model">
                                                                     {t('Model')}
                                                                 </label>
@@ -407,6 +407,101 @@ export default function VehiclesManage({
                                                                     />
                                                                     : <span className="w-full h-9 rounded-md p-2 flex items-center">
                                                                         {getThisVehicleModelName(thisItem?.make ?? '', thisItem?.model ?? '')}
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                            <div className="relative w-30 flex flex-col gap-1">
+                                                                <LoaderShimmer isLoading={_isLoading} />
+                                                                <label htmlFor="year">
+                                                                    {t('Year')}
+                                                                </label>
+                                                                {isEditing ?
+                                                                    <Select
+                                                                        name="year"
+                                                                        placeholder={t('Select Year')}
+                                                                        required={true}
+                                                                        searchable={true}
+                                                                        disabled={!isEditing}
+                                                                        value={thisItem?.year ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'year', e.target.value)}
+                                                                        className="w-full"
+                                                                        options={vehicleYears}
+                                                                    />
+                                                                    : <span className="w-full h-9 rounded-md p-2 flex items-center">
+                                                                        {thisItem?.year ?? ''}
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                            <div className="relative w-40 flex flex-col gap-1">
+                                                                <LoaderShimmer isLoading={_isLoading} />
+                                                                <label htmlFor="engine">
+                                                                    {t('Engine')}
+                                                                </label>
+                                                                {isEditing ?
+                                                                    <Input
+                                                                        type="text"
+                                                                        name="engine"
+                                                                        disabled={!isEditing}
+                                                                        value={thisItem?.engine ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'engine', e.target.value)}
+                                                                        placeholder={t('Engine')}
+                                                                    />
+                                                                    : <span className="w-full h-9 rounded-md p-2 flex items-center">
+                                                                        {thisItem?.engine ?? ''}
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                            <div className="relative w-14 flex flex-col gap-1">
+                                                                <LoaderShimmer isLoading={_isLoading} />
+                                                                <label htmlFor="color">
+                                                                    {t('Color')}
+                                                                </label>
+                                                                <ColorPicker
+                                                                    color={thisItem?.color ?? ''}
+                                                                    onChange={(e) => handleInputChange(item.tempId, 'color', e.target.value)}
+                                                                    name="color"
+                                                                    label={t('Color')}
+                                                                    disabled={!isEditing}
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-full flex flex-col md:flex-row gap-2">
+                                                            <div className="relative w-40 flex flex-col gap-1">
+                                                                <LoaderShimmer isLoading={_isLoading} />
+                                                                <label htmlFor="odometer">
+                                                                    {t('Odometer')}
+                                                                </label>
+                                                                {isEditing ?
+                                                                    <Input
+                                                                        type="text"
+                                                                        name="odometer"
+                                                                        disabled={!isEditing}
+                                                                        value={thisItem?.odometer ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'odometer', e.target.value)}
+                                                                        placeholder={t('Odometer')}
+                                                                    />
+                                                                    : <span className="w-full h-9 rounded-md p-2 flex items-center">
+                                                                        {thisItem?.odometer ?? ''}
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                            <div className="relative w-full flex flex-col gap-1">
+                                                                <LoaderShimmer isLoading={_isLoading} />
+                                                                <label htmlFor="notes">
+                                                                    {t('Notes')}
+                                                                </label>
+                                                                {isEditing ?
+                                                                    <Input
+                                                                        type="text"
+                                                                        name="notes"
+                                                                        disabled={!isEditing}
+                                                                        value={thisItem?.notes ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'notes', e.target.value)}
+                                                                        placeholder={t('Notes')}
+                                                                    />
+                                                                    : <span className="w-full h-9 rounded-md p-2 flex items-center">
+                                                                        {thisItem?.notes ?? ''}
                                                                     </span>
                                                                 }
                                                             </div>
@@ -432,23 +527,27 @@ export default function VehiclesManage({
                                                                 </SecondaryButton>
                                                             </div>
                                                         }
-                                                        {!isEditing && !_editingItem && allowedActions.includes('edit') &&
+                                                        {!isEditing && !_editingItem &&
                                                             <div className="flex gap-3">
                                                                 <div className="w-full flex justify-end gap-2 mt-3">
-                                                                    <DangerButton
-                                                                        type="button"
-                                                                        onClick={() => handleItemDeleteClick(item)}
-                                                                    >
-                                                                        <TrashIcon className="size-4" />
-                                                                        {t('Delete')}
-                                                                    </DangerButton>
-                                                                    <SecondaryButton
-                                                                        type="button"
-                                                                        onClick={() => handleItemEditClick(item)}
-                                                                    >
-                                                                        <PencilIcon className="size-4" />
-                                                                        {t('Edit')}
-                                                                    </SecondaryButton>
+                                                                    {allowedActions.includes('delete') &&
+                                                                        <DangerButton
+                                                                            type="button"
+                                                                            onClick={() => handleItemDeleteClick(item)}
+                                                                        >
+                                                                            <TrashIcon className="size-4" />
+                                                                            {t('Delete')}
+                                                                        </DangerButton>
+                                                                    }
+                                                                    {allowedActions.includes('edit') &&
+                                                                        <SecondaryButton
+                                                                            type="button"
+                                                                            onClick={() => handleItemEditClick(item)}
+                                                                        >
+                                                                            <PencilIcon className="size-4" />
+                                                                            {t('Edit')}
+                                                                        </SecondaryButton>
+                                                                    }
                                                                 </div>
                                                             </div>
                                                         }
@@ -508,4 +607,33 @@ export default function VehiclesManage({
             </div>
         </div>
     );
+}
+
+
+
+const LicensePlateEl = ({ className = '', value = '', disabled = false, onChange = () => { } }) => {
+
+    return (
+        <div className={`max-w-96 h-12 p-1 gap-1 rounded-md shrink-0 bg-white border overflow-hidden font-mono flex items-center ${className} `}>
+            <div className="w-3/12 h-full flex flex-col items-center justify-center border-r-3 border-olive-400">
+                <Image
+                    src="/images/flags/am.svg"
+                    alt="License Plate"
+                    className="h-2/5 w-auto"
+                />
+                <span className="h-3/5">AM</span>
+            </div>
+            <div className="w-9/12 flex justify-center">
+                <Input
+                    type="text"
+                    name="licensePlate"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    disabled={disabled}
+                    placeholder="123456"
+                    className="w-full h-full border-none rounded-none focus:ring-0 focus:border-none"
+                />
+            </div>
+        </div>
+    )
 }
