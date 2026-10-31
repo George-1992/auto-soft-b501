@@ -1,17 +1,11 @@
-import db, { desc, getErrorMessage } from '#src/db/index.js';
-import {
-    accountsTable, notesTable,
-    usersAndAccountsTable, usersTable, workspacesTable,
-    locationsTable, customersTable, vehiclesTable,
-    servicesTable
-} from '#src/db/schema.js';
 import HandleAiRequest from '#src/services/ai/aiSdk.js';
 import { createJwtToken } from '#src/services/jwt.service.js';
 import { logger } from '#src/utils/logger.js';
 import bcrypt from 'bcrypt';
-import { and, eq, getTableColumns, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 import webPush from 'web-push';
 import makesAndModels from '../../data/vehicleMakes.json' with { type: 'json' };
+import Prisma from '#src/db/prisma/index.js';
+
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -95,14 +89,13 @@ export const handleAppRequest = async (req, res) => {
                 return res.json(resObj);
             }
 
-            account = await db.query.accountsTable.findFirst({
-                where: {
-                    id: accountId,
-                },
-                with: {
+            account = await Prisma.accounts.findUnique({
+                where: { id: accountId },
+                include: {
                     workspaces: true,
                 },
             });
+            console.log('>>>>>>>>>>>> account:', account);
 
             if (!account) {
                 resObj.message = 'Account not found';
@@ -110,14 +103,15 @@ export const handleAppRequest = async (req, res) => {
                 return res.json(resObj);
             }
 
-            user = await db.query.usersTable.findFirst({
+            user = await Prisma.users.findUnique({
                 where: { id: userId },
-                with: {
+                include: {
                     usersAndAccounts: {
                         where: { accountId },
                     },
                 },
             });
+
 
             if (!user) {
                 resObj.message = 'User not found';
@@ -133,19 +127,21 @@ export const handleAppRequest = async (req, res) => {
         data.accountId = accountId;
         data.workspaceId = workspace?.id || null;
 
-        // ==== TEST =======
+        // // ==== TEST =======
 
-        const workspaces = await db.query.workspacesTable.findMany({
-            where: {
-                accountId: accountId,
-            },
-            with: {
-                notes: true
-            }
-        });
-        console.log('handleAppRequest: workspaces:', workspaces);
+        // const workspaces = await db.query.workspacesTable.findMany({
+        //     where: {
+        //         accountId: accountId,
+        //     },
+        //     with: {
+        //         notes: true
+        //     }
+        // });
+        // console.log('handleAppRequest: workspaces:', workspaces);
 
-        // === TEST END ====
+        // // === TEST END ====
+
+
 
         if (itsFor === 'signup') {
             const requiredFields = ['email', 'firstName', 'lastName', 'password'];
@@ -161,7 +157,7 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'error';
                 return res.json(resObj);
             } else {
-                const existingAccountsCount = await db.$count(accountsTable)
+                const existingAccountsCount = await Prisma.accounts.count();
                 const hashedPassword = bcrypt.hashSync(data.password, 10);
                 const status = existingAccountsCount === 0 ? 'active' : 'pending'; // First account is active, others are pending
 
@@ -171,51 +167,52 @@ export const handleAppRequest = async (req, res) => {
                 // });
 
                 // Handle user creation logic here
-                const result = await db.transaction(async (tx) => {
+                const result = await Prisma.$transaction(async (tx) => {
                     // 1. Create the primary User
-                    const [user] = await tx
-                        .insert(usersTable)
-                        .values({
+                    const user = await tx.users.create({
+                        data: {
                             email: data.email,
                             firstName: data.firstName,
                             lastName: data.lastName,
                             password: hashedPassword,
                             status: status, // Account under review status
-                        })
-                        .returning({
-                            id: usersTable.id,
-                            firstName: usersTable.firstName,
-                            lastName: usersTable.lastName,
-                            email: usersTable.email,
-                            status: usersTable.status,
-                        });
+                        },
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                            status: true,
+                        },
+                    });
 
                     // 2. Create the Account (Organization / Tenant)
-                    const [account] = await tx
-                        .insert(accountsTable)
-                        .values({
+                    const account = await tx.accounts.create({
+                        data: {
                             name: `${user.firstName}'s Account`,
                             status: status, // Pending admin approval
-                        })
-                        .returning({ id: accountsTable.id });
+                        },
+                        select: { id: true },
+                    });
 
                     // 3. Link User to Account (Junction table)
-                    await tx.insert(usersAndAccountsTable).values({
-                        userId: user.id,
-                        accountId: account.id,
-                        role: 'owner', // Default role for the creator
+                    await tx.usersAndAccounts.create({
+                        data: {
+                            userId: user.id,
+                            accountId: account.id,
+                            role: 'owner', // Default role for the creator
+                        },
                     });
 
                     // 4. Create initial Workspace under the Account
-                    const [workspace] = await tx
-                        .insert(workspacesTable)
-                        .values({
+                    const workspace = await tx.workspaces.create({
+                        data: {
                             accountId: account.id,
                             name: 'Default Workspace',
-                        })
-                        .returning({ id: workspacesTable.id });
+                        },
+                        select: { id: true },
+                    });
 
-                    // Return the populated objects
                     return {
                         user,
                         accountId: account.id,
@@ -246,23 +243,24 @@ export const handleAppRequest = async (req, res) => {
             }
 
             // see if user exists
-            const user = await db.query.usersTable.findFirst({
+            const user = await Prisma.users.findFirst({
                 where: {
                     email: data.email,
                     status: 'active',
                 },
-                with: {
+                include: {
                     usersAndAccounts: {
-                        with: {
+                        include: {
                             account: {
-                                with: {
-                                    workspaces: true
-                                }
+                                include: {
+                                    workspaces: true,
+                                },
                             },
                         },
                     },
                 },
             });
+
             // logger.info('handleAppRequest: signin user found:', user);
 
             if (!user) {
@@ -326,17 +324,17 @@ export const handleAppRequest = async (req, res) => {
             data.workspaceId = workspace?.id || null;
 
             if (action === 'get') {
-                const notes = await db.query.notesTable.findMany({
+                const notes = await Prisma.notes.findMany({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
                     },
-                    orderBy: {
-                        updatedAt: 'desc',
-                        createdAt: 'desc',
-                    },
-                    limit: limit,
-                    offset: offset,
+                    orderBy: [
+                        { updatedAt: 'desc' },
+                        { createdAt: 'desc' },
+                    ],
+                    take: limit,
+                    skip: offset,
                 });
 
                 resObj.success = true;
@@ -345,39 +343,51 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'create') {
                 // Handle note creation logic here
-                const response = await db.insert(notesTable).values(data).returning();
+                const created = await Prisma.notes.create({
+                    data,
+                });
                 resObj.success = true;
                 resObj.message = 'Note created successfully';
-                resObj.data = response;
+                resObj.data = [created];
                 resObj.status = 'success';
             } else if (action === 'update') {
                 // Handle note update logic here
-                const response = await db
-                    .update(notesTable)
-                    .set(data)
-                    .where(
-                        and(
-                            eq(notesTable.id, data.id),
-                            eq(notesTable.accountId, accountId),
-                            eq(notesTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const { id, ...updateData } = data;
+                await Prisma.notes.updateMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    data: updateData,
+                });
+                const updated = await Prisma.notes.findMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Note updated successfully';
-                resObj.data = response;
+                resObj.data = updated;
                 resObj.status = 'success';
             } else if (action === 'delete') {
                 // Handle note deletion logic here
-                const response = await db.delete(notesTable)
-                    .where(
-                        and(
-                            eq(notesTable.id, data.id),
-                            eq(notesTable.accountId, accountId),
-                            eq(notesTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const response = await Prisma.notes.findMany({
+                    where: {
+                        id: data.id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
+                await Prisma.notes.deleteMany({
+                    where: {
+                        id: data.id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Note deleted successfully';
                 resObj.data = response;
@@ -394,12 +404,12 @@ export const handleAppRequest = async (req, res) => {
             }
 
             if (action === 'get') {
-                const user = await db.query.usersTable.findFirst({
+                const user = await Prisma.users.findFirst({
                     where: {
                         id: userId,
                         status: 'active',
                     },
-                    columns: {
+                    select: {
                         id: true,
                         email: true,
                         firstName: true,
@@ -428,22 +438,22 @@ export const handleAppRequest = async (req, res) => {
                     lastName: data.lastName ?? '',
                 };
 
-                const updated = await db
-                    .update(usersTable)
-                    .set(updateData)
-                    .where(eq(usersTable.id, userId))
-                    .returning({
-                        id: usersTable.id,
-                        email: usersTable.email,
-                        firstName: usersTable.firstName,
-                        lastName: usersTable.lastName,
-                        status: usersTable.status,
-                        provider: usersTable.provider,
-                        createdAt: usersTable.createdAt,
-                        updatedAt: usersTable.updatedAt,
-                    });
+                const updated = await Prisma.users.update({
+                    where: { id: userId },
+                    data: updateData,
+                    select: {
+                        id: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                        status: true,
+                        provider: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                });
 
-                if (!updated || updated.length === 0) {
+                if (!updated) {
                     resObj.message = 'Profile update failed';
                     resObj.status = 'error';
                     res.json(resObj);
@@ -451,7 +461,7 @@ export const handleAppRequest = async (req, res) => {
 
                 resObj.success = true;
                 resObj.message = 'Profile updated successfully';
-                resObj.data = updated[0];
+                resObj.data = updated;
                 resObj.status = 'success';
             } else if (action === 'password') {
                 const nextPassword = data.password || '';
@@ -464,15 +474,15 @@ export const handleAppRequest = async (req, res) => {
 
                 const hashedPassword = bcrypt.hashSync(nextPassword, 10);
 
-                const updated = await db
-                    .update(usersTable)
-                    .set({
+                const updated = await Prisma.users.update({
+                    where: { id: userId },
+                    data: {
                         password: hashedPassword,
-                    })
-                    .where(eq(usersTable.id, userId))
-                    .returning({ id: usersTable.id });
+                    },
+                    select: { id: true },
+                });
 
-                if (!updated || updated.length === 0) {
+                if (!updated) {
                     resObj.message = 'Password update failed';
                     resObj.status = 'error';
                     return res.json(resObj);
@@ -481,7 +491,7 @@ export const handleAppRequest = async (req, res) => {
                 resObj.success = true;
                 resObj.message = 'Password updated successfully';
                 resObj.data = {
-                    id: updated[0].id,
+                    id: updated.id,
                 };
                 resObj.status = 'success';
             } else {
@@ -497,13 +507,13 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'update' || action === 'create') {
                 // update user.config.settings
-                await db.update(accountsTable)
-                    .set({
+                await Prisma.accounts.update({
+                    where: { id: account.id },
+                    data: {
                         name: data.name || account.name,
                         country: data.country || account.country,
-                    })
-                    .where((eq(accountsTable.id, account.id)))
-                    .returning();
+                    },
+                });
 
                 resObj.success = true;
                 resObj.message = 'Settings config updated successfully';
@@ -524,13 +534,14 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'update' || action === 'create') {
                 // update user.config.webpush
-                await db.update(usersTable)
-                    .set({
+                await Prisma.users.update({
+                    where: { id: user.id },
+                    data: {
                         config: {
                             ...user.config, webpush: data
                         }
-                    })
-                    .where((eq(usersTable.id, user.id)));
+                    },
+                });
 
                 resObj.success = true;
                 resObj.message = 'Webpush config updated successfully';
@@ -538,13 +549,14 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'delete') {
                 // delete user.config.webpush
-                await db.update(usersTable)
-                    .set({
+                await Prisma.users.update({
+                    where: { id: user.id },
+                    data: {
                         config: {
                             ...user.config, webpush: null
                         }
-                    })
-                    .where((eq(usersTable.id, user.id)));
+                    },
+                });
 
                 resObj.success = true;
                 resObj.message = 'Webpush config deleted successfully';
@@ -601,13 +613,15 @@ export const handleAppRequest = async (req, res) => {
                 //  go over errors if expired or unsubscribed, remove from user.config.webpush
                 if ([401, 403, 404, 410].some(code => statusCodes.includes(code))) {
                     const updatedSubscriptions = subscriptions.filter(sub => !dead.includes(sub.endpoint));
-                    await db.update(usersTable)
-                        .set({
+                    await Prisma.users.update({
+                        where: { id: user.id },
+                        data: {
                             config: {
-                                ...user.config, webpush: null
+                                ...user.config,
+                                webpush: updatedSubscriptions
                             }
-                        })
-                        .where((eq(usersTable.id, user.id)));
+                        },
+                    });
                 }
 
                 resObj.success = sent > 0;
@@ -616,23 +630,24 @@ export const handleAppRequest = async (req, res) => {
                 resObj.errors = failed;
                 return res.json(resObj);
             }
+
         } else if (itsFor === 'ai-chat') {
             return HandleAiRequest(req, res, account, user, workspace);
         } else if (itsFor === 'locations') {
 
             if (action === 'get') {
                 // Handle location retrieval logic here
-                const locations = await db.query.locationsTable.findMany({
+                const locations = await Prisma.locations.findMany({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
                     },
-                    orderBy: {
-                        updatedAt: 'desc',
-                        createdAt: 'desc',
-                    },
-                    limit: limit,
-                    offset: offset,
+                    orderBy: [
+                        { updatedAt: 'desc' },
+                        { createdAt: 'desc' },
+                    ],
+                    take: limit,
+                    skip: offset,
                 });
 
                 resObj.success = true;
@@ -641,7 +656,7 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'create') {
                 // check if location with the same name already exists for the account and workspace
-                const existingLocation = await db.query.locationsTable.findFirst({
+                const existingLocation = await Prisma.locations.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
@@ -658,39 +673,49 @@ export const handleAppRequest = async (req, res) => {
                 }
 
                 // Handle location creation logic here
-                const response = await db.insert(locationsTable).values(data).returning();
+                const response = await Prisma.locations.create({ data });
                 resObj.success = true;
                 resObj.message = 'Location created successfully';
-                resObj.data = response;
+                resObj.data = [response];
                 resObj.status = 'success';
             } else if (action === 'update') {
                 // Handle location update logic here
-                const response = await db
-                    .update(locationsTable)
-                    .set(data)
-                    .where(
-                        and(
-                            eq(locationsTable.id, data.id),
-                            eq(locationsTable.accountId, accountId),
-                            eq(locationsTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const { id, ...updateData } = data;
+                await Prisma.locations.updateMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    data: updateData,
+                });
+                const response = await Prisma.locations.findMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Location updated successfully';
                 resObj.data = response;
                 resObj.status = 'success';
             } else if (action === 'delete') {
                 // Handle location deletion logic here
-                const response = await db.delete(locationsTable)
-                    .where(
-                        and(
-                            eq(locationsTable.id, data.id),
-                            eq(locationsTable.accountId, accountId),
-                            eq(locationsTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const response = await Prisma.locations.findMany({
+                    where: {
+                        id: data.id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
+                await Prisma.locations.deleteMany({
+                    where: {
+                        id: data.id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Location deleted successfully';
                 resObj.data = response;
@@ -702,53 +727,48 @@ export const handleAppRequest = async (req, res) => {
 
             const ids = getIdsFromData(data);
             if (action === 'get') {
-                const buildWhere = (t) => {
-                    return and(
-                        eq(t.accountId, accountId),
-                        ids.length ? inArray(t.id, ids) : undefined,
-                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
-                        searchQuery
-                            ? or(
-                                like(t.firstName, `%${searchQuery}%`),
-                                like(t.lastName, `%${searchQuery}%`),
-                                like(t.email, `%${searchQuery}%`),
-                                like(t.phone, `%${searchQuery}%`),
-                            )
-                            : undefined,
-                    );
+                const buildWhere = {
+                    accountId,
+                    workspaceId: workspace?.id || null,
+                    ...(ids.length ? { id: { in: ids } } : {}),
+                    ...(searchQuery ? {
+                        OR: [
+                            { firstName: { contains: searchQuery, mode: 'insensitive' } },
+                            { lastName: { contains: searchQuery, mode: 'insensitive' } },
+                            { email: { contains: searchQuery, mode: 'insensitive' } },
+                            { phone: { contains: searchQuery, mode: 'insensitive' } },
+                        ],
+                    } : {}),
                 };
 
                 const [customers, totalCount] = await Promise.all([
-                    db.query.customersTable.findMany({
-                        where: { RAW: buildWhere },
-                        // with: {
-                        //     vehicles: true,
-                        // },
-                        extras: {
-                            vehicleCount: (t) =>
-                                sql`(
-                                        SELECT COUNT(*) 
-                                        FROM ${vehiclesTable} 
-                                        WHERE ${vehiclesTable.customerId} = ${t.id}
-                                    )`
-                                    .mapWith(Number)
-                                    .as('vehicleCount'),
+                    Prisma.customers.findMany({
+                        where: buildWhere,
+                        include: {
+                            _count: {
+                                select: { vehicles: true },
+                            },
                         },
-                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
-                        limit,
-                        offset,
+                        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+                        take: limit,
+                        skip: offset,
                     }),
-                    db.$count(customersTable, buildWhere(customersTable)),
+                    Prisma.customers.count({ where: buildWhere }),
                 ]);
+
+                const mappedCustomers = customers.map((item) => ({
+                    ...item,
+                    vehicleCount: item._count?.vehicles || 0,
+                }));
 
                 resObj.totalCount = totalCount;
                 resObj.success = true;
                 resObj.message = 'Customers retrieved successfully';
-                resObj.data = customers;
+                resObj.data = mappedCustomers;
                 resObj.status = 'success';
             } else if (action === 'create') {
                 // check if already exists either by email or phone
-                const existingCustomer = await db.query.customersTable.findFirst({
+                const existingCustomer = await Prisma.customers.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
@@ -771,10 +791,9 @@ export const handleAppRequest = async (req, res) => {
                 //     dummyCustomersCreation({ count: 1000, accountId: accountId, workspaceId: workspace?.id || null });
                 // }
 
-                const result = await db.transaction(async (tx) => {
+                const result = await Prisma.$transaction(async (tx) => {
                     // 1. Insert customer using the transaction instance (tx)
-                    const response = await tx.insert(customersTable).values(data).returning();
-                    const createdCustomer = response[0];
+                    const createdCustomer = await tx.customers.create({ data });
 
                     // 2. Insert related vehicles if present
                     if (data.vehicles && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
@@ -785,10 +804,10 @@ export const handleAppRequest = async (req, res) => {
                             workspaceId: workspace?.id || null,
                         }));
 
-                        await tx.insert(vehiclesTable).values(vehiclesToInsert);
+                        await tx.vehicles.createMany({ data: vehiclesToInsert });
                     }
 
-                    return response;
+                    return [createdCustomer];
                 });
 
                 resObj.success = true;
@@ -797,17 +816,22 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
 
             } else if (action === 'update') {
-                const response = await db
-                    .update(customersTable)
-                    .set(data)
-                    .where(
-                        and(
-                            eq(customersTable.id, data.id),
-                            eq(customersTable.accountId, accountId),
-                            eq(customersTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const { id, ...updateData } = data;
+                await Prisma.customers.updateMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    data: updateData,
+                });
+                const response = await Prisma.customers.findMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Customer updated successfully';
                 resObj.data = response;
@@ -818,15 +842,20 @@ export const handleAppRequest = async (req, res) => {
                     ? data.map(item => typeof item === 'object' && item.id ? item.id : item)
                     : [data.id];
 
-                const response = await db.delete(customersTable)
-                    .where(
-                        and(
-                            inArray(customersTable.id, idsToDelete),
-                            eq(customersTable.accountId, accountId),
-                            eq(customersTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const response = await Prisma.customers.findMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
+                await Prisma.customers.deleteMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
 
                 if (response.length === 0) {
                     resObj.success = false;
@@ -844,26 +873,33 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'uniques') {
 
-                const columns = getTableColumns(customersTable);
+                const selectableFields = new Set([
+                    'firstName',
+                    'lastName',
+                    'companyName',
+                    'email',
+                    'phone',
+                    'address',
+                    'notes',
+                ]);
 
                 const validFields = data
                     .map(field => field.name)
-                    .filter(fieldName => fieldName in columns);
+                    .filter(fieldName => selectableFields.has(fieldName));
 
                 const entries = await Promise.all(
                     validFields.map(async (field) => {
-                        const rows = await db
-                            .selectDistinct({ value: columns[field] })
-                            .from(customersTable)
-                            .where(and(
-                                eq(customersTable.accountId, accountId),
-                                workspace?.id
-                                    ? eq(customersTable.workspaceId, workspace.id)
-                                    : isNull(customersTable.workspaceId),
-                                isNotNull(columns[field])
-                            ));
+                        const rows = await Prisma.customers.findMany({
+                            where: {
+                                accountId,
+                                workspaceId: workspace?.id || null,
+                                [field]: { not: null },
+                            },
+                            select: { [field]: true },
+                            distinct: [field],
+                        });
 
-                        return [field, rows.map(row => row.value)];
+                        return [field, rows.map((row) => row[field]).filter((value) => value != null)];
                     })
                 );
 
@@ -885,31 +921,30 @@ export const handleAppRequest = async (req, res) => {
             const customerId = data.customerId || null;
 
             if (action === 'get') {
-                const buildWhere = (t) => {
-                    return and(
-                        eq(t.accountId, accountId),
-                        ids.length ? inArray(t.id, ids) : undefined,
-                        customerId ? eq(t.customerId, customerId) : undefined,
-                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
-                        searchQuery
-                            ? or(
-                                like(t.make, `%${searchQuery}%`),
-                                like(t.model, `%${searchQuery}%`),
-                                like(t.year, `%${searchQuery}%`),
-                                like(t.vin, `%${searchQuery}%`),
-                            )
-                            : undefined,
-                    );
+                const parsedYear = Number(searchQuery);
+                const buildWhere = {
+                    accountId,
+                    workspaceId: workspace?.id || null,
+                    ...(ids.length ? { id: { in: ids } } : {}),
+                    ...(customerId ? { customerId } : {}),
+                    ...(searchQuery ? {
+                        OR: [
+                            { make: { contains: searchQuery, mode: 'insensitive' } },
+                            { model: { contains: searchQuery, mode: 'insensitive' } },
+                            ...(Number.isFinite(parsedYear) ? [{ year: parsedYear }] : []),
+                            { vin: { contains: searchQuery, mode: 'insensitive' } },
+                        ].filter(Boolean),
+                    } : {}),
                 };
 
                 const [vehicles, totalCount] = await Promise.all([
-                    db.query.vehiclesTable.findMany({
-                        where: { RAW: buildWhere },
-                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
-                        limit,
-                        offset,
+                    Prisma.vehicles.findMany({
+                        where: buildWhere,
+                        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+                        take: limit,
+                        skip: offset,
                     }),
-                    db.$count(vehiclesTable, buildWhere(vehiclesTable)),
+                    Prisma.vehicles.count({ where: buildWhere }),
                 ]);
 
                 resObj.totalCount = totalCount;
@@ -927,7 +962,7 @@ export const handleAppRequest = async (req, res) => {
                 if (data.licensePlate) {
                     orConditions.push({ licensePlate: data.licensePlate });
                 }
-                const existingVehicle = await db.query.vehiclesTable.findFirst({
+                const existingVehicle = await Prisma.vehicles.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
@@ -943,10 +978,9 @@ export const handleAppRequest = async (req, res) => {
                     return res.json(resObj);
                 }
 
-                const result = await db.transaction(async (tx) => {
+                const result = await Prisma.$transaction(async (tx) => {
                     // 1. Insert vehicle using the transaction instance (tx)
-                    const response = await tx.insert(vehiclesTable).values(data).returning();
-                    const createdVehicle = response[0];
+                    const createdVehicle = await tx.vehicles.create({ data });
                     return createdVehicle;
                 });
 
@@ -955,17 +989,22 @@ export const handleAppRequest = async (req, res) => {
                 resObj.data = result;
                 resObj.status = 'success';
             } else if (action === 'update') {
-                const response = await db
-                    .update(vehiclesTable)
-                    .set(data)
-                    .where(
-                        and(
-                            eq(vehiclesTable.id, data.id),
-                            eq(vehiclesTable.accountId, accountId),
-                            eq(vehiclesTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const { id, ...updateData } = data;
+                await Prisma.vehicles.updateMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    data: updateData,
+                });
+                const response = await Prisma.vehicles.findMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Vehicle updated successfully';
                 resObj.data = response;
@@ -977,28 +1016,26 @@ export const handleAppRequest = async (req, res) => {
 
             const ids = getIdsFromData(data);
             if (action === 'get') {
-                const buildWhere = (t) => {
-                    return and(
-                        eq(t.accountId, accountId),
-                        ids.length ? inArray(t.id, ids) : undefined,
-                        workspace?.id ? eq(t.workspaceId, workspace.id) : isNull(t.workspaceId),
-                        searchQuery
-                            ? or(
-                                like(t.name, `%${searchQuery}%`),
-                                like(t.description, `%${searchQuery}%`),
-                            )
-                            : undefined,
-                    );
+                const buildWhere = {
+                    accountId,
+                    workspaceId: workspace?.id || null,
+                    ...(ids.length ? { id: { in: ids } } : {}),
+                    ...(searchQuery ? {
+                        OR: [
+                            { name: { contains: searchQuery, mode: 'insensitive' } },
+                            { description: { contains: searchQuery, mode: 'insensitive' } },
+                        ],
+                    } : {}),
                 };
 
                 const [services, totalCount] = await Promise.all([
-                    db.query.servicesTable.findMany({
-                        where: { RAW: buildWhere },
-                        orderBy: { updatedAt: 'desc', createdAt: 'desc' },
-                        limit,
-                        offset,
+                    Prisma.services.findMany({
+                        where: buildWhere,
+                        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+                        take: limit,
+                        skip: offset,
                     }),
-                    db.$count(servicesTable, buildWhere(servicesTable)),
+                    Prisma.services.count({ where: buildWhere }),
                 ]);
 
                 resObj.totalCount = totalCount;
@@ -1007,7 +1044,7 @@ export const handleAppRequest = async (req, res) => {
                 resObj.data = services;
                 resObj.status = 'success';
             } else if (action === 'create') {
-                const alreadyExists = await db.query.servicesTable.findFirst({
+                const alreadyExists = await Prisma.services.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
@@ -1023,10 +1060,9 @@ export const handleAppRequest = async (req, res) => {
                     return res.json(resObj);
                 }
 
-                const result = await db.transaction(async (tx) => {
+                const result = await Prisma.$transaction(async (tx) => {
                     // 1. Insert service using the transaction instance (tx)
-                    const response = await tx.insert(servicesTable).values(data).returning();
-                    const createdService = response[0];
+                    const createdService = await tx.services.create({ data });
                     return createdService;
                 });
 
@@ -1036,34 +1072,39 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             } else if (action === 'update') {
 
-                const existingService = await db.query.servicesTable.findFirst({
+                const existingService = await Prisma.services.findFirst({
                     where: {
                         accountId: accountId,
                         workspaceId: workspace?.id || null,
                         name: data.name,
-                        id: not(eq(data.id)), // Exclude the current service being updated
+                        id: { not: data.id }, // Exclude the current service being updated
                     },
                 });
 
-                if (!existingService) {
+                if (existingService) {
                     resObj.success = false;
-                    resObj.message = 'Service not found or does not exist';
+                    resObj.message = 'Service already exists with the same name';
                     resObj.data = null;
                     resObj.status = 'error';
                     return res.json(resObj);
                 }
 
-                const response = await db
-                    .update(servicesTable)
-                    .set(data)
-                    .where(
-                        and(
-                            eq(servicesTable.id, data.id),
-                            eq(servicesTable.accountId, accountId),
-                            eq(servicesTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const { id, ...updateData } = data;
+                await Prisma.services.updateMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                    data: updateData,
+                });
+                const response = await Prisma.services.findMany({
+                    where: {
+                        id,
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
                 resObj.success = true;
                 resObj.message = 'Service updated successfully';
                 resObj.data = response;
@@ -1073,15 +1114,20 @@ export const handleAppRequest = async (req, res) => {
                     ? data.map(item => typeof item === 'object' && item.id ? item.id : item)
                     : [data.id];
 
-                const response = await db.delete(servicesTable)
-                    .where(
-                        and(
-                            inArray(servicesTable.id, idsToDelete),
-                            eq(servicesTable.accountId, accountId),
-                            eq(servicesTable.workspaceId, workspace?.id)
-                        )
-                    )
-                    .returning();
+                const response = await Prisma.services.findMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
+                await Prisma.services.deleteMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        accountId,
+                        workspaceId: workspace?.id || null,
+                    },
+                });
 
                 if (response.length === 0) {
                     resObj.success = false;
@@ -1147,7 +1193,7 @@ export const handleAppRequest = async (req, res) => {
     } catch (error) {
         logger.error('handleAppRequest error:', error);
         resObj.success = false;
-        resObj.message = getErrorMessage(error) || 'Unknown error';
+        resObj.message = error.message ? `ERROR: ${error.message}` : 'An error occurred while processing the request';
         resObj.status = error.status || 'error';
 
         res.status(error.status || 500).json(resObj);
@@ -1210,7 +1256,16 @@ const dummyCustomersCreation = async ({ count, accountId, workspaceId }) => {
                 workspaceId: workspaceId,
             });
         }
-        return await db.insert(customersTable).values(dummyCustomers).returning();
+        await Prisma.customers.createMany({ data: dummyCustomers });
+        return Prisma.customers.findMany({
+            where: {
+                accountId,
+                workspaceId,
+                email: {
+                    in: dummyCustomers.map((item) => item.email),
+                },
+            },
+        });
 
 
     } catch (error) {

@@ -2,8 +2,6 @@ import express from 'express';
 import multer from 'multer';
 import handleFile from '#src/services/file/process.js';
 import { logger } from '#src/utils/logger.js';
-import db from '#src/db/index.js';
-import { usersTable } from '#src/db/schema.js';
 import { handleAppRequest } from '#src/services/appRequest.js';
 
 const router = express.Router();
@@ -25,45 +23,15 @@ router.post('/app', async (req, res) => {
 
 
 // prefix is /api/v1
-router.get('/test', (req, res) => {
-    // console.log('Test endpoint hit')
-    logger.info('Test endpoint hit')
-    res.json({ message: 'API is working!' })
+router.get('/test', async (req, res) => {
+    // logger.info('Test endpoint hit')
+    res.json({ message: 'API is working!', data: [] })
 })
 
 router.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: Date.now() })
 })
 
-router.get('/db', async (req, res) => {
-    try {
-
-        // // test
-        // const userName = 'john' + Math.floor(Math.random() * 100000);
-        // const user = {
-        //     name: 'John',
-        //     age: 30,
-        //     email: `${userName}@example.com`,
-        // };
-        // const result = await db.insert(usersTable).values(user);
-        // logger.info('Inserted user into database:', result);
-        // //test end
-
-        const users = await db.select().from(usersTable)
-        res.json({
-            success: true,
-            message: 'Database connection successful',
-            data: users
-        })
-    } catch (error) {
-        logger.error(error.cause?.message || error.message);
-        res.status(500).json({
-            success: false,
-            message: 'Database connection failed',
-            error: error.message || 'Unknown error'
-        })
-    }
-})
 
 // example endpoint to test path params, query params, and body
 router.post('/example/:path1/:path2', (req, res) => {

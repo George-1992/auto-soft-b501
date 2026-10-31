@@ -5,7 +5,7 @@ import {
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { logger } from '#src/utils/logger.js';
-import db from '#src/db/index.js';
+import Prisma from '#src/db/prisma/index.js';
 
 const aiModelName = 'gpt-5.4-nano'; // Valid OpenAI model
 // Define the tool with Zod schema directly
@@ -23,12 +23,12 @@ const logToConsoleTool = tool({
 
 
 const createDbRequestTool = (accountId) => tool({
-    description: 'Query database tables using Drizzle query options. Account scope is applied automatically.',
+    description: 'Query database tables using Prisma-style query options. Account scope is applied automatically.',
     inputSchema: z.object({
         table: z
-            .enum(['notesTable'])
-            .default('notesTable')
-            .describe('Target table in db.query to run findMany against'),
+            .enum(['notes'])
+            .default('notes')
+            .describe('Target Prisma model to run findMany against'),
         where: z
             .object({
                 id: z.string().optional(),
@@ -38,7 +38,7 @@ const createDbRequestTool = (accountId) => tool({
                 workspaceId: z.string().optional(),
             })
             .default({})
-            .describe('Optional notesTable filters. accountId is injected server-side.'),
+            .describe('Optional notes filters. accountId is injected server-side.'),
         limit: z
             .coerce.number()
             .int()
@@ -58,7 +58,7 @@ const createDbRequestTool = (accountId) => tool({
                 direction: z.enum(['asc', 'desc']).default('desc'),
             })
             .optional()
-            .describe('Sort configuration for notesTable'),
+            .describe('Sort configuration for notes'),
     }),
     execute: async ({ table, where, limit, offset, orderBy }) => {
         try {
@@ -69,36 +69,24 @@ const createDbRequestTool = (accountId) => tool({
                 return [];
             }
 
-            const queryByTable = {
-                notesTable: db.query.notesTable,
+            const whereClause = {
+                ...(where || {}),
+                accountId,
             };
 
-            const tableQuery = queryByTable[table];
-            if (!tableQuery) {
+            if (table !== 'notes') {
                 logger.error('DB Request Tool: unsupported table requested:', table);
                 return [];
             }
 
-            const drizzleQuery = {
-                where: {
-                    ...(where || {}),
-                    accountId,
-                },
-            };
-
-            if (typeof limit === 'number') {
-                drizzleQuery.limit = limit;
-            }
-            if (typeof offset === 'number') {
-                drizzleQuery.offset = offset;
-            }
-            if (orderBy?.field && orderBy?.direction) {
-                drizzleQuery.orderBy = {
-                    [orderBy.field]: orderBy.direction,
-                };
-            }
-
-            const result = await tableQuery.findMany(drizzleQuery);
+            const result = await Prisma.notes.findMany({
+                where: whereClause,
+                ...(typeof limit === 'number' ? { take: limit } : {}),
+                ...(typeof offset === 'number' ? { skip: offset } : {}),
+                ...(orderBy?.field && orderBy?.direction
+                    ? { orderBy: { [orderBy.field]: orderBy.direction } }
+                    : {}),
+            });
 
             return result;
 
