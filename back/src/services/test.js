@@ -11,7 +11,7 @@ export const TestFunc = async ({ req, res }) => {
     try {
 
         console.log('========= TestFunc called =========');
-        return res.send(resObj);
+        // return res.send(resObj);
 
         console.log('makesAndModels: ', makesAndModels.length);
 
