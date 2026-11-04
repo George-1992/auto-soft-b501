@@ -60,6 +60,12 @@ function ThisEditComponent({
         }
         // logger.info("ThisEditComponent:handleFormSubmit:", data);
 
+       //if pipline is not set notify and return
+       if (!data?.pipelineId) {
+            notify({ type: 'error', message: t('Pipeline is not set') });
+            return;
+       }
+
         if (!data?.orderLines || !data?.orderLines.length) {
             notify({ type: 'info', message: t('At least one service is required') });
             return;

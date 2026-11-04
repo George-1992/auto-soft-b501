@@ -100,12 +100,12 @@ function ThisEditComponent({
             return stage;
         });
 
-        logger.log('handleStageInputChange newData:', newData);
+        // logger.log('handleStageInputChange newData:', newData);
         onInputChange('stages', newData);
     };
 
 
-    logger.log('ThisEditComponent data:', data);
+    // logger.log('ThisEditComponent data:', data);
     // logger.log('ThisEditComponent getStageItems:', getStageItems());
 
     return (
