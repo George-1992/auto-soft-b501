@@ -31,7 +31,7 @@ export default function Header({ items }) {
                 {/* settings */}
                 <div className="flex items-center gap-2">
                     <SecondaryButton onClick={test} className="px-3 py-1">
-                        Test
+                        Test-2
                     </SecondaryButton>
 
 
