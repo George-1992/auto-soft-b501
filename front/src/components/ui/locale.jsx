@@ -62,7 +62,7 @@ export default function LanguageSwitch({ onChange = () => { }, className }) {
     );
 }
 
-export const CountriesSelect = ({ value, onChange, className }) => {
+export const CountriesSelect = ({ value, onChange, className, isLoading = true }) => {
     // const { t } = useTranslation();
     const [currentCountry, setCurrentCountry] = useState(value || 'us');
 
@@ -83,6 +83,7 @@ export const CountriesSelect = ({ value, onChange, className }) => {
         <Select
             className={className || "w-40"}
             value={currentCountry}
+            isLoading={isLoading}
             options={countries.map((country) => ({
                 value: country.code,
                 label: country.label || country.code.toUpperCase(),

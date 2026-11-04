@@ -3,7 +3,6 @@ import { updateSession } from "@/src/components/auth";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import Card from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/inputs";
-import { LoaderShimmer } from "@/src/components/ui/loader";
 import { CountriesSelect } from "@/src/components/ui/locale";
 import Select from "@/src/components/ui/select";
 import { notify } from "@/src/components/ui/sonnar/sonnar";
@@ -113,16 +112,16 @@ export default function Settings() {
 
     return (
         <div className="w-full relative rounded-md">
-            <LoaderShimmer isLoading={_isLoading} />
             <h1 className="text-2xl font-bold mb-4">
                 Settings
             </h1>
-            <Card>
+            <Card   className="p-5">
                 <div className="md:w-96 flex flex-col gap-5">
                     <div>
                         <label htmlFor="name">Name</label>
                         <Input
                             id="name"
+                            isLoading={_isLoading}
                             className="w-full border border-gray-300 rounded-md p-2"
                             value={_data?.name || ''}
                             onChange={(e) => handleInputChange('name', e.target.value)}
@@ -132,6 +131,7 @@ export default function Settings() {
                         <label htmlFor="country">Country</label>
                         <CountriesSelect
                             id="country"
+                            isLoading={_isLoading}
                             className="w-full "
                             value={_data?.country || ''}
                             onChange={(value) => handleInputChange('country', value)}
@@ -141,6 +141,7 @@ export default function Settings() {
                         <label htmlFor="country">Currency</label>
                         <Select
                             id="currency"
+                            isLoading={_isLoading}
                             className="w-full "
                             value={_data?.currency || ''}
                             onChange={(e) => handleInputChange('currency', e.target.value)}
@@ -155,6 +156,7 @@ export default function Settings() {
                 <div className="mt-10">
                     <PrimaryButton
                         size="lg"
+                        isLoading={_isLoading}
                         onClick={handleSave}
                     >
                         Save
