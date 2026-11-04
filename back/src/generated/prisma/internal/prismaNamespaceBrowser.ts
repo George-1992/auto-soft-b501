@@ -107,6 +107,7 @@ export const UsersScalarFieldEnum = {
   password: 'password',
   provider: 'provider',
   config: 'config',
+  language: 'language',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -238,6 +239,7 @@ export const OrdersScalarFieldEnum = {
   discount: 'discount',
   discountType: 'discountType',
   totalPrice: 'totalPrice',
+  stageColPosition: 'stageColPosition',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   workspaceId: 'workspaceId',

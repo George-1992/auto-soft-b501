@@ -5,7 +5,7 @@ import { logger } from "@/src/services/logger";
 import { languages, countries } from "@/i18n";
 import Image from "@/src/components/wraps/image";
 
-export default function LanguageSwitch() {
+export default function LanguageSwitch({ onChange = () => { }, className }) {
 
     const { t, i18n } = useTranslation()
     const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'en');
@@ -16,12 +16,19 @@ export default function LanguageSwitch() {
         } else {
             return code;
         }
-    }
+    };
+
+    const handleLanguageChange = (e) => {
+        const selectedLanguage = e.target.value;
+        setCurrentLanguage(selectedLanguage);
+        i18n.changeLanguage(selectedLanguage);
+        onChange(selectedLanguage);
+    };
 
     return (
-        <div>
+        <div className={className || "w-40"}>
             <Select
-                className="w-40"
+                className="w-full"
                 value={currentLanguage}
                 options={languages.map((lang) => ({
                     value: lang.code,
@@ -29,13 +36,7 @@ export default function LanguageSwitch() {
                     flag: lang.flag,
                 }))}
                 defaultValue="en"
-                onChange={(e) => {
-                    const value = e.target.value;
-                    logger.info('LanguageSwitch: selected language:', value);
-
-                    i18n.changeLanguage(value);
-                    setCurrentLanguage(value);
-                }}
+                onChange={handleLanguageChange}
                 renderOption={(option) => (
                     <div className="flex items-center gap-2">
                         <Image
@@ -111,4 +112,5 @@ export const CountriesSelect = ({ value, onChange, className }) => {
             )}
         />
     );
-}
+};
+

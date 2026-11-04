@@ -56,6 +56,7 @@ export type OrdersMinAggregateOutputType = {
   discount: runtime.Decimal | null
   discountType: $Enums.DiscountType | null
   totalPrice: runtime.Decimal | null
+  stageColPosition: string | null
   createdAt: Date | null
   updatedAt: Date | null
   workspaceId: string | null
@@ -81,6 +82,7 @@ export type OrdersMaxAggregateOutputType = {
   discount: runtime.Decimal | null
   discountType: $Enums.DiscountType | null
   totalPrice: runtime.Decimal | null
+  stageColPosition: string | null
   createdAt: Date | null
   updatedAt: Date | null
   workspaceId: string | null
@@ -106,6 +108,7 @@ export type OrdersCountAggregateOutputType = {
   discount: number
   discountType: number
   totalPrice: number
+  stageColPosition: number
   createdAt: number
   updatedAt: number
   workspaceId: number
@@ -147,6 +150,7 @@ export type OrdersMinAggregateInputType = {
   discount?: true
   discountType?: true
   totalPrice?: true
+  stageColPosition?: true
   createdAt?: true
   updatedAt?: true
   workspaceId?: true
@@ -172,6 +176,7 @@ export type OrdersMaxAggregateInputType = {
   discount?: true
   discountType?: true
   totalPrice?: true
+  stageColPosition?: true
   createdAt?: true
   updatedAt?: true
   workspaceId?: true
@@ -197,6 +202,7 @@ export type OrdersCountAggregateInputType = {
   discount?: true
   discountType?: true
   totalPrice?: true
+  stageColPosition?: true
   createdAt?: true
   updatedAt?: true
   workspaceId?: true
@@ -309,6 +315,7 @@ export type OrdersGroupByOutputType = {
   discount: runtime.Decimal
   discountType: $Enums.DiscountType
   totalPrice: runtime.Decimal
+  stageColPosition: string | null
   createdAt: Date
   updatedAt: Date
   workspaceId: string
@@ -357,6 +364,7 @@ export type ordersWhereInput = {
   discount?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFilter<"orders"> | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.StringNullableFilter<"orders"> | string | null
   createdAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   workspaceId?: Prisma.StringFilter<"orders"> | string
@@ -388,6 +396,7 @@ export type ordersOrderByWithRelationInput = {
   discount?: Prisma.SortOrder
   discountType?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  stageColPosition?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -423,6 +432,7 @@ export type ordersWhereUniqueInput = Prisma.AtLeast<{
   discount?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFilter<"orders"> | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.StringNullableFilter<"orders"> | string | null
   createdAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   workspaceId?: Prisma.StringFilter<"orders"> | string
@@ -454,6 +464,7 @@ export type ordersOrderByWithAggregationInput = {
   discount?: Prisma.SortOrder
   discountType?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  stageColPosition?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -487,6 +498,7 @@ export type ordersScalarWhereWithAggregatesInput = {
   discount?: Prisma.DecimalWithAggregatesFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeWithAggregatesFilter<"orders"> | $Enums.DiscountType
   totalPrice?: Prisma.DecimalWithAggregatesFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.StringNullableWithAggregatesFilter<"orders"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"orders"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"orders"> | Date | string
   workspaceId?: Prisma.StringWithAggregatesFilter<"orders"> | string
@@ -512,6 +524,7 @@ export type ordersCreateInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -538,6 +551,7 @@ export type ordersUncheckedCreateInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -564,6 +578,7 @@ export type ordersUpdateInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -590,6 +605,7 @@ export type ordersUncheckedUpdateInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -616,6 +632,7 @@ export type ordersCreateManyInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -641,6 +658,7 @@ export type ordersUpdateManyMutationInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -661,6 +679,7 @@ export type ordersUncheckedUpdateManyInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -701,6 +720,7 @@ export type ordersCountOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   discountType?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  stageColPosition?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -733,6 +753,7 @@ export type ordersMaxOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   discountType?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  stageColPosition?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -758,6 +779,7 @@ export type ordersMinOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   discountType?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  stageColPosition?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -1031,6 +1053,7 @@ export type ordersCreateWithoutWorkspaceInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.customersCreateNestedOneWithoutOrdersInput
@@ -1056,6 +1079,7 @@ export type ordersUncheckedCreateWithoutWorkspaceInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customerId: string
@@ -1110,6 +1134,7 @@ export type ordersScalarWhereInput = {
   discount?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFilter<"orders"> | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFilter<"orders"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.StringNullableFilter<"orders"> | string | null
   createdAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"orders"> | Date | string
   workspaceId?: Prisma.StringFilter<"orders"> | string
@@ -1135,6 +1160,7 @@ export type ordersCreateWithoutLocationInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -1160,6 +1186,7 @@ export type ordersUncheckedCreateWithoutLocationInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1211,6 +1238,7 @@ export type ordersCreateWithoutCustomerInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -1236,6 +1264,7 @@ export type ordersUncheckedCreateWithoutCustomerInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1287,6 +1316,7 @@ export type ordersCreateWithoutVehicleInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -1312,6 +1342,7 @@ export type ordersUncheckedCreateWithoutVehicleInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1363,6 +1394,7 @@ export type ordersCreateWithoutOrderLinesInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -1388,6 +1420,7 @@ export type ordersUncheckedCreateWithoutOrderLinesInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1429,6 +1462,7 @@ export type ordersUpdateWithoutOrderLinesInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -1454,6 +1488,7 @@ export type ordersUncheckedUpdateWithoutOrderLinesInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1479,6 +1514,7 @@ export type ordersCreateWithoutStageInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
@@ -1504,6 +1540,7 @@ export type ordersUncheckedCreateWithoutStageInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1555,6 +1592,7 @@ export type ordersCreateManyWorkspaceInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customerId: string
@@ -1579,6 +1617,7 @@ export type ordersUpdateWithoutWorkspaceInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.customersUpdateOneRequiredWithoutOrdersNestedInput
@@ -1604,6 +1643,7 @@ export type ordersUncheckedUpdateWithoutWorkspaceInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1629,6 +1669,7 @@ export type ordersUncheckedUpdateManyWithoutWorkspaceInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1653,6 +1694,7 @@ export type ordersCreateManyLocationInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1677,6 +1719,7 @@ export type ordersUpdateWithoutLocationInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -1702,6 +1745,7 @@ export type ordersUncheckedUpdateWithoutLocationInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1727,6 +1771,7 @@ export type ordersUncheckedUpdateManyWithoutLocationInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1751,6 +1796,7 @@ export type ordersCreateManyCustomerInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1775,6 +1821,7 @@ export type ordersUpdateWithoutCustomerInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -1800,6 +1847,7 @@ export type ordersUncheckedUpdateWithoutCustomerInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1825,6 +1873,7 @@ export type ordersUncheckedUpdateManyWithoutCustomerInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1849,6 +1898,7 @@ export type ordersCreateManyVehicleInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1873,6 +1923,7 @@ export type ordersUpdateWithoutVehicleInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -1898,6 +1949,7 @@ export type ordersUncheckedUpdateWithoutVehicleInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1923,6 +1975,7 @@ export type ordersUncheckedUpdateManyWithoutVehicleInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1947,6 +2000,7 @@ export type ordersCreateManyStageInput = {
   discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: $Enums.DiscountType
   totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -1971,6 +2025,7 @@ export type ordersUpdateWithoutStageInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
@@ -1996,6 +2051,7 @@ export type ordersUncheckedUpdateWithoutStageInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2021,6 +2077,7 @@ export type ordersUncheckedUpdateManyWithoutStageInput = {
   discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2076,6 +2133,7 @@ export type ordersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   discount?: boolean
   discountType?: boolean
   totalPrice?: boolean
+  stageColPosition?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -2108,6 +2166,7 @@ export type ordersSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   discount?: boolean
   discountType?: boolean
   totalPrice?: boolean
+  stageColPosition?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -2138,6 +2197,7 @@ export type ordersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   discount?: boolean
   discountType?: boolean
   totalPrice?: boolean
+  stageColPosition?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -2168,6 +2228,7 @@ export type ordersSelectScalar = {
   discount?: boolean
   discountType?: boolean
   totalPrice?: boolean
+  stageColPosition?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -2177,7 +2238,7 @@ export type ordersSelectScalar = {
   stageId?: boolean
 }
 
-export type ordersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "status" | "name" | "customerNotes" | "internalNotes" | "startDate" | "dueDate" | "paymentTerms" | "paymentStatus" | "tax" | "taxType" | "discount" | "discountType" | "totalPrice" | "createdAt" | "updatedAt" | "workspaceId" | "customerId" | "locationId" | "vehicleId" | "stageId", ExtArgs["result"]["orders"]>
+export type ordersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "status" | "name" | "customerNotes" | "internalNotes" | "startDate" | "dueDate" | "paymentTerms" | "paymentStatus" | "tax" | "taxType" | "discount" | "discountType" | "totalPrice" | "stageColPosition" | "createdAt" | "updatedAt" | "workspaceId" | "customerId" | "locationId" | "vehicleId" | "stageId", ExtArgs["result"]["orders"]>
 export type ordersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.workspacesDefaultArgs<ExtArgs>
   customer?: boolean | Prisma.customersDefaultArgs<ExtArgs>
@@ -2228,6 +2289,7 @@ export type $ordersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     discount: runtime.Decimal
     discountType: $Enums.DiscountType
     totalPrice: runtime.Decimal
+    stageColPosition: string | null
     createdAt: Date
     updatedAt: Date
     workspaceId: string
@@ -2679,6 +2741,7 @@ export interface ordersFieldRefs {
   readonly discount: Prisma.FieldRef<"orders", 'Decimal'>
   readonly discountType: Prisma.FieldRef<"orders", 'DiscountType'>
   readonly totalPrice: Prisma.FieldRef<"orders", 'Decimal'>
+  readonly stageColPosition: Prisma.FieldRef<"orders", 'String'>
   readonly createdAt: Prisma.FieldRef<"orders", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"orders", 'DateTime'>
   readonly workspaceId: Prisma.FieldRef<"orders", 'String'>

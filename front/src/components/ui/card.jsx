@@ -1,9 +1,9 @@
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Card({ children, className = '', ...props }) {
+export default function Card({ children, className = '', isLoading = false, ...props }) {
     return (
-        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white p-5 ${className}`} {...props}>
+        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white p-5 ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
             {children}
         </div>
     );
@@ -22,6 +22,7 @@ export function ExpandableCard({
     disabled = false,
     keepMounted = false,
     icon = null,
+    isLoading = false,
     ...props
 }) {
     const isControlled = typeof expanded === 'boolean';
@@ -40,7 +41,7 @@ export function ExpandableCard({
     };
 
     return (
-        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white ${className}`} {...props}>
+        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
             <button
                 type="button"
                 onClick={handleToggle}

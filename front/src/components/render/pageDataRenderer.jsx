@@ -10,6 +10,7 @@ import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
+import { LexoRank } from "lexorank";
 import _, { cloneDeep } from "lodash";
 import { FunnelIcon, GhostIcon, Grid2x2Icon, ListIcon, MapPinHouseIcon, PencilIcon, PencilLine, PhoneIcon, PlusIcon, RotateCcwIcon, Rows4Icon, SearchIcon, SquareCheckBigIcon, SquareCheckIcon, SquareIcon, SquareKanbanIcon, TimerResetIcon, Trash2, Trash2Icon } from "lucide-react";
 import { use } from "react";
@@ -206,8 +207,17 @@ export default function DataRenderer({
         body();
     }, []);
 
+    const isEmptyData = () => {
+        if (!_data) return true;
 
-    const handleFormSubmit = async (e, thisEditType = null) => {
+        if (Array.isArray(_data)) {
+            return _data.length === 0;
+        } else if (typeof _data === 'object') {
+            return Object.keys(_data).length === 0;
+        }
+        return false;
+    };
+    const handleFormSubmit = async (e, thisEditType = 'new', showLoading = true) => {
         e?.preventDefault?.();
 
         // logger.info("handleFormSubmit e: ", e);
@@ -219,7 +229,7 @@ export default function DataRenderer({
                 ? new FormData(e.target)
                 : e;
 
-            _setLoading(true);
+            if (showLoading) _setLoading(true);
             const action = edt === 'new' ? 'create' : 'update';
             // logger.info("handleFormSubmit toSaveItem", action, toSaveItem);
             // return
@@ -233,10 +243,12 @@ export default function DataRenderer({
 
 
             if (response.success) {
-                notify({
-                    type: 'success',
-                    message: edt === 'new' ? t('Added successfully') : t('Updated successfully'),
-                });
+                if (showLoading) {
+                    notify({
+                        type: 'success',
+                        message: edt === 'new' ? t('Added successfully') : t('Updated successfully'),
+                    });
+                }
 
 
                 const incomingItems = Array.isArray(response.data) ? response.data : [response.data];
@@ -270,7 +282,7 @@ export default function DataRenderer({
                 message: 'Error saving item',
             });
         } finally {
-            _setLoading(false);
+            if (showLoading) _setLoading(false);
         }
     };
     const handleInputChange = (field, value) => {
@@ -587,20 +599,71 @@ export default function DataRenderer({
 
 
     const handleKanbanMove = async ({ item, fromIndex, toIndex, fromColumnId, toColumnId }) => {
-        // logger.info("handleKanbanMove item", item);
-        // logger.info("handleKanbanMove fromIndex", fromIndex);
-        // logger.info("handleKanbanMove toIndex", toIndex);
-        // logger.info("handleKanbanMove fromColumnId", fromColumnId);
-        // logger.info("handleKanbanMove toColumnId", toColumnId);
+        logger.info("handleKanbanMove item", {
+            item,
+            fromIndex,
+            toIndex,
+            fromColumnId,
+            toColumnId
+        });
 
-        let toSaveData = { ...item };
-        if (toColumnId) {
-            toSaveData = { ...item, stageId: toColumnId };
-        }
+        const targetStageId = toColumnId || item.stageId;
+
+        // 1. Filter and sort existing items in the destination column (excluding moved item)
+        const targetColumnItems = _data
+            .filter(d => d.stageId === targetStageId && d.id !== item.id)
+            .sort((a, b) => (a.stageColPosition || "a").localeCompare(b.stageColPosition || "a"));
+
+        // 2. Identify neighboring items relative to toIndex
+        const prevItem = targetColumnItems[toIndex - 1];
+        const nextItem = targetColumnItems[toIndex];
+
+        const prevPos = prevItem?.stageColPosition || null;
+        const nextPos = nextItem?.stageColPosition || null;
+
+        // 3. Compute the new mid-rank lexicographical position
+        const newPosition = getMidRank(prevPos, nextPos);
+
+        let toSaveData = {
+            ...item,
+            stageId: targetStageId,
+            stageColPosition: newPosition
+        };
+
         _setEditType('update');
         setTimeout(() => {
-            handleFormSubmit(toSaveData, 'update');
+            handleFormSubmit(toSaveData, 'update', false);
         }, 250);
+    };
+
+    // Helper: Generates a string lexicographically between prevPos and nextPos
+    const getMidRank = (prev, next) => {
+        if (!prev && !next) return "a";
+        if (!prev) return String.fromCharCode((next.charCodeAt(0) || 97) - 1); // Insert before first
+        if (!next) return prev + "a"; // Append to bottom
+
+        // Insert between two strings
+        let i = 0;
+        while (i < prev.length || i < next.length) {
+            const pChar = prev.charCodeAt(i) || 96; // 'a' - 1
+            const nChar = next.charCodeAt(i) || 123; // 'z' + 1
+
+            if (nChar - pChar > 1) {
+                const midChar = String.fromCharCode(Math.floor((pChar + nChar) / 2));
+                return prev.slice(0, i) + midChar;
+            }
+            i++;
+        }
+        return prev + "m";
+    };
+    const getKanbanItems = () => {
+        // ordered items by stageColPosition
+        return _data
+            .map(item => ({
+                ...item,
+                stageColPosition: item.stageColPosition || "a"
+            }))
+            .sort((a, b) => (a.stageColPosition || "a").localeCompare(b.stageColPosition || "a"));
     };
 
 
@@ -714,7 +777,6 @@ export default function DataRenderer({
 
 
 
-
     // logger.info('_data', _data);
     // logger.info('pipeline?.stages', pipeline?.stages);
     // logger.info('_deletingItems', _deletingItems);
@@ -773,7 +835,7 @@ export default function DataRenderer({
                     }
 
                     <div className="">
-                        <PrimaryButton onClick={() => handleOpenFilter()} className="relative" >
+                        <PrimaryButton onClick={() => handleOpenFilter()} className="relative" isLoading={_loading} >
                             <FunnelIcon className="size-4" />
                             {t('Filters')}
                             {
@@ -787,7 +849,6 @@ export default function DataRenderer({
                     </div>
                 </div>
                 <div className="flex items-center gap-3 relative rounded-md">
-                    <LoaderShimmer isLoading={_loading} />
                     {
                         _selectedItems.length > 0 && (
                             <div className="flex items-center gap-1"    >
@@ -800,7 +861,12 @@ export default function DataRenderer({
                             </div>
                         )
                     }
-                    <select className="border bg-white border-gray-300 rounded-md px-2 py-1.5" value={_itemsPerPage} onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}>
+                    <select
+                        className={"border bg-white border-gray-300 rounded-md px-2 py-1.5 " + (_loading ? 'loading-shimmer' : '')}
+                        value={_itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
+                        disabled={_loading}
+                    >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
                         <option value={20}>20</option>
@@ -809,7 +875,7 @@ export default function DataRenderer({
                     </select>
 
 
-                    <PrimaryButton onClick={handleAddNew} >
+                    <PrimaryButton onClick={handleAddNew} isLoading={_loading} >
                         <PlusIcon className="size-4" /> {t('Add New')}
                     </PrimaryButton>
 
@@ -818,9 +884,8 @@ export default function DataRenderer({
 
             <div className="w-full h-full relative rounded-md">
                 {/* empty card */}
-                {_data && _data.length === 0 && (
-                    <Card className="w-full flex flex-col items-center justify-center gap-3 py-10">
-                        <LoaderShimmer isLoading={_loading} />
+                {isEmptyData() && (
+                    <Card className="w-full flex flex-col items-center justify-center gap-3 py-10" isLoading={_loading}>
                         <GhostIcon className="size-10 text-gray-400" />
                         <p className="text-gray-500">{t('No data found')}</p>
                     </Card>
@@ -944,29 +1009,27 @@ export default function DataRenderer({
                     </div>
                 )}
                 {/* kanban */}
-                {
-                    _data && _data.length > 0 && _dataViewType === 'kanban' && (
-                        <KanbanBoard
-                            className="w-full h-full"
-                            columns={pipeline?.stages || []}
-                            items={_data}
-                            renderCard={(item) => {
-                                return (
-                                    <CardViewer
-                                        columns={columns.map(c => c.name)}
-                                        data={item}
+                {_data && _data.length > 0 && _dataViewType === 'kanban' && (
+                    <KanbanBoard
+                        className="w-full h-full"
+                        columns={pipeline?.stages || []}
+                        items={getKanbanItems()}
+                        renderCard={(item) => {
+                            return (
+                                <CardViewer
+                                    columns={columns.map(c => c.name)}
+                                    data={item}
 
-                                        onEdit={(pItem) => handleEditRow(pItem || item)}
-                                        onClose={dismissEditModal}
-                                        onInputChange={handleInputChange}
-                                        onSubmit={handleFormSubmit}
-                                    />
-                                );
-                            }}
-                            onMove={handleKanbanMove}
-                        />
-                    )
-                }
+                                    onEdit={(pItem) => handleEditRow(pItem || item)}
+                                    onClose={dismissEditModal}
+                                    onInputChange={handleInputChange}
+                                    onSubmit={handleFormSubmit}
+                                />
+                            );
+                        }}
+                        onMove={handleKanbanMove}
+                    />
+                )}
 
                 {/* pagination */}
                 {_data && _data.length > 0 && _dataViewType !== 'kanban' &&

@@ -197,6 +197,8 @@ const toOrderLineNestedWriteData = (line) => {
     };
 };
 
+const getIncludeObject = (includ = {}) => { }
+
 export const handleAppRequest = async (req, res) => {
 
     let resObj = {
@@ -1338,19 +1340,24 @@ export const handleAppRequest = async (req, res) => {
                 const [orders, totalCount] = await Promise.all([
                     Prisma.orders.findMany({
                         where: whereCondition,
-                        // ...(singleItem ? {
-                        //     include: {
-                        //         customer: true,
-                        //         location: true,
-                        //         vehicle: true,
-                        //         orderLines: true,
-                        //     }
-                        // } : {}),
                         include: {
                             customer: true,
                             location: true,
-                            vehicle: true,
+                            vehicle: {
+                                include: {
+                                    make: true,
+                                    model: true,
+                                }
+                            },
+                            stage: true,
                             orderLines: true,
+                            // ...(singleItem ? {
+                            //     customer: true,
+                            //     location: true,
+                            //     vehicle: true,
+                            //     orderLines: true,
+                            // } : {}),
+                            ...include,
                         },
                         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
                         take: limit,
@@ -1394,6 +1401,21 @@ export const handleAppRequest = async (req, res) => {
                                     ...toOrderLineNestedWriteData(line),
                                 })),
                             }
+                        },
+                        include: {
+                            ...include,
+                            ...(items.length === 1
+                                ? {
+                                    customer: true,
+                                    location: true,
+                                    vehicle: {
+                                        include: {
+                                            make: true,
+                                            model: true,
+                                        }
+                                    },
+                                    orderLines: true,
+                                } : {}),
                         },
                     }))
                 );
@@ -1439,21 +1461,24 @@ export const handleAppRequest = async (req, res) => {
                                     })),
                                 },
                             },
-                            ...(items.length === 1
-                                ? {
-                                    include: {
-                                        ...include,
+                            include: {
+                                ...include,
+                                ...(items.length === 1
+                                    ? {
                                         customer: true,
                                         location: true,
-                                        vehicle: true,
+                                        vehicle: {
+                                            include: {
+                                                make: true,
+                                                model: true,
+                                            }
+                                        },
                                         orderLines: true,
-                                    },
-                                }
-                                : (Object.keys(include || {}).length > 0
-                                    ? { include }
+                                    }
                                     : {}
-                                )
-                            ),
+                                ),
+                            },
+
                         });
                     })
                 );

@@ -12,7 +12,7 @@ import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import { clearObjectValues } from "@/src/services/other";
 import { cloneDeep, cloneDeepWith } from "lodash";
-import { BuildingComplexIcon, GhostIcon, MapPinHouseIcon, PhoneIcon } from "lucide-react";
+import { BuildingComplexIcon, GhostIcon, MapPinHouseIcon, PhoneIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 
 
 export default function LocationsPage({ }) {
-    
+
     setMetas({
         title: 'Locations',
         description: 'Manage your locations',
@@ -137,13 +137,13 @@ export default function LocationsPage({ }) {
 
     return (
         <div className="w-full relative rounded-md">
-            <LoaderShimmer isLoading={_loading} />
             <h1 className="text-2xl font-bold mb-4">
                 {t('Locations')}
             </h1>
             <div className="w-full py-3 flex items-center justify-end">
-                <PrimaryButton onClick={handleAddNew} >
-                    {t('Add New ' + itsFor)}
+                <PrimaryButton onClick={handleAddNew} isLoading={_loading}>
+                    <PlusIcon className="size-4" />
+                    {t('Add New Location')}
                 </PrimaryButton>
             </div>
             <div className="flex flex-wrap gap-5 md:gap-10">
@@ -179,15 +179,14 @@ export default function LocationsPage({ }) {
                         </div>
                     </Card>
                 )) : (
-                    <div className="w-full flex items-center justify-center">
+                    <Card className={"w-full relative min-h-40 flex items-center justify-center"} isLoading={_loading}>
                         <p>{t('No locations found')}</p>
-                    </div>
+                    </Card>
                 )}
             </div>
 
 
             <PopupModal isOpen={_editItem} onClose={dismissEditModal} title={_editType === 'new' ? t('Add New Location') : t('Edit Location')}>
-                <LoaderShimmer isLoading={_loading} />
                 <form onSubmit={handleFormSubmit} className="w-full flex flex-col gap-3 p-4">
                     <div>
                         <label htmlFor="name">{t('Name')}</label>

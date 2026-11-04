@@ -8,6 +8,8 @@ import { notify } from "@/src/components/ui/sonnar/sonnar";
 import Card from "@/src/components/ui/card";
 import { setMetas } from "@/src/services/metas";
 import NotificationPermissionPrompt from "@/src/components/notifications/permissionPrompt";
+import { useTranslation } from "react-i18next";
+import LanguageSwitch from "@/src/components/ui/locale";
 
 export default function Profile() {
 
@@ -36,6 +38,8 @@ export default function Profile() {
     const [isSavingPassword, setIsSavingPassword] = useState(false);
     const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
     const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
+
+    const { t } = useTranslation();
 
     const userId = rootAuthData?.id || null;
 
@@ -163,6 +167,11 @@ export default function Profile() {
 
         setIsSavingPassword(false);
     };
+    const handleLanguageChange = (newLang) => {
+        // Update the language in the session or user settings
+        // This is a placeholder; implement the actual logic to save the language preference
+        logger.info(`Language changed to: ${newLang}`);
+    }
 
     return (
         <div className="w-full mx-auto mt-6 space-y-5">
@@ -179,7 +188,7 @@ export default function Profile() {
                     <form onSubmit={onSave} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="mb-1 block text-sm font-medium">First Name</label>
+                                <label className="mb-1 block text-sm font-medium">{t('First Name')}</label>
                                 <Input
                                     name="firstName"
                                     value={profile.firstName}
@@ -188,7 +197,7 @@ export default function Profile() {
                                 />
                             </div>
                             <div>
-                                <label className="mb-1 block text-sm font-medium">Last Name</label>
+                                <label className="mb-1 block text-sm font-medium">{t('Last Name')}</label>
                                 <Input
                                     name="lastName"
                                     value={profile.lastName}
@@ -200,7 +209,7 @@ export default function Profile() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="mb-1 block text-sm font-medium">Email</label>
+                                <label className="mb-1 block text-sm font-medium">{t('Email')}</label>
                                 <Input
                                     name="email"
                                     value={profile.email}
@@ -208,21 +217,30 @@ export default function Profile() {
                                 />
                             </div>
                             <div>
-                                <label className="mb-1 block text-sm font-medium">Status</label>
+                                <label className="mb-1 block text-sm font-medium">{t('Status')}</label>
                                 <Input
                                     name="status"
                                     value={profile.status}
                                     disabled
                                 />
                             </div>
+
+
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-medium">Provider</label>
+                            <label className="mb-1 block text-sm font-medium">{t('Provider')}</label>
                             <Input
                                 name="provider"
                                 value={profile.provider}
                                 disabled
+                            />
+                        </div>
+                        <div className="w-60">
+                            <label className="mb-1 block text-sm font-medium">{t('Language')}</label>
+                            <LanguageSwitch
+                                className={'w-full'}
+                                onChange={handleLanguageChange}
                             />
                         </div>
 
@@ -236,7 +254,7 @@ export default function Profile() {
 
                         <div className="pt-2">
                             <PrimaryButton type="submit" isLoading={isSaving}>
-                                Save Profile
+                                {t('Save Changes')}
                             </PrimaryButton>
                         </div>
                     </form>
@@ -246,13 +264,13 @@ export default function Profile() {
             {!isLoading &&
                 <Card className="">
                     <div className="mb-5">
-                        <h2 className="text-lg font-semibold">Password</h2>
-                        <p className="text-sm opacity-65">Update your account password.</p>
+                        <h2 className="text-lg font-semibold">{t('Password')}</h2>
+                        <p className="text-sm opacity-65">{t('Update your account password.')}</p>
                     </div>
 
                     <form onSubmit={onPasswordSave} className="space-y-4">
                         <div>
-                            <label className="mb-1 block text-sm font-medium">Password</label>
+                            <label className="mb-1 block text-sm font-medium">{t('Password')}</label>
                             <Input
                                 type="password"
                                 name="password"
@@ -272,7 +290,7 @@ export default function Profile() {
 
                         <div className="pt-2">
                             <PrimaryButton type="submit" isLoading={isSavingPassword}>
-                                Update Password
+                                {t('Update Password')}
                             </PrimaryButton>
                         </div>
                     </form>

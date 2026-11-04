@@ -239,3 +239,22 @@ export const getCurrencyObjectFromSession = (session) => {
         return defualt; // Default currency
     }
 };
+
+export const toDisplayDate = (value, options = { defaultValue: 'n/a' }) => {
+    try {
+        if (!value) return options.defaultValue;
+
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return options.defaultValue;
+
+        return date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+
+    } catch (error) {
+        logger.error('toDisplayDate error ==> ', error);
+        return options.defaultValue;
+    }
+}

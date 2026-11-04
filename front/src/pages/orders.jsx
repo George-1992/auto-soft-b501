@@ -9,23 +9,24 @@ import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
-import { randomString, toDisplayNumber } from "@/src/services/other";
+import { randomString, toDisplayDate, toDisplayNumber } from "@/src/services/other";
 import _, { cloneDeep, random } from "lodash";
-import { BookmarkIcon, BoxesIcon, BuildingComplexIcon, CarFrontIcon, CircleDollarSignIcon, DownloadIcon, FileTextIcon, MailIcon, MapPinHouseIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, PrinterIcon, RouteIcon, ShellIcon, SquareTextIcon, SquareUserRoundIcon, Trash2Icon, WrenchIcon, XIcon } from "lucide-react";
+import { BookmarkIcon, BoxesIcon, BuildingComplexIcon, CarFrontIcon, ChevronsRightIcon, CircleDollarSignIcon, Component, DownloadIcon, FileTextIcon, HashIcon, MailIcon, MapPinHouseIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, PrinterIcon, RouteIcon, ShellIcon, SquareTextIcon, SquareUserRoundIcon, Trash2Icon, WrenchIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Car, User, Timer, Percent, MessageSquare, CalendarDays, ListOrdered, CheckCircle2, MoreHorizontal, Plus, X } from 'lucide-react';
 import DateInput from "@/src/components/date";
 import PartsCatalog from "@/src/components/render/partsCatalog";
 import CurrencySymbol from "@/src/components/render/currency";
+import Image from "@/src/components/wraps/image";
 
 
 
-function ThisEditComponent({
+const ThisEditComponent = ({
     isOpen = false, data = null, editType = 'new', isLoading = false,
     onClose = () => { }, onInputChange = () => { }, onSubmit = () => { },
     pipeline = null, // pipelines and stages, specific var
-}) {
+}) => {
 
     const orderLineSample = {
         id: randomString(25),
@@ -60,13 +61,15 @@ function ThisEditComponent({
         }
         // logger.info("ThisEditComponent:handleFormSubmit:", data);
 
-       //if pipline is not set notify and return
-       if (!data?.pipelineId) {
-            notify({ type: 'error', message: t('Pipeline is not set') });
+        //if pipline is not set notify and return
+        if (!data?.stageId) {
+            logger.warn("Pipeline is not set, cannot submit order");
+            notify({ type: 'error', message: t('Stage is not set') });
             return;
-       }
+        }
 
         if (!data?.orderLines || !data?.orderLines.length) {
+            logger.warn("No order lines, cannot submit order");
             notify({ type: 'info', message: t('At least one service is required') });
             return;
         }
@@ -326,8 +329,7 @@ function ThisEditComponent({
         if (!['labor', 'part', 'fee'].includes(type)) return [];
 
         return (data?.orderLines || []).filter(line => String(line.type) === String(type));
-    }
-
+    };
 
     const handleStageChange = (e) => {
         const stageId = e?.target?.value || e?.value || null;
@@ -960,27 +962,6 @@ function ThisEditComponent({
 
 
 
-
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80';
-const getOrderTotal = (data) => {
-    const lines = data?.orderLines ?? [];
-    const subtotal = lines.reduce((sum, l) => sum + Number(l.price || 0) * Number(l.quantity || 1), 0);
-    const discount = Number(data?.discount || 0);
-    const tax = Number(data?.tax || 0);
-    const afterDiscount = data?.discountType === 'percentage' ? subtotal * (1 - discount / 100) : subtotal - discount;
-    const total = data?.taxType === 'percentage' ? afterDiscount * (1 + tax / 100) : afterDiscount + tax;
-    return total;
-};
-const getTitle = (data) => {
-    const lines = data?.orderLines ?? [];
-    if (!lines.length) return data?.name ?? 'Untitled order';
-    const extra = lines.length - 1;
-    return extra > 0 ? `${lines[0].name} and ${extra} more` : lines[0].name;
-};
-const tagStyles = {
-    yellow: 'bg-yellow-200 text-yellow-900',
-    red: 'bg-red-300 text-red-900',
-};
 const ThisCardViewer = ({
     data = null, columns = [],
     handleEditRow = () => { }, initDeleteRow = () => { },
@@ -991,6 +972,34 @@ const ThisCardViewer = ({
         { label: 'New Client', color: 'yellow' },
         { label: 'Friends & Family', color: 'red' },
     ];
+    const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80';
+    const getOrderTotal = (data) => {
+        const lines = data?.orderLines ?? [];
+        const subtotal = lines.reduce((sum, l) => sum + Number(l.price || 0) * Number(l.quantity || 1), 0);
+        const discount = Number(data?.discount || 0);
+        const tax = Number(data?.tax || 0);
+        const afterDiscount = data?.discountType === 'percentage' ? subtotal * (1 - discount / 100) : subtotal - discount;
+        const total = data?.taxType === 'percentage' ? afterDiscount * (1 + tax / 100) : afterDiscount + tax;
+        return total;
+    };
+    const getTitle = (data) => {
+        const lines = data?.orderLines ?? [];
+        if (!lines.length) return data?.name ?? 'Untitled order';
+        const extra = lines.length - 1;
+        return extra > 0 ? `${lines[0].name} and ${extra} more` : lines[0].name;
+    };
+    const tagStyles = {
+        yellow: 'bg-yellow-200 text-yellow-900',
+        red: 'bg-red-300 text-red-900',
+    };
+    const getLinesTotal = (lines) => {
+        return lines.reduce((total, line) => {
+            const lineTotal = Number(line?.quantity ?? 1) * Number(line?.unitPrice ?? 0);
+            return total + lineTotal;
+        }, 0);
+    }
+
+
     const total = getOrderTotal(data);
     const hoursLeft = data?.hoursLeft ?? 0;
     const hoursBilled = data?.hoursBilled ?? 0;
@@ -999,34 +1008,34 @@ const ThisCardViewer = ({
 
     const { t } = useTranslation();
 
-    const getLinesTotal = (lines) => {
-        return lines.reduce((total, line) => {
-            const lineTotal = Number(line?.quantity ?? 1) * Number(line?.unitPrice ?? 0);
-            return total + lineTotal;
-        }, 0);
-    }
 
     return (
         <div className="w-full max-w-sm bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-            <img
+            <Image
                 src={data?.vehicle?.image ?? PLACEHOLDER_IMAGE}
                 alt="Vehicle"
-                className="w-full h-44 object-cover rounded-md"
+                className="w-full h-auto object-cover rounded-md"
             />
-
-            <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                <span>{data?.orderNumber ? `RO-${data.orderNumber}` : 'RO-0000'}</span>
-                <MoreHorizontal size={16} className="text-gray-400" />
+            <div className="flex justify-between">
+                <div className="flex items-center gap-2 text-gray-500 text-sm mt-2">
+                    <span>{data?.name || 'n/a'}</span>
+                    <HashIcon className="size-4 text-gray-500" />
+                    <span>{data?.orderNumber || 'RO-0000'}</span>
+                </div>
+                <div></div>
             </div>
 
-            <div className="flex items-start justify-between gap-3 mt-2">
+
+
+
+            <div className="flex items-center justify-between gap-3 mt-2">
                 <h3 className="text-sm font-semibold text-gray-900 leading-snug">{getTitle(data)}</h3>
                 <span className="shrink-0 w-7 h-7 rounded-full bg-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-center">
                     {assignee}
                 </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 mt-3">
+            {/* <div className="flex flex-wrap items-center gap-2 mt-3">
                 {tags.map((tag) => (
                     <span
                         key={tag.label}
@@ -1036,16 +1045,22 @@ const ThisCardViewer = ({
                         <X size={12} className="opacity-50" />
                     </span>
                 ))}
-                {/* <button type="button" className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium bg-blue-50 text-blue-700">
+                <button type="button" className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium bg-blue-50 text-blue-700">
                     <Plus size={14} /> Add
-                </button> */}
+                </button>
+            </div> */}
+
+            <div className="flex items-center gap-3 p-0.5 my-1 border border-blue-200 rounded-lg bg-blue-50">
+                <span> {toDisplayDate(data?.startDate)}</span>
+                <div><ChevronsRightIcon className="size-4 text-gray-500" /></div>
+                <span> {toDisplayDate(data?.dueDate)}</span>
             </div>
 
             <div className="flex flex-col gap-2.5 mt-3 text-sm text-gray-800">
                 <div className="flex items-center gap-3">
                     <Car size={18} className="text-gray-600" />
                     <span>
-                        {`${data?.vehicle?.make ?? ''} ${data?.vehicle?.model ?? ''} ${data?.vehicle?.year ?? ''} ${data?.vehicle?.licensePlate ? `(${data.vehicle.licensePlate})` : ''}`}
+                        {`${data?.vehicle?.make?.name ?? ''} ${data?.vehicle?.model?.name ?? ''} ${data?.vehicle?.year ?? ''} ${data?.vehicle?.licensePlate ? `(${data.vehicle.licensePlate})` : ''}`}
                     </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1058,45 +1073,34 @@ const ThisCardViewer = ({
                     <Timer size={18} className="text-gray-600" />
                     <span>{hoursLeft} hrs left / {hoursBilled} hrs billed</span>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Percent size={18} className="text-gray-600" />
-                    <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                        <div className="h-full bg-blue-600" style={{ width: `${progress}%` }} />
-                    </div>
-                </div>
             </div>
 
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
-                <div className="flex items-center gap-3 text-blue-600">
-                    {/* <MessageSquare size={18} fill="currentColor" />
-                    <CalendarDays size={18} fill="currentColor" />
-                    <ListOrdered size={18} className="text-gray-600" /> */}
-                </div>
-                <div className="flex items-center gap-2 text-lg text-gray-800 font-semibold">
+
+            <div className="flex items-center justify-between mt-1 border-t border-gray-200">
+                <div className="flex items-center gap-1 font-semibold">
                     <CurrencySymbol />
                     {toDisplayNumber(getLinesTotal(data?.orderLines ?? []))}
                 </div>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-2">
-                <button
-                    type="button"
-                    title={t('Edit')}
-                    aria-label={t('Edit')}
-                    onClick={() => onEdit(data)}
-                    className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
-                >
-                    <PencilIcon className="size-4" />
-                </button>
-                <button
-                    type="button"
-                    title={t('Delete')}
-                    aria-label={t('Delete')}
-                    onClick={() => initDeleteRow(data)}
-                    className="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
-                >
-                    <Trash2Icon className="size-4" />
-                </button>
+                <div className="flex justify-end gap-2 mt-2">
+                    <button
+                        type="button"
+                        title={t('Edit')}
+                        aria-label={t('Edit')}
+                        onClick={() => onEdit(data)}
+                        className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
+                    >
+                        <PencilIcon className="size-4" />
+                    </button>
+                    <button
+                        type="button"
+                        title={t('Delete')}
+                        aria-label={t('Delete')}
+                        onClick={() => initDeleteRow(data)}
+                        className="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                    >
+                        <Trash2Icon className="size-4" />
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -1165,9 +1169,73 @@ export default function OrdersPage(props) {
                 dataViewOptions={['table', 'kanban']}
                 columns={[
                     { name: 'name', label: 'Name' },
-                    { name: 'price', label: 'Price' },
-                    { name: 'description', label: 'Description' },
-                    { name: 'category', label: 'Category' },
+                    { name: 'orderNumber', label: 'Order Number' },
+                    {
+                        name: 'stage', label: 'Stage',
+                        component: ({ value }) => {
+                            if (!value) return <span className="text-gray-500">n/a</span>;
+                            return (
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: value.color || '#ccc' }}></span>
+                                    <span>{value.name}</span>
+                                </div>
+                            );
+                        }
+                    },
+                    {
+                        name: 'totalPrice', label: 'Total Price',
+                        component: ({ value, row }) => {
+                            // logger.log("Rendering totalPrice for row:", row);
+                            const lines = row.orderLines && Array.isArray(row.orderLines) ? row.orderLines : [];
+                            const total = lines.reduce((sum, line) => sum + Number(line?.quantity || 1) * Number(line?.unitPrice || 0), 0);
+                            return (
+                                <div className="flex items-center gap-1">
+                                    <CurrencySymbol />
+                                    {toDisplayNumber(total)}
+                                </div>
+                            );
+                        }
+                    },
+                    {
+                        name: 'orderLines', label: 'Services & Parts', width: 400,
+                        component: ({ value }) => {
+                            const lines = value && Array.isArray(value) ? value : [];
+                            return (
+                                <div className="flex flex-wrap gap-1">
+                                    {lines.map((line, index) => (
+                                        <div key={index} className="w-fit flex items-center gap-2 bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                                            <span className="text-xs font-medium">{line.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        }
+                    },
+                    {
+                        name: 'customer', label: 'Customer',
+                        component: ({ value }) => {
+                            if (!value) return <span className="text-gray-500">n/a</span>;
+                            return (
+                                <div className="flex flex-col">
+                                    <span>{value.firstName} {value.lastName}</span>
+                                    <span className="text-gray-500 text-sm">{value.email}</span>
+                                </div>
+                            );
+                        }
+                    },
+                    {
+                        name: 'vehicle', label: 'Vehicle',
+                        component: ({ value }) => {
+                            if (!value) return <span className="text-gray-500">n/a</span>;
+                            return (
+                                <div className="flex flex-col">
+                                    <span>{value.make?.name} {value.model?.name} {value.year}</span>
+                                    <span className="text-gray-500 text-sm">{value.licensePlate}</span>
+                                </div>
+                            );
+                        }
+                    },
+
                 ]}
             />
         </>

@@ -32,6 +32,9 @@ export const sendBackRequest = async ({
     }
     try {
 
+        //dummy await
+        // await new Promise(resolve => setTimeout(resolve, 10000));
+
         let toSendData = {
             method: method,
             headers: {

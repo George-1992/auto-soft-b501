@@ -44,7 +44,7 @@ export default function Header({ items }) {
                     </div>
 
                     <WebpushButton />
-                    <LanguageSwitch />
+                    {/* <LanguageSwitch /> */}
                     <NavLink
                         to="/settings"
                         className="flex items-center gap-2 p-2 rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 ease-in-out border border-gray-300 bg-white"

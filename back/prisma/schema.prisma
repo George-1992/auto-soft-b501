@@ -33,6 +33,7 @@ model users {
   password  String?
   provider  String?     @default("email")
   config    Json?       @default("{}")
+  language  String?     @default("en")
 
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
@@ -188,21 +189,22 @@ model services {
 }
 
 model orders {
-  id            String          @id @default(uuid())
-  orderNumber   Int             @map("order_number")
-  status        WorkOrderStatus @default(estimate)
-  name          String
-  customerNotes String?         @map("customer_notes")
-  internalNotes String?         @map("internal_notes")
-  startDate     DateTime?       @map("start_date") @db.Timestamp(6)
-  dueDate       DateTime?       @map("due_date") @db.Timestamp(6)
-  paymentTerms  String?         @map("payment_terms")
-  paymentStatus String?         @map("payment_status")
-  tax           Decimal         @default(0) @db.Decimal(10, 2)
-  taxType       DiscountType    @default(percentage) @map("tax_type")
-  discount      Decimal         @default(0) @db.Decimal(10, 2)
-  discountType  DiscountType    @default(percentage) @map("discount_type")
-  totalPrice    Decimal         @default(0) @map("total_price") @db.Decimal(10, 2)
+  id               String          @id @default(uuid())
+  orderNumber      Int             @map("order_number")
+  status           WorkOrderStatus @default(estimate)
+  name             String
+  customerNotes    String?         @map("customer_notes")
+  internalNotes    String?         @map("internal_notes")
+  startDate        DateTime?       @map("start_date") @db.Timestamp(6)
+  dueDate          DateTime?       @map("due_date") @db.Timestamp(6)
+  paymentTerms     String?         @map("payment_terms")
+  paymentStatus    String?         @map("payment_status")
+  tax              Decimal         @default(0) @db.Decimal(10, 2)
+  taxType          DiscountType    @default(percentage) @map("tax_type")
+  discount         Decimal         @default(0) @db.Decimal(10, 2)
+  discountType     DiscountType    @default(percentage) @map("discount_type")
+  totalPrice       Decimal         @default(0) @map("total_price") @db.Decimal(10, 2)
+  stageColPosition String?         @default("a") @map("stage_col_position")
 
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
