@@ -1,5 +1,7 @@
 import { logger } from "@/src/services/logger";
 
+const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
+
 // Email validation
 export const validateEmail = (email) => {
     const errors = [];
@@ -278,12 +280,14 @@ export const internetConnection = async (timeout = 2000) => {
         const controller = new AbortController();
         timer = setTimeout(() => controller.abort(), timeout);
 
+        const healthUrl = `${API_URL.replace('/api/v1/app', '/api/v1')}/health?t=${Date.now()}`;
 
-        const response = await fetch(`/api/v1/health?t=${Date.now()}`, {
+        const response = await fetch(healthUrl, {
             method: 'HEAD',
             cache: 'no-store',
             signal: controller.signal,
         });
+
         return response.ok;
     } catch (error) {
         logger.error('internetConnection error:', error);
