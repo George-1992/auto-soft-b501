@@ -1,10 +1,10 @@
 {
-  "name": "template-node",
+  "name": "b501-back",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "directories": {
-    "test": "tests"
+    "test": ""
   },
   "scripts": {
     "start": "node server.js",
