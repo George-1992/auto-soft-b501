@@ -34,7 +34,7 @@
   --warning-foreground: #ffffff;
 
   --border: #e2e8f0;
-  --input: #ffffff;
+  --input: #fdfdfd;
   --ring: #4183bd;
 
   --card: #ffffff;
@@ -387,6 +387,26 @@ body {
     left: 100%;
   }
 }
+
+
+@keyframes input-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.loading-shimmer {
+  opacity: 0.7;
+  // background-color: var(--primary);
+  background-image: linear-gradient(90deg, #edeef0 25%, #ababab 50%, #edeef0 75%);
+  background-size: 200% 100%;
+  animation: input-shimmer 1.5s linear infinite;
+}
+
 
 .slide-up-once {
   animation: slideUpOnce 0.4s ease-out forwards;

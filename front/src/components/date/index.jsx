@@ -2,30 +2,24 @@ import { forwardRef } from 'react';
 import DatePicker from 'react-datepicker';
 import { Calendar, X } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
- 
+
 
 // Custom input component that matches your form-control styling
-const CustomInput = forwardRef(({ value, onClick, placeholder, disabled, error, clearable, onClear, className, displayValue }, ref) => (
-    <div className={`relative ${className}`}>
+const CustomInput = forwardRef(({ value, onClick, placeholder, disabled, error, clearable, onClear, className, displayValue, isLoading }, ref) => (
+    <div className={`relative h-9 w-full border border-gray-300 rounded-md shadow-sm overflow-hidden ${isLoading ? 'loading-shimmer' : ''} ${className}`}>
         <div
             ref={ref}
             onClick={onClick}
             className={`
-                form-control flex items-center justify-between cursor-pointer
+                form-control flex h-full w-full items-center justify-between cursor-pointer
                 transition-all duration-200
                 ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-gray-400'}
                 ${error ? 'border-red-400 focus:outline-red-500' : ''}
             `}
         >
-            <div className="flex-1 min-w-0">
-                {displayValue || value ? (
-                    <span className="text-gray-900">{displayValue || value}</span>
-                ) : (
-                    <span className="text-gray-500">{placeholder}</span>
-                )}
-            </div>
 
-            <div className="flex items-center gap-2 ml-2">
+
+            <div className="flex items-center gap-2 px-2">
                 {clearable && !disabled && value && (
                     <button
                         type="button"
@@ -38,7 +32,14 @@ const CustomInput = forwardRef(({ value, onClick, placeholder, disabled, error, 
                         <X className="w-4 h-4" />
                     </button>
                 )}
-                <Calendar className="w-4 h-4 text-yellow-400" />
+                <Calendar className="w-4 h-4 text-[var(--accent)]" />
+            </div>
+            <div className="flex-1 min-w-0 px-2">
+                {displayValue || value ? (
+                    <span className="text-gray-900">{displayValue || value}</span>
+                ) : (
+                    <span className="text-gray-500">{placeholder}</span>
+                )}
             </div>
         </div>
     </div>
@@ -62,6 +63,7 @@ export const DateInput = ({
     minDate = null,
     maxDate = null,
     inline = false, // for table inline editing
+    isLoading = false,
     ...props
 }) => {
     // appConsole.log('DateInput value ==> ', value);
@@ -183,7 +185,20 @@ export const DateInput = ({
     }
 
     return (
-        <div className={`relative w-full rounded-md ${className}`}>
+        <div className={`relative w-full rounded-md ${className} `}>
+            {/* Native required validator for custom select */}
+            {
+                required && !disabled && (
+                    <input
+                        tabIndex={-1}
+                        value={selectedDate ? formatValue(selectedDate) : ''}
+                        onChange={() => { }}
+                        required
+                        name={`${name}-required-validation`}
+                        className="w-[1px] h-[1px] absolute opacity-0 pointer-events-none"
+                    />
+                )
+            }
             <DatePicker
                 selected={selectedDate}
                 onChange={handleChange}
@@ -201,15 +216,16 @@ export const DateInput = ({
                         clearable={clearable}
                         onClear={handleClear}
                         className={className}
+                        isLoading={isLoading}
                         displayValue={displayValue}
                     />
                 }
-                popperClassName="date-picker-popper"
+                popperClassName="date-picker-popper p-0 m-0"
                 calendarClassName="date-picker-calendar"
                 {...props}
             />
 
-            {disabled && <div className="absolute inset-0 bg-gray-200 opacity-50 cursor-not-allowed  rounded-md"></div>}
+            {disabled && <div className="h-9 absolute inset-0 bg-gray-200 opacity-50 cursor-not-allowed  rounded-md"></div>}
             {/* Error message */}
             {error && (
                 <p className="text-sm text-red-500 mt-1 expanding">
@@ -217,14 +233,8 @@ export const DateInput = ({
                 </p>
             )}
 
-            {/* Hidden input for form submission - always ISO 8601 format */}
-            {name && (
-                <input
-                    type="hidden"
-                    name={name}
-                    value={selectedDate ? formatValue(selectedDate) : ''}
-                />
-            )}
+
+
         </div>
     );
 };

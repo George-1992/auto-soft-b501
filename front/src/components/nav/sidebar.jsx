@@ -2,8 +2,9 @@ import { GLOBALS } from "@/globals";
 import Image from "@/src/components/wraps/image";
 import { BotIcon, HomeIcon, ListChevronsUpDownIcon, LogOutIcon, MenuIcon, PanelsTopLeftIcon, StretchHorizontalIcon, User2, XIcon } from "lucide-react";
 import { NavLink, useLocation, useRouteLoaderData } from "react-router";
-import { Pattern } from "./pattern";
 import { useEffect, useState } from "react";
+import { Pattern } from "@/src/components/ui/pattern";
+
 
 
 const exampleItems = [

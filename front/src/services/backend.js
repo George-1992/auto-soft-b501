@@ -21,6 +21,8 @@ export const sendBackRequest = async ({
     searchQuery = '',
     offset = 0,
     limit = 50,
+    filters = [],
+    include = {},
 }) => {
     let resObj = {
         success: false,
@@ -40,6 +42,8 @@ export const sendBackRequest = async ({
                 action: action,
                 offset: offset,
                 limit: limit,
+                filters: filters,
+                include: include,
             }
         };
 
@@ -49,7 +53,7 @@ export const sendBackRequest = async ({
         if (searchQuery) {
             toSendData.body.searchQuery = searchQuery;
         }
-      
+
         // check if there is internet connection before sending the request
         const inetConnection = await internetConnection();
         // logger.info('sendBackRequest: internetConnection:', inetConnection);

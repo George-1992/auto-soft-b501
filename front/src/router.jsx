@@ -5,11 +5,10 @@ import ErrorEl from '@/src/components/ui/errorEl'
 import NotFound from '@/src/components/ui/notFound';
 import { logger } from '@/src/services/logger';
 import { createBrowserRouter, Outlet, redirect, RouterProvider } from 'react-router'
-import Header from '@/src/components/ui/header.jsx';
-import Sidebar from '@/src/components/ui/sidebar.jsx';
+import Header from '@/src/components/nav/header.jsx';
+import Sidebar from '@/src/components/nav/sidebar.jsx';
 import { setMetas } from '@/src/services/metas';
-import Notes from '@/src/pages/notes';
-import { BotIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
+import { BotIcon, BoxesIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, RouteIcon, ShellIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
 import ToasterSonnar from '@/src/components/ui/sonnar/sonnar';
 import Profile from '@/src/pages/profile';
 import Settings from '@/src/pages/settings';
@@ -19,6 +18,10 @@ import LocationsPage from '@/src/pages/locations';
 import CustomersPage from '@/src/pages/customers';
 import VehiclesPage from '@/src/pages/vehicles';
 import ServicesPage from '@/src/pages/services';
+import NotesPage from '@/src/pages/notes';
+import OrdersPage from '@/src/pages/orders';
+import PipelinesPage from '@/src/pages/pipelines';
+import InventoryPage from '@/src/pages/parts';
 
 // const AUTH_PATHS = GLOBALS.AUTH_PATHS || [];
 // const authRes = await auth();
@@ -55,8 +58,9 @@ const requireAuth = async ({ request }) => {
     if (!res.success) {
         // const from = new URL(request.url).pathname;
         // throw redirect(`/auth/signin?from=${encodeURIComponent(from)}`);
-        return redirect(`/auth/signin`);
+        throw redirect('/auth/signin');
     }
+    // logger.info("requireAuth res", res);
     return res.data || res;
 };
 
@@ -72,6 +76,12 @@ const sidebarItems = [
         name: 'Home',
         icon: (props) => <HomeIcon {...props} />,
         path: '/',
+        subItems: []
+    },
+    {
+        name: 'Orders',
+        icon: (props) => <WrenchIcon {...props} />,
+        path: '/orders',
         subItems: []
     },
     {
@@ -96,6 +106,18 @@ const sidebarItems = [
         name: 'Services',
         icon: (props) => <ToolboxIcon {...props} />,
         path: '/services',
+        subItems: []
+    },
+    {
+        name: 'Pipelines',
+        icon: (props) => <RouteIcon {...props} />,
+        path: '/pipelines',
+        subItems: []
+    },
+    {
+        name: 'Inventory',
+        icon: (props) => <BoxesIcon {...props} />,
+        path: '/inventory',
         subItems: []
     },
     // {
@@ -150,7 +172,7 @@ const router = createBrowserRouter([
         ),
         children: [
             { index: true, element: <Home /> },
-            { path: 'notes', element: <Notes /> },
+            { path: 'notes', element: <NotesPage /> },
             { path: 'ai-chat', element: <AiChatPage /> },
             { path: 'profile', element: <Profile /> },
             { path: 'settings', element: <Settings /> },
@@ -158,7 +180,10 @@ const router = createBrowserRouter([
             { path: 'customers', element: <CustomersPage /> },
             { path: 'vehicles', element: <VehiclesPage /> },
             { path: 'services', element: <ServicesPage /> },
-            
+            { path: 'orders', element: <OrdersPage /> },
+            { path: 'pipelines', element: <PipelinesPage /> },
+            { path: 'inventory', element: <InventoryPage /> },
+
             { path: 'test', element: <Test /> },
             { path: 'test-2/:id', element: <Test2 /> },
             { path: '*', element: <NotFound /> },

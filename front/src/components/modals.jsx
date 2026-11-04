@@ -25,10 +25,11 @@ const ModalBase = ({ isOpen, onClose, children, className = '', backdropClassNam
     }, [isOpen, onClose]);
 
     // Handle backdrop click
+    // close on outside click
     const handleBackdropClick = (e) => {
-        if (modalRef.current && !modalRef.current.contains(e.target)) {
-            onClose();
-        }
+        // if (modalRef.current && !modalRef.current.contains(e.target)) {
+        //     onClose();
+        // }
     };
 
     if (!isOpen) return null;
@@ -141,10 +142,11 @@ export const ExpandableModal = ({
     }, [isOpen, onClose]);
 
     // Handle backdrop click
+    // close on outside click
     const handleBackdropClick = (e) => {
-        if (modalRef.current && !modalRef.current.contains(e.target)) {
-            onClose();
-        }
+        // if (modalRef.current && !modalRef.current.contains(e.target)) {
+        //     onClose();
+        // }
     };
 
     if (!isOpen) return null;

@@ -32,8 +32,8 @@ export default function VehiclesManage({
         vin: '',
         licensePlate: '',
         year: 0,
-        make: '',
-        model: '',
+        // makeId: '',
+        // modelId: '',
         trim: '',
         engine: '',
         color: '',
@@ -94,7 +94,11 @@ export default function VehiclesManage({
             _setIsLoading(true);
             const response = await sendBackRequest({
                 itsFor: 'vehiclesModels',
-                data: { make },
+                filters: [{
+                    key: 'makeId',
+                    operator: 'equals',
+                    value: make.id,
+                }]
             });
             logger.log('fetchVehicleModels response:', response);
 
@@ -128,11 +132,25 @@ export default function VehiclesManage({
     };
     const getVehicleModels = (makeId) => {
         // logger.log('getVehicleModels called with makeId:', makeId);
-        const make = _vehicleMakes.find(m => m.id === makeId);
-        return make?.models || [];
+        try {
+            const make = (_vehicleMakes || []).find(m => m.id === makeId);
+            return make?.models ?? [];
+
+            // logger.log('getVehicleModels found make:', make);
+
+            return []
+        } catch (error) {
+            logger.error('Error getting vehicle models for makeId:', makeId, error);
+            return [];
+        }
     };
     const handleInputChange = (id, field, value) => {
         let ei = { ..._editingItem, [field]: value };
+
+        if (['year', 'odometer'].includes(field)) {
+            ei[field] = parseInt(value) || 0;
+        }
+
         _setEditingItem(ei);
     };
     const handleCancelEdit = () => {
@@ -198,16 +216,16 @@ export default function VehiclesManage({
 
     const getThisVehicleMakeName = (makeId) => {
         const make = _vehicleMakes.find(m => m.id === makeId);
-        return make ? (make.name || make.makeName) : '';
-    }
+        return make ? (make.name || make.name) : '';
+    };
     const getThisVehicleModelName = (makeId, modelId) => {
         const make = _vehicleMakes.find(m => m.id === makeId);
         if (make && make.models) {
             const model = make.models.find(m => m.id === modelId);
-            return model ? (model.name || model.modelName) : '';
+            return model ? (model.name || model.name) : '';
         }
         return '';
-    }
+    };
 
     // fetch vehicle makes and models
     //  when component mounts or when _items or _editingItem changes
@@ -230,9 +248,9 @@ export default function VehiclesManage({
                     _setVehicleMakes(thisMakes);
                 }
 
-                const makeIds = _items.map(item => item.make).filter(make => make);
-                if (_editingItem && _editingItem.make) {
-                    makeIds.push(_editingItem.make);
+                const makeIds = _items.map(item => item.makeId).filter(make => make);
+                if (_editingItem && _editingItem.makeId) {
+                    makeIds.push(_editingItem.makeId);
                 }
                 // logger.log('makeIds:', makeIds);
                 if (makeIds) {
@@ -278,7 +296,76 @@ export default function VehiclesManage({
 
         }
         body();
-    }, [_items.length, _editingItem?.make]);
+    }, [_items.length, _editingItem?.makeId]);
+
+    useEffect(() => {
+        async function body() {
+            try {
+                const thisMakes = _vehicleMakes.length
+                    ? _vehicleMakes : await fetchVehicleMakes();
+
+                if (thisMakes.length === 0) {
+                    logger.log('No vehicle makes found. Please add vehicle makes first.');
+                    notify({
+                        type: 'error',
+                        message: 'No vehicle makes found. Please add vehicle makes first.',
+                    })
+                    return;
+                }
+
+                if (_vehicleMakes.length === 0) {
+                    _setVehicleMakes(thisMakes);
+                }
+
+                const makeIds = _items.map(item => item.makeId).filter(make => make);
+                if (_editingItem && _editingItem.makeId) {
+                    makeIds.push(_editingItem.makeId);
+                }
+                // logger.log('makeIds:', makeIds);
+                if (makeIds) {
+                    const newMakesData = {}
+                    for (const makeId of makeIds) {
+                        const make = thisMakes.find(m => m.id === makeId);
+                        const modelsAlreadyExist = thisMakes.find(m => m.id === makeId)?.models?.length > 0;
+                        if (modelsAlreadyExist) {
+                            logger.log(`Models for makeId ${makeId} already exist. Skipping fetch.`);
+                            continue;
+                        }
+                        // logger.log('make:', make);
+                        if (make) {
+                            const modelData = await fetchVehicleModels(make);
+                            newMakesData[makeId] = modelData;
+                        } else {
+                            logger.log(`Make with id ${makeId} not found in vehicle makes.`);
+                            notify({
+                                type: 'error',
+                                message: `Make with id ${makeId} not found in vehicle makes.`,
+                            })
+                        }
+                    }
+
+
+                    if (Object.keys(newMakesData).length > 0) {
+                        const updatedMakes = thisMakes.map(make => {
+                            if (newMakesData[make.id]) {
+                                return { ...make, models: newMakesData[make.id] };
+                            }
+                            return make;
+                        });
+                        _setVehicleMakes(updatedMakes);
+                    }
+                }
+            } catch (error) {
+                logger.error('Error in useEffect for fetching vehicle makes and models:', error);
+                notify({
+                    type: 'error',
+                    message: 'Error fetching vehicle makes and models. Please try again later.',
+                })
+            }
+
+        }
+        body();
+    }, [_items.length, _editingItem?.makeId]);
 
 
     // fetch customers vehicles when customerId defined or changed
@@ -342,14 +429,14 @@ export default function VehiclesManage({
 
                                                     </div>
                                                     <LicensePlateEl
-                                                        className="text-lg font-semibold"
+                                                        className="text-lg font-semibold uppercase"
                                                         disabled={!isEditing}
                                                         value={thisItem?.licensePlate ?? ''}
                                                         onChange={(v) => handleInputChange(item.tempId, 'licensePlate', v)}
                                                     />
                                                 </div>
                                                 <div className="w-full flex flex-col gap-3">
-                                                    <div>
+                                                    <div className="w-full">
                                                         <div className="w-full relative flex flex-row gap-2 items-center">
                                                             <LoaderShimmer isLoading={_isLoading} />
                                                             {isEditing ?
@@ -379,13 +466,13 @@ export default function VehiclesManage({
                                                                         required={true}
                                                                         searchable={true}
                                                                         disabled={!isEditing}
-                                                                        value={thisItem?.make ?? ''}
-                                                                        onChange={(e) => handleInputChange(item.tempId, 'make', e.target.value)}
+                                                                        value={thisItem?.makeId ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'makeId', e.target.value)}
                                                                         className="w-full"
-                                                                        options={_vehicleMakes.map(make => ({ value: make.id, label: make.makeName }))}
+                                                                        options={_vehicleMakes.map(make => ({ value: make.id, label: make.name }))}
                                                                     />
                                                                     : <span className="w-full h-9 rounded-md p-2 flex items-center">
-                                                                        {getThisVehicleMakeName(thisItem?.make ?? '')}
+                                                                        {getThisVehicleMakeName(thisItem?.makeId ?? '')}
                                                                     </span>
                                                                 }
                                                             </div>
@@ -400,13 +487,13 @@ export default function VehiclesManage({
                                                                         required={true}
                                                                         searchable={true}
                                                                         disabled={!isEditing}
-                                                                        value={thisItem?.model ?? ''}
-                                                                        onChange={(e) => handleInputChange(item.tempId, 'model', e.target.value)}
+                                                                        value={thisItem?.modelId ?? ''}
+                                                                        onChange={(e) => handleInputChange(item.tempId, 'modelId', e.target.value)}
                                                                         className="w-full"
-                                                                        options={getVehicleModels(thisItem?.make ?? '').map(model => ({ value: model.id, label: model.modelName }))}
+                                                                        options={getVehicleModels(thisItem?.makeId ?? '').map(model => ({ value: model.id, label: model.name }))}
                                                                     />
                                                                     : <span className="w-full h-9 rounded-md p-2 flex items-center">
-                                                                        {getThisVehicleModelName(thisItem?.make ?? '', thisItem?.model ?? '')}
+                                                                        {getThisVehicleModelName(thisItem?.makeId ?? '', thisItem?.modelId ?? '')}
                                                                     </span>
                                                                 }
                                                             </div>
@@ -422,7 +509,7 @@ export default function VehiclesManage({
                                                                         required={true}
                                                                         searchable={true}
                                                                         disabled={!isEditing}
-                                                                        value={thisItem?.year ?? ''}
+                                                                        value={thisItem?.year ? { value: thisItem.year.toString(), label: thisItem.year.toString() } : null}
                                                                         onChange={(e) => handleInputChange(item.tempId, 'year', e.target.value)}
                                                                         className="w-full"
                                                                         options={vehicleYears}
@@ -432,7 +519,7 @@ export default function VehiclesManage({
                                                                     </span>
                                                                 }
                                                             </div>
-                                                            <div className="relative w-40 flex flex-col gap-1">
+                                                            <div className="relative w-28 flex flex-col gap-1">
                                                                 <LoaderShimmer isLoading={_isLoading} />
                                                                 <label htmlFor="engine">
                                                                     {t('Engine')}
@@ -630,7 +717,7 @@ const LicensePlateEl = ({ className = '', value = '', disabled = false, onChange
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     disabled={disabled}
-                    placeholder="123456"
+                    placeholder="77AA777"
                     className="w-full h-full border-none rounded-none focus:ring-0 focus:border-none"
                 />
             </div>

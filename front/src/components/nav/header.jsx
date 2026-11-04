@@ -1,7 +1,9 @@
 import WebpushButton from "@/src/components/notifications/webpush";
+import { SecondaryButton } from "@/src/components/ui/buttons";
 import LanguageSwitch from "@/src/components/ui/locale";
+import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { useOnline } from "@/src/hooks";
-import { logger } from "@/src/services/logger";
+import { sendBackRequest } from "@/src/services/backend";
 import { SettingsIcon, Settings2Icon, User2Icon } from "lucide-react";
 import { NavLink } from "react-router";
 
@@ -10,6 +12,16 @@ export default function Header({ items }) {
     const online = useOnline();
     // logger.info("Header: online", online);
 
+    const test = (e) => {
+        e.preventDefault();
+        sendBackRequest({
+            itsFor: 'test2',
+        })
+        notify({
+            type: 'info',
+            message: 'Test notification',
+        })
+    }
 
     return (
         <div className="w-full flex items-center justify-end">
@@ -18,6 +30,11 @@ export default function Header({ items }) {
 
                 {/* settings */}
                 <div className="flex items-center gap-2">
+                    <SecondaryButton onClick={test} className="px-3 py-1">
+                        Test
+                    </SecondaryButton>
+
+
                     <div>
                         {online ? (
                             <div className="size-3 bg-green-500 rounded-full" />

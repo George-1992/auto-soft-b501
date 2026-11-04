@@ -26,7 +26,7 @@ export const auth = async () => {
             resObj.message = "No profile data found";
             resObj.data = null;
         }
-      
+
 
     } catch (error) {
         logger.error("auth: Error during authentication", error);
@@ -37,6 +37,16 @@ export const auth = async () => {
 
     // console.log('>>>auth: resObj:', resObj);
     return resObj;
+};
+
+export const updateSession = async ({ data }) => {
+    try {
+        logger.info("updateSession: Updating session with data:", data);
+        db.all.where('itsFor').equals('signin').modify(data);
+
+    } catch (error) {
+        logger.error("updateSession: Error updating session", error);
+    }
 }
 
 
@@ -101,6 +111,7 @@ export const handleSignin = async (props) => {
             // method: 'POST',
             data: props,
         })
+        // logger.info("handleSignin: result", result);
 
         if (!result.success) {
             resObj = result;
@@ -157,7 +168,7 @@ export const handleSignout = async () => {
             // action: 'delete',
             // method: 'POST',
         });
- 
+
         // react-router redirect() only works in loaders/actions. For regular async calls,
         // force browser navigation to ensure the user is moved to signin.
         // if (typeof window !== 'undefined') {

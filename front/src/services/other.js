@@ -1,3 +1,4 @@
+import { CURRENCIES } from "@/data/currency";
 import { logger } from "@/src/services/logger";
 import { cloneDeep } from "lodash";
 
@@ -119,6 +120,29 @@ export const toDisplayStr = (value) => {
     }
 }
 
+export const toDisplayNumber = (value, options = {
+    defaultValue: 0,
+    decimalPlaces: 0,
+}) => {
+
+    // 10000 to 10,000
+    try {
+        if (value === null || value === undefined || isNaN(value)) {
+            return options.defaultValue;
+        }
+
+        const number = Number(value);
+        return number.toLocaleString(undefined, {
+            minimumFractionDigits: options.decimalPlaces,
+            maximumFractionDigits: options.decimalPlaces,
+        });
+    }
+    catch (error) {
+        logger.error('toDisplayNumber error ==> ', error);
+        return options.defaultValue;
+    }
+};
+
 export const clearObjectValues = (obj) => {
     try {
         return clearValue(obj);
@@ -176,4 +200,42 @@ export const randomString = (length = 8) => {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+};
+
+export const getCurrencyDisplayName = ({ code, name, symbol }) => {
+    try {
+        if (!code || !name || !symbol) {
+            logger.warn('getCurrencyDisplayName: Missing currency information', { code, name, symbol });
+            return '';
+        }
+        return `${code.toUpperCase()} - ${name} (${symbol})`;
+    } catch (error) {
+        logger.error('getCurrencyDisplayName error ==> ', error);
+        return '';
+    }
+};
+
+export const getCurrencyObjectFromSession = (session) => {
+    const defualt = { code: 'amd', name: 'Armenian Dram', symbol: '֏' };
+
+    try {
+        if (!session || !session.account || !session.account.currency) {
+            logger.warn('getCurrencyObjectFromSession: Missing session or account currency', { session });
+            return defualt; // Default currency
+        }
+
+        const currencyCode = session.account.currency.toLowerCase();
+        const currencyObj = CURRENCIES.find(c => c.code.toLowerCase() === currencyCode);
+
+        if (!currencyObj) {
+            logger.warn('getCurrencyObjectFromSession: Currency code not found in CURRENCIES', { currencyCode });
+            return defualt; // Default currency
+        }
+
+        return currencyObj;
+    }
+    catch (error) {
+        logger.error('getCurrencyObjectFromSession error ==> ', error);
+        return defualt; // Default currency
+    }
 };

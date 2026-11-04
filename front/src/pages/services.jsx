@@ -1,4 +1,5 @@
 import { ExpandableModal, PopupModal } from "@/src/components/modals"
+import CurrencySymbol from "@/src/components/render/currency";
 import DataRenderer from "@/src/components/render/pageDataRenderer"
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import { Input, Textarea } from "@/src/components/ui/inputs";
@@ -6,6 +7,7 @@ import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
+import { getCurrencyDisplayName, toDisplayNumber, toDisplayStr } from "@/src/services/other";
 import { BookmarkIcon, BuildingComplexIcon, CircleDollarSignIcon, MailIcon, MapPinHouseIcon, PhoneIcon, SquareTextIcon, WrenchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -34,8 +36,10 @@ function ThisEditComponent({
             e.preventDefault();
         }
 
+        let payload = { ...data };
+
         // logger.info("ThisEditComponent:handleFormSubmit:", e);
-        onSubmit(e);
+        onSubmit(payload);
     }
 
     return (
@@ -59,7 +63,7 @@ function ThisEditComponent({
                     </div>
                     <div className="w-full flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                            <CircleDollarSignIcon className="w-5 h-5 text-gray-500" />
+                            <CurrencySymbol className="w-5 h-5 text-gray-500" />
                             <label className="font-semibold">{t('Price')}</label>
                         </div>
                         <Input
@@ -136,7 +140,18 @@ export default function ServicesPage() {
                 editComponent={ThisEditComponent}
                 columns={[
                     { name: 'name', label: 'Name' },
-                    { name: 'price', label: 'Price' },
+                    {
+                        name: 'price', label: 'Price',
+                        component: ({ row, value }) => {
+                            return (
+                                <div>
+                                    <CurrencySymbol />
+                                    {toDisplayNumber(value)}
+                                </div>
+                            )
+                        }
+
+                    },
                     { name: 'description', label: 'Description' },
                     { name: 'category', label: 'category' },
                 ]}

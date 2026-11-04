@@ -1,154 +1,118 @@
-import Table from "@/src/components/table/index.jsx";
-import { LoaderEl, LoaderShimmer } from "@/src/components/ui/loader";
-import ToasterSonnar, { notify } from "@/src/components/ui/sonnar/sonnar";
+import { ExpandableModal, PopupModal } from "@/src/components/modals"
+import DataRenderer from "@/src/components/render/pageDataRenderer"
+import { PrimaryButton } from "@/src/components/ui/buttons";
+import { Input, Textarea } from "@/src/components/ui/inputs";
+import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
-import _ from "lodash";
-import { use, useEffect } from "react";
-import { useState } from "react";
+import { setMetas } from "@/src/services/metas";
+import { BookmarkIcon, BuildingComplexIcon, CircleDollarSignIcon, MailIcon, MapPinHouseIcon, PhoneIcon, SquareTextIcon, WrenchIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 
 
-export default function Notes() {
+function ThisEditComponent({
+    isOpen = false, data = null, editType = 'new',
+    onClose = () => { }, onInputChange = () => { }, onSubmit = () => { }
+}) {
 
 
-    const [_data, _setData] = useState([]);
-    const [_isLoading, _setIsLoading] = useState(true);
-    const [_page, _setPage] = useState({
-        page: 1,
-        perPage: 10,
-        total: 0,
-    });
-
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const res = await sendBackRequest({
-                itsFor: 'notes',
-                action: 'get',
-                method: 'POST',
-                data: {
-                    offset: (_page.page - 1) * _page.perPage,
-                    limit: _page.perPage,
-                }
-            });
-
-            // logger.info('fetchData response:', res);
-            _setData(res.data || []);
-            _setIsLoading(false);
-            _setPage(prev => ({
-                ...prev,
-                total: res.total || 0,
-            }));
-        };
-        fetchData();
-        // logger.info('Notes page loaded');
-        // notify({ type: 'info', message: 'Notes page loaded', timer: 3000 });
-    }, []);
-
-
-
-    const handlePageChange = (newPage) => {
-        logger.info('handlePageChange:', newPage);
-    }
-    const handleNewItemClick = async (data) => {
-        const response = await sendBackRequest({
-            itsFor: 'notes',
-            action: 'create',
-            method: 'POST',
-            data: data,
-        });
-        logger.info('handleNewItemClick response:', response);
-        const newData = response.data ? [...response.data, ..._data] : _data;
-        logger.info('handleNewItemClick: newData:', newData);
-        _setData(newData);
-
-        return response;
+    const { t } = useTranslation();
+    const sampleData = {
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: '',
     };
 
-    const onBulkAction = (action, selectedItems) => {
-        logger.info('onBulkAction:', action, selectedItems);
-    }
-    const handleEditSubmit = (item) => {
-        logger.info('handleEditSubmit:', item);
-    }
-    const handleDeleteSubmit = (item) => {
-        logger.info('handleDeleteSubmit:', item);
-    }
-    const handlePreview = (item) => {
-        logger.info('handlePreview:', item);
-    }
+    const handleFormSubmit = (e) => {
+        if (e && e.preventDefault) {
+            e.preventDefault();
+        }
 
-
-    const updateItem = async ({ item, action }) => {
-        logger.info('updateItem:', item, action);
-        const response = await sendBackRequest({
-            itsFor: 'notes',
-            action: 'update',
-            method: 'POST',
-            data: { ...item, action },
-        });
-        const newData = response.data ? [...response.data, ..._data] : _data;
-        _setData(newData);
-        return response;
+        // logger.info("ThisEditComponent:handleFormSubmit:", e);
+        onSubmit(e);
     }
-
 
     return (
-        <div className="relative rounded">
-            <LoaderShimmer className={""} isLoading={_isLoading} />
-            <Table
-                className=""
-                editable={true}
-                sortable={true}
-                paginated={true}
-                page={_page}
-                onPageChange={handlePageChange}
-                previewKey=""
-                data={_data}
-                onAddNew={handleNewItemClick}
-                onRowChange={(item) => updateItem({ item, action: 'update' })}
-                onRowDelete={(item) => updateItem({ item, action: 'delete' })}
-                onBulkAction={onBulkAction}
-                actions={['edit', 'delete']}
-                // actions={[
-                //     {
-                //         name: 'edit',
-                //         onlyCallback: true,
-                //         func: handleEditSubmit
-                //     },
-                //     {
-                //         name: 'delete',
-                //         confirm: {
-                //             title: 'Confirm Deletion',
-                //             message: 'Are you sure you want to delete this job?',
-                //             button1: 'Cancel',
-                //             button2: 'Delete',
-                //         },
-                //         func: (item) => updateItem({ item, action: 'delete' })
-                //     }
-                // ]}
-                columns={[
-                    {
-                        key: 'title',
-                        title: 'Title',
-                        width: 'w-64',
-                        required: true,
-                        validateKey: 'length',
-                    },
-                    {
-                        key: 'content',
-                        title: 'Content',
-                        width: 'w-96',
-                        type: 'textarea',
-                        Component: (props) => {
-                            if (!props.value) return <span className="text-gray-400">No content</span>;
-                            const truncated = props.value.length > 100 ? props.value.substring(0, 100) + '...' : props.value;
-                            return <span className="text-sm text-gray-700">{truncated}</span>;
-                        }
-                    }
-                ]}
-            />
-        </div>
+        <PopupModal isOpen={isOpen} onClose={onClose}>
+            <div className="w-full flex flex-col gap-3 p-5">
+                <form className="flex flex-col gap-5" onSubmit={handleFormSubmit}>
+
+
+                    <div className="w-full flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                            <label className="font-semibold">{t('Title')}</label>
+                        </div>
+                        <Input
+                            type="text"
+                            name="title"
+                            value={data?.title ?? ''}
+                            onChange={(e) => onInputChange('title', e.target.value)}
+                            className="border border-gray-300 rounded-md p-2"
+                        />
+                    </div>
+                    <div className="w-full flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                            <label className="font-semibold">{t('Content')}</label>
+                        </div>
+                        <Textarea
+                            name="content"
+                            value={data?.content ?? ''}
+                            onChange={(e) => onInputChange('content', e.target.value)}
+                            className="border border-gray-300 rounded-md p-2"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                        <PrimaryButton
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        >
+                            {t('Cancel')}
+                        </PrimaryButton>
+                        <PrimaryButton
+                            type="submit"
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        >
+                            {t('Save')}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </div>
+        </PopupModal >
     );
 }
+
+
+export default function NotesPage() {
+    const { t } = useTranslation();
+    setMetas({
+        title: 'Notes',
+        description: 'Manage your notes',
+    });
+
+    return (
+        <>
+
+            <h1 className="text-2xl font-bold mb-4">
+                {t('Notes')}
+            </h1>
+            <DataRenderer
+                itsFor="notes"
+                editComponent={ThisEditComponent}
+                columns={[
+                    { name: 'title', label: 'title' },
+                    { name: 'content', label: 'Content' },
+                ]}
+
+            />
+        </>
+    )
+}
+

@@ -1,25 +1,34 @@
+import { CURRENCIES } from "@/data/currency";
+import { updateSession } from "@/src/components/auth";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import Card from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/inputs";
 import { LoaderShimmer } from "@/src/components/ui/loader";
 import { CountriesSelect } from "@/src/components/ui/locale";
+import Select from "@/src/components/ui/select";
 import { notify } from "@/src/components/ui/sonnar/sonnar";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
+import { getCurrencyDisplayName } from "@/src/services/other";
 import { useEffect, useState } from "react";
+import { useRouteLoaderData } from "react-router";
+
+
 
 export default function Settings() {
-
-    const [_data, _setData] = useState(null);
-    const [_isLoading, _setIsLoading] = useState(true);
-
     setMetas({
         title: 'Settings',
         // description: '',
         // icon: GLOBALS.LOGO.MAIN,
     });
 
+    const [_data, _setData] = useState(null);
+    const [_isLoading, _setIsLoading] = useState(true);
+
+
+    const session = useRouteLoaderData("root");
+    // console.log("session:", session);
 
     useEffect(() => {
         const body = async () => {
@@ -59,7 +68,19 @@ export default function Settings() {
             ...prev,
             [key]: value,
         }));
-    }
+
+        if (key === 'currency') {
+            let newData = {
+                ...session,
+                account: {
+                    ...session.account,
+                    currency: value
+                }
+            };
+            // logger.info("Settings handleInputChange: updating session with new currency", newData);
+            updateSession({ data: newData });
+        }
+    };
     const handleSave = async () => {
         try {
             const response = await sendBackRequest({
@@ -88,7 +109,7 @@ export default function Settings() {
         }
     };
 
-    logger.info("Settings _data", _data);
+    // logger.info("Settings _data", _data);
 
     return (
         <div className="w-full relative rounded-md">
@@ -114,6 +135,19 @@ export default function Settings() {
                             className="w-full "
                             value={_data?.country || ''}
                             onChange={(value) => handleInputChange('country', value)}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="country">Currency</label>
+                        <Select
+                            id="currency"
+                            className="w-full "
+                            value={_data?.currency || ''}
+                            onChange={(e) => handleInputChange('currency', e.target.value)}
+                            options={CURRENCIES.map((currency) => ({
+                                value: currency.code,
+                                label: getCurrencyDisplayName(currency),
+                            }))}
                         />
                     </div>
                 </div>

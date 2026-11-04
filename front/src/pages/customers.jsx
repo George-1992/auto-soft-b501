@@ -8,6 +8,7 @@ import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import { BuildingComplexIcon, MailIcon, MapPinHouseIcon, PhoneIcon, SquareTextIcon } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 
@@ -18,7 +19,10 @@ function ThisEditComponent({
 }) {
 
 
+    const [_vehicles, _setVehicles] = useState(data?.vehicles ?? []);
     const { t } = useTranslation();
+
+    const customerId = data?.id ?? null;
     const sampleData = {
         name: '',
         email: '',
@@ -28,19 +32,41 @@ function ThisEditComponent({
         state: '',
         zip: '',
         country: '',
+
+    };
+    const handleFormSubmit = (e) => {
+        e?.preventDefault?.();
+        // logger.log('Form submitted with data:', data);
+        // logger.log('Form submitted with e:', e);
+        // // logger.log('Form submitted with _vehicles:', _vehicles);
+
+        // const isForm = e?.target?.tagName === 'FORM';
+        // let payload = e;
+        // if (isForm && !customerId) {
+        //     const formObject = Object.fromEntries(new FormData(e.target).entries());
+        //     payload = { ...formObject, vehicles: _vehicles };
+        // }
+        // logger.log('Form submitted with payload:', payload);
+
+        let payload = { ...data };
+        if (!customerId) {
+            payload.vehicles = _vehicles;
+        }
+
+        onSubmit(payload);
     };
 
-    const handleFormSubmit = (e) => {
-        if (e && e.preventDefault) {
-            e.preventDefault();
-        }
-        onSubmit(e);
-    }
-
     const handleVehicleAddOrEdit = async (vehicles) => {
-        logger.log('Vehicles added or edited:', vehicles);
-        const data = vehicles?.length > 0 ? vehicles[0] : null;
-        if (!data) {
+        // logger.log('Vehicles added or data:', data);
+        // logger.log('Vehicles added or edited:', vehicles);
+        if (!customerId) {
+            // logger.log('Customer ID is not available. Storing vehicles in local state.');
+            _setVehicles(vehicles);
+            return;
+        }
+
+        const thisData = vehicles?.length > 0 ? vehicles[0] : null;
+        if (!thisData) {
             notify({
                 type: 'error',
                 message: t('No vehicle data provided for add/edit.'),
@@ -52,7 +78,7 @@ function ThisEditComponent({
             const response = await sendBackRequest({
                 itsFor: 'vehicles',
                 action: 'update',
-                data: { ...data, customerId: data.customerId ?? data.customer?.id ?? null },
+                data: { ...thisData, customerId: thisData.customerId ?? thisData.customer?.id ?? null },
             });
             logger.log('Vehicle add/edit response:', response);
 

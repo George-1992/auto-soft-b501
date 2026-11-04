@@ -8,20 +8,16 @@ datasource db {
 }
 
 model accounts {
-  id               String             @id @default(uuid())
-  name             String             @default("Default Account")
-  status           AccountStatus      @default(inactive)
-  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
-  country          String?
-  customers        customers[]
-  locations        locations[]
-  notes            notes[]
-  orders           orders[]
-  parts            parts[]
-  services         services[]
+  id       String        @id @default(uuid())
+  name     String        @default("Default Account")
+  status   AccountStatus @default(inactive)
+  country  String?       @default("AM")
+  currency String?       @default("amd")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
   usersAndAccounts usersAndAccounts[]
-  vehicles         vehicles[]
   workspaces       workspaces[]
 
   @@index([name])
@@ -29,19 +25,19 @@ model accounts {
 }
 
 model users {
-  id               String             @id @default(uuid())
-  status           UsersStatus        @default(pending)
-  email            String             @unique
-  firstName        String?            @default("") @map("first_name")
-  lastName         String?            @default("") @map("last_name")
-  password         String?
-  provider         String?            @default("email")
-  config           Json?              @default("{}")
+  id        String      @id @default(uuid())
+  status    UsersStatus @default(pending)
+  email     String      @unique
+  firstName String?     @default("") @map("first_name")
+  lastName  String?     @default("") @map("last_name")
+  password  String?
+  provider  String?     @default("email")
+  config    Json?       @default("{}")
+
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
   usersAndAccounts usersAndAccounts[]
 
-  @@index([email])
   @@index([firstName])
   @@index([lastName])
   @@index([provider])
@@ -51,110 +47,176 @@ model users {
 model usersAndAccounts {
   id        String      @id @default(uuid())
   role      AccountRole @default(admin)
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
   accountId String      @map("account_id")
   userId    String      @map("user_id")
-  account   accounts    @relation(fields: [accountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user      users       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  account   accounts @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, userId])
   @@index([accountId])
-  @@index([role])
   @@index([userId])
+  @@index([role])
   @@map("users_and_accounts")
 }
 
-model notes {
-  id          String     @id @default(uuid())
-  title       String
-  content     String
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
-  workspaceId String     @map("workspace_id")
-  accountId   String     @map("account_id")
-  accounts    accounts   @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notes_accountId_accounts_id_fkey")
-  workspaces  workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notes_workspaceId_workspaces_id_fkey")
+model workspaces {
+  id   String @id @default(uuid())
+  name String @default("Default Workspace")
 
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
+  accountId String      @map("account_id")
+  account   accounts    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  customers customers[]
+  notes     notes[]
+  orders    orders[]
+  parts     parts[]
+  services  services[]
+  vehicles  vehicles[]
+  locations locations[]
+  pipelines pipelines[]
+
+  @@index([name])
+  @@index([accountId])
+}
+
+model notes {
+  id      String @id @default(uuid())
+  title   String
+  content String
+
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String     @map("workspace_id")
+  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
   @@index([title])
 }
 
 model locations {
-  id                  String     @id @default(uuid())
+  id                  String  @id @default(uuid())
   name                String
   address             String?
   city                String?
   country             String?
   phone               String?
-  timezone            String     @default("UTC")
-  nextWorkOrderNumber Int        @default(1) @map("next_work_order_number")
-  accountId           String     @map("account_id")
-  workspaceId         String     @map("workspace_id")
-  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt           DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
+  timezone            String  @default("UTC")
+  nextWorkOrderNumber Int     @default(1) @map("next_work_order_number")
   state               String?
-  accounts            accounts   @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "locations_accountId_accounts_id_fkey")
-  workspaces          workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "locations_workspaceId_workspaces_id_fkey")
-  orders              orders[]
+  currency            String? @default("amd")
 
-  @@index([workspaceId], map: "locations_workspace_idx")
-}
-
-model customers {
-  id          String     @id @default(uuid())
-  firstName   String     @default("") @map("first_name")
-  lastName    String?    @default("") @map("last_name")
-  companyName String?    @map("company_name")
-  email       String?    @unique
-  phone       String?    @unique
-  address     String?
-  notes       String?
-  accountId   String     @map("account_id")
-  workspaceId String     @map("workspace_id")
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
-  accounts    accounts   @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "customers_accountId_accounts_id_fkey")
-  workspaces  workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "customers_workspaceId_workspaces_id_fkey")
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String     @map("workspace_id")
+  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   orders      orders[]
-  vehicles    vehicles[]
 
-  @@index([workspaceId, email])
-  @@index([workspaceId, phone])
+  @@unique([workspaceId, name])
   @@index([workspaceId])
 }
 
+model customers {
+  id        String  @id @default(uuid())
+  firstName String  @default("") @map("first_name")
+  lastName  String? @default("") @map("last_name")
+  company   String?
+  email     String?
+  phone     String?
+  address   String?
+  notes     String?
+
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String     @map("workspace_id")
+  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orders      orders[]
+  vehicles    vehicles[]
+
+  @@unique([workspaceId, email])
+  @@unique([workspaceId, phone])
+  @@index([workspaceId])
+}
+
+model vehicles {
+  id           String  @id @default(uuid())
+  vin          String?
+  licensePlate String? @map("license_plate")
+  year         Int?
+  trim         String?
+  engine       String?
+  color        String?
+  odometer     Int?
+  notes        String?
+
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String         @map("workspace_id")
+  workspace   workspaces     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String         @map("customer_id")
+  customer    customers      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  makeId      String?        @map("make_id")
+  make        vehicleMakes?  @relation(fields: [makeId], references: [id], onDelete: NoAction)
+  modelId     String?        @map("model_id")
+  model       vehicleModels? @relation(fields: [modelId], references: [id], onDelete: NoAction)
+  orders      orders[]
+
+  @@index([customerId])
+  @@index([workspaceId, licensePlate])
+  @@index([workspaceId, vin])
+}
+
+model services {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  category          String?
+  defaultLaborHours Decimal? @map("default_labor_hours") @db.Decimal(6, 2)
+  isActive          Boolean  @default(true) @map("is_active")
+  price             Decimal  @default(0) @db.Decimal(10, 2)
+
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String       @map("workspace_id")
+  workspace   workspaces   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orderLines  orderLines[]
+
+  @@index([workspaceId, category], map: "services_workspace_idx")
+}
+
 model orders {
-  id             String           @id @default(uuid())
-  orderNumber    Int              @map("order_number")
-  status         WorkOrderStatus  @default(estimate)
-  totalAmount    Decimal          @default(0) @map("total_amount") @db.Decimal(10, 2)
-  totalTax       Decimal          @default(0) @map("total_tax") @db.Decimal(10, 2)
-  totalDiscount  Decimal          @default(0) @map("total_discount") @db.Decimal(10, 2)
-  accountId      String           @map("account_id")
-  workspaceId    String           @map("workspace_id")
-  customerId     String?          @map("customer_id")
-  vehicleId      String?          @map("vehicle_id")
-  locationId     String           @map("location_id")
-  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt      DateTime         @default(now()) @map("updated_at") @db.Timestamp(6)
-  name           String
-  customerNotes  String?          @map("customer_notes")
-  internalNotes  String?          @map("internal_notes")
-  startDate      DateTime?        @map("start_date") @db.Timestamp(6)
-  dueDate        DateTime?        @map("due_date") @db.Timestamp(6)
-  paymentTerms   String?          @map("payment_terms")
-  paymentStatus  String?          @map("payment_status")
-  tax            Decimal          @default(0) @db.Decimal(10, 2)
-  discount       Decimal          @default(0) @db.Decimal(10, 2)
-  discountType   DiscountType     @default(fixed) @map("discount_type")
-  totalPrice     Decimal          @default(0) @map("total_price") @db.Decimal(10, 2)
-  accounts       accounts         @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_accountId_accounts_id_fkey")
-  customers      customers?       @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "orders_customerId_customers_id_fkey")
-  locations      locations        @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_locationId_locations_id_fkey")
-  vehicles       vehicles?        @relation(fields: [vehicleId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "orders_vehicleId_vehicles_id_fkey")
-  workspaces     workspaces       @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_workspaceId_workspaces_id_fkey")
-  ordersParts    ordersParts[]
-  ordersServices ordersServices[]
+  id            String          @id @default(uuid())
+  orderNumber   Int             @map("order_number")
+  status        WorkOrderStatus @default(estimate)
+  name          String
+  customerNotes String?         @map("customer_notes")
+  internalNotes String?         @map("internal_notes")
+  startDate     DateTime?       @map("start_date") @db.Timestamp(6)
+  dueDate       DateTime?       @map("due_date") @db.Timestamp(6)
+  paymentTerms  String?         @map("payment_terms")
+  paymentStatus String?         @map("payment_status")
+  tax           Decimal         @default(0) @db.Decimal(10, 2)
+  taxType       DiscountType    @default(percentage) @map("tax_type")
+  discount      Decimal         @default(0) @db.Decimal(10, 2)
+  discountType  DiscountType    @default(percentage) @map("discount_type")
+  totalPrice    Decimal         @default(0) @map("total_price") @db.Decimal(10, 2)
+
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String         @map("workspace_id")
+  workspace   workspaces     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String         @map("customer_id")
+  customer    customers      @relation(fields: [customerId], references: [id], onDelete: NoAction)
+  locationId  String         @map("location_id")
+  location    locations      @relation(fields: [locationId], references: [id], onDelete: NoAction)
+  vehicleId   String         @map("vehicle_id")
+  vehicle     vehicles       @relation(fields: [vehicleId], references: [id], onDelete: NoAction)
+  stageId     String         @map("stage_id")
+  stage       pipelineStages @relation(fields: [stageId], references: [id], onDelete: NoAction)
+  orderLines  orderLines[]
 
   @@unique([locationId, orderNumber])
   @@index([customerId])
@@ -163,119 +225,114 @@ model orders {
   @@index([workspaceId])
 }
 
-model ordersParts {
-  id        String   @id @default(uuid())
-  orderId   String   @map("order_id")
-  partId    String   @map("part_id")
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
-  orders    orders   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_parts_orderId_orders_id_fkey")
-  parts     parts    @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_parts_partId_parts_id_fkey")
+enum OrderLineType {
+  labor
+  part
+  fee
 
-  @@unique([orderId, partId])
-  @@index([orderId])
-  @@index([partId])
-  @@map("orders_parts")
+  @@map("order_line_type")
 }
 
-model ordersServices {
-  id        String   @id @default(uuid())
-  orderId   String   @map("order_id")
-  serviceId String   @map("service_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
-  orders    orders   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_services_orderId_orders_id_fkey")
-  services  services @relation(fields: [serviceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_services_serviceId_services_id_fkey")
+model orderLines {
+  id   String        @id @default(uuid())
+  type OrderLineType // labor | part | fee
 
-  @@unique([orderId, serviceId])
+  name        String
+  sku         String?
+  category    String?
+  unit        String  @default("each")
+  quantity    Decimal @default(1) @db.Decimal(10, 2)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal @map("line_total") @db.Decimal(10, 2)
+  description String?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  orderId   String    @map("order_id")
+  order     orders    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partId    String?   @map("part_id")
+  part      parts?    @relation(fields: [partId], references: [id], onDelete: SetNull)
+  serviceId String?   @map("service_id")
+  service   services? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
   @@index([orderId])
+  @@index([partId])
   @@index([serviceId])
-  @@map("orders_services")
+}
+
+model pipelines {
+  id     String           @id @default(uuid())
+  name   String
+  active Boolean          @default(true)
+  stages pipelineStages[]
+  config Json?            @default("{}")
+
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String     @map("workspace_id")
+  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, name])
+  @@unique([workspaceId, active])
+}
+
+model pipelineStages {
+  id       String @id @default(uuid())
+  name     String
+  position Int
+
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  pipelineId String    @map("pipeline_id")
+  pipeline   pipelines @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  orders     orders[]
+
+  @@unique([pipelineId, position])
+  @@index([pipelineId])
+  @@map("pipeline_stages")
 }
 
 model parts {
-  id          String        @id @default(uuid())
+  id          String  @id @default(uuid())
   sku         String
   name        String
+  description String?
   brand       String?
-  costCents   Int           @default(0) @map("cost_cents")
-  priceCents  Int           @default(0) @map("price_cents")
-  stockQty    Int           @default(0) @map("stock_qty")
-  accountId   String        @map("account_id")
-  workspaceId String        @map("workspace_id")
-  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime      @default(now()) @map("updated_at") @db.Timestamp(6)
-  ordersParts ordersParts[]
-  accounts    accounts      @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "parts_accountId_accounts_id_fkey")
-  workspaces  workspaces    @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "parts_workspaceId_workspaces_id_fkey")
+  price       Decimal @default(0) @db.Decimal(10, 2)
+  quantity    Int     @default(0)
+  config      Json?   @default("{}")
 
-  @@unique([workspaceId, sku], map: "parts_ws_sku_unique")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String       @map("workspace_id")
+  workspace   workspaces   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orderLines  orderLines[]
+
+  @@unique([workspaceId, sku])
+  @@index([sku])
 }
 
-model services {
-  id                String           @id @default(uuid())
-  name              String
-  description       String?
-  category          String?
-  defaultLaborHours Decimal?         @map("default_labor_hours") @db.Decimal(6, 2)
-  defaultPriceCents Int              @default(0) @map("default_price_cents")
-  isActive          Boolean          @default(true) @map("is_active")
-  accountId         String           @map("account_id")
-  workspaceId       String           @map("workspace_id")
-  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime         @default(now()) @map("updated_at") @db.Timestamp(6)
-  price             Decimal          @default(0) @db.Decimal(10, 2)
-  ordersServices    ordersServices[]
-  accounts          accounts         @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "services_accountId_accounts_id_fkey")
-  workspaces        workspaces       @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "services_workspaceId_workspaces_id_fkey")
+model vehicleMakes {
+  id     String          @id @default(uuid())
+  name   String
+  models vehicleModels[]
 
-  @@index([workspaceId, category], map: "services_workspace_idx")
-}
-
-model vehicles {
-  id           String     @id @default(uuid())
-  customerId   String     @map("customer_id")
-  vin          String?
-  licensePlate String?    @map("license_plate")
-  year         Int?
-  make         String?
-  model        String?
-  trim         String?
-  engine       String?
-  color        String?
-  odometer     Int?
-  notes        String?
-  accountId    String     @map("account_id")
-  workspaceId  String     @map("workspace_id")
-  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt    DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
-  orders       orders[]
-  accounts     accounts   @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "vehicles_accountId_accounts_id_fkey")
-  customers    customers  @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "vehicles_customerId_customers_id_fkey")
-  workspaces   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "vehicles_workspaceId_workspaces_id_fkey")
-
-  @@index([customerId])
-  @@index([workspaceId, licensePlate])
-  @@index([workspaceId, vin])
-}
-
-model workspaces {
-  id        String      @id @default(uuid())
-  name      String      @default("Default Workspace")
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
-  accountId String?     @map("account_id")
-  customers customers[]
-  locations locations[]
-  notes     notes[]
-  orders    orders[]
-  parts     parts[]
-  services  services[]
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
   vehicles  vehicles[]
-  accounts  accounts?   @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workspaces_accountId_accounts_id_fkey")
+}
 
-  @@index([name])
+model vehicleModels {
+  id   String @id @default(uuid())
+  name String
+
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
+  makeId    String       @map("make_id")
+  make      vehicleMakes @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  vehicles  vehicles[]
+
+  @@index([makeId])
 }
 
 enum AccountRole {

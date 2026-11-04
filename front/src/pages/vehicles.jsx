@@ -167,6 +167,7 @@ function ThisEditComponent({
                     <Select
                         className="h-10"
                         label={t('Customer')}
+                        searchable={true}
                         value={getCustomerValue(data?.customerId)}
                         onChange={(e) => {
                             handleCustomerChange(e);

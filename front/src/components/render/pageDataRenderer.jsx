@@ -1,4 +1,5 @@
 import { dataSamples } from "@/data/samples";
+import KanbanBoard from "@/src/components/kanban/custom";
 import { ExpandableModal, PopupModal } from "@/src/components/modals";
 import { FilterComponent } from "@/src/components/render/filter";
 import { DangerButton, PrimaryButton } from "@/src/components/ui/buttons";
@@ -10,7 +11,7 @@ import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import _, { cloneDeep } from "lodash";
-import { FunnelIcon, GhostIcon, Grid2x2Icon, ListIcon, MapPinHouseIcon, PencilIcon, PencilLine, PhoneIcon, PlusIcon, RotateCcwIcon, Rows4Icon, SearchIcon, SquareCheckBigIcon, SquareCheckIcon, SquareIcon, TimerResetIcon, Trash2, Trash2Icon } from "lucide-react";
+import { FunnelIcon, GhostIcon, Grid2x2Icon, ListIcon, MapPinHouseIcon, PencilIcon, PencilLine, PhoneIcon, PlusIcon, RotateCcwIcon, Rows4Icon, SearchIcon, SquareCheckBigIcon, SquareCheckIcon, SquareIcon, SquareKanbanIcon, TimerResetIcon, Trash2, Trash2Icon } from "lucide-react";
 import { use } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -87,10 +88,11 @@ const defaultCardViewer = ({ columns = [], data, children }) => {
 export default function DataRenderer({
     itsFor,
     defaultDataViewType = 'table', // 'table' or 'card'
-    dataViewOptions = ['table', 'card'],
+    dataViewOptions = ['table', 'card'], //table, card, kanban
     editComponent: EditComponent = DefaultEditComponent,
     cardViewer: CardViewer = defaultCardViewer,
     columns = [],
+    pipeline = null, // pipelines and stages, specific var
 }) {
 
 
@@ -205,41 +207,53 @@ export default function DataRenderer({
     }, []);
 
 
-    const handleFormSubmit = async (e) => {
-        if (e && e?.preventDefault) {
-            e.preventDefault();
-        }
+    const handleFormSubmit = async (e, thisEditType = null) => {
+        e?.preventDefault?.();
 
-        // logger.info("handleFormSubmit _editItem", e);
-        // return
+        // logger.info("handleFormSubmit e: ", e);
 
         try {
-            const toSaveItem = e && typeof e === 'object' && e.target
-                ? Object.fromEntries(new FormData(e.target))
-                : _editItem;
+            const edt = thisEditType || _editType;
+            const isForm = e && e.target && e.target.tagName === 'FORM';
+            const toSaveItem = isForm
+                ? new FormData(e.target)
+                : e;
+
             _setLoading(true);
-            const action = _editType === 'new' ? 'create' : 'update';
-            // logger.info("handleFormSubmit toSaveItem", toSaveItem);
+            const action = edt === 'new' ? 'create' : 'update';
+            // logger.info("handleFormSubmit toSaveItem", action, toSaveItem);
+            // return
 
             const response = await sendBackRequest({
                 itsFor: itsFor,
                 action: action,
                 data: toSaveItem,
             });
-            logger.info("handleFormSubmit response", response);
+            // logger.info("handleFormSubmit response", response);
 
 
             if (response.success) {
                 notify({
                     type: 'success',
-                    message: _editType === 'new' ? t('Added successfully') : t('Updated successfully'),
+                    message: edt === 'new' ? t('Added successfully') : t('Updated successfully'),
                 });
 
-                // merage data
-                const newData = [..._data];
-                newData.push(Array.isArray(response.data) ? response.data[0] : response.data);
 
-                _setData(newData);
+                const incomingItems = Array.isArray(response.data) ? response.data : [response.data];
+                const getId = (item) => item?.id ?? item?.ID ?? item;
+                _setData((prev) => {
+                    let newItems = [...prev];
+                    if (edt === 'new') {
+                        newItems.unshift(...incomingItems);
+                    } else if (edt === 'update') {
+                        newItems = prev.map((item) => {
+                            const incomingItem = incomingItems.find(i => String(getId(i)) === String(getId(item)));
+                            return incomingItem ? incomingItem : item;
+                        });
+                    }
+                    return newItems;
+                });
+
                 dismissEditModal();
             } else {
                 logger.error("handleFormSubmit error", response.message || 'Error saving item');
@@ -259,8 +273,14 @@ export default function DataRenderer({
             _setLoading(false);
         }
     };
-
     const handleInputChange = (field, value) => {
+
+        if (field.includes('quantity')) {
+            value = value
+                ? Number(value) < 0 ? 0 : Number(value)
+                : 0;
+        }
+
         _setEditItem((prev) => ({
             ...prev,
             [field]: value,
@@ -348,7 +368,6 @@ export default function DataRenderer({
             });
         }
     };
-
     const handleSelectItem = (itemId) => {
         if (_selectedItems.includes(itemId)) {
             _setSelectedItems(_selectedItems.filter((id) => id !== itemId));
@@ -359,12 +378,10 @@ export default function DataRenderer({
     const clearSelectedItems = () => {
         _setSelectedItems([]);
     };
-
     const dismissEditModal = () => {
         _setEditItem(null);
         _setEditType('new');
     }
-
     const handleFilterChange = (filterKey, value) => {
         _setFilters((prev) => ({
             ...prev,
@@ -532,11 +549,11 @@ export default function DataRenderer({
 
             if (col.name === 'make') {
                 const makeObj = _vehicleMakes.find(m => m.id === v);
-                v = makeObj?.makeName || makeObj?.name || v;
+                v = makeObj?.name || makeObj?.name || v;
             }
             if (col.name === 'model') {
                 const modelObj = _vehicleModels.find(m => m.id === v);
-                v = modelObj?.modelName || modelObj?.name || v;
+                v = modelObj?.name || modelObj?.name || v;
             }
             // if (v === 0) {
             //     return 'n/a';
@@ -548,8 +565,46 @@ export default function DataRenderer({
         }
     };
 
+    const renderCellContent = (row, col, rowIndex, colIndex) => {
+        if (!col?.component) {
+            return getCellValue(row, col);
+        }
 
-    // inital fetch data
+        if (typeof col.component === 'function') {
+            const value = row?.[col.name];
+            return col.component({
+                value,
+                row,
+                col,
+                rowIndex,
+                colIndex,
+                text: getCellValue(row, col),
+            });
+        }
+
+        return col.component;
+    };
+
+
+    const handleKanbanMove = async ({ item, fromIndex, toIndex, fromColumnId, toColumnId }) => {
+        // logger.info("handleKanbanMove item", item);
+        // logger.info("handleKanbanMove fromIndex", fromIndex);
+        // logger.info("handleKanbanMove toIndex", toIndex);
+        // logger.info("handleKanbanMove fromColumnId", fromColumnId);
+        // logger.info("handleKanbanMove toColumnId", toColumnId);
+
+        let toSaveData = { ...item };
+        if (toColumnId) {
+            toSaveData = { ...item, stageId: toColumnId };
+        }
+        _setEditType('update');
+        setTimeout(() => {
+            handleFormSubmit(toSaveData, 'update');
+        }, 250);
+    };
+
+
+    // register keydown event for search input
     useEffect(() => {
         const handleFetchData = async (term) => {
             try {
@@ -661,10 +716,25 @@ export default function DataRenderer({
 
 
     // logger.info('_data', _data);
+    // logger.info('pipeline?.stages', pipeline?.stages);
     // logger.info('_deletingItems', _deletingItems);
 
     return (
-        <div className="w-full relative rounded-md">
+        <div className="w-full h-[calc(100vh-20%)] relative rounded-md">
+
+            {EditComponent && _editItem !== null && (
+                <EditComponent
+                    isOpen={_editItem !== null}
+                    isLoading={_loading}
+                    data={_editItem}
+                    pipeline={pipeline}
+                    editType={_editType}
+
+                    onClose={dismissEditModal}
+                    onInputChange={handleInputChange}
+                    onSubmit={handleFormSubmit}
+                />
+            )}
 
             {/* tooltip */}
             <div className="w-full py-3 gap-3 flex items-center justify-between">
@@ -692,6 +762,11 @@ export default function DataRenderer({
                             {dataViewOptions.includes('card') &&
                                 <button onClick={() => _setDataViewType('grid')} className={"p-1.5 w-10 flex justify-center rounded-r-md" + (_dataViewType === 'grid' ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}>
                                     <Grid2x2Icon className="size-5" />
+                                </button>
+                            }
+                            {dataViewOptions.includes('kanban') &&
+                                <button onClick={() => _setDataViewType('kanban')} className={"p-1.5 w-10 flex justify-center rounded-r-md" + (_dataViewType === 'kanban' ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}>
+                                    <SquareKanbanIcon className="size-5" />
                                 </button>
                             }
                         </div>
@@ -741,8 +816,7 @@ export default function DataRenderer({
                 </div>
             </div>
 
-            <div className="w-full relative rounded-md">
-                <LoaderShimmer isLoading={_loading} />
+            <div className="w-full h-full relative rounded-md">
                 {/* empty card */}
                 {_data && _data.length === 0 && (
                     <Card className="w-full flex flex-col items-center justify-center gap-3 py-10">
@@ -754,7 +828,8 @@ export default function DataRenderer({
 
                 {/* data table */}
                 {_data && _data.length > 0 && _dataViewType === 'table' && (
-                    <div className="w-full overflow-hidden">
+                    <div className="w-full overflow-hidden relative rounded-md">
+                        <LoaderShimmer isLoading={_loading} />
                         <div className="w-full max-h-[calc(100vh-225px)] overflow-auto bg-gray-50 rounded-t-md border border-gray-200">
                             {/* header */}
                             {columns.length > 0 && (
@@ -796,8 +871,6 @@ export default function DataRenderer({
                                                         <SquareCheckIcon className="size-5" />
                                                     </button>
                                                 }
-
-
                                                 <button
                                                     type="button"
                                                     title={t('Edit')}
@@ -826,7 +899,7 @@ export default function DataRenderer({
                                                         className="text-gray-600 flex-shrink-0 truncate overflow-hidden"
                                                         style={{ width: `${colWidth}px` }}
                                                     >
-                                                        {getCellValue(row, col)}
+                                                        {renderCellContent(row, col, rowIndex, colIndex)}
                                                     </div>
                                                 );
                                             })}
@@ -840,7 +913,8 @@ export default function DataRenderer({
                 )}
                 {/* card viewer */}
                 {_data && _data.length > 0 && _dataViewType === 'grid' && (
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="relative w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <LoaderShimmer isLoading={_loading} />
                         {_data.map((row, rowIndex) => (
                             <div key={rowIndex} className="w-full">
                                 <CardViewer columns={columns.map(c => c.name)} data={row} >
@@ -869,70 +943,82 @@ export default function DataRenderer({
                         ))}
                     </div>
                 )}
+                {/* kanban */}
+                {
+                    _data && _data.length > 0 && _dataViewType === 'kanban' && (
+                        <KanbanBoard
+                            className="w-full h-full"
+                            columns={pipeline?.stages || []}
+                            items={_data}
+                            renderCard={(item) => {
+                                return (
+                                    <CardViewer
+                                        columns={columns.map(c => c.name)}
+                                        data={item}
+
+                                        onEdit={(pItem) => handleEditRow(pItem || item)}
+                                        onClose={dismissEditModal}
+                                        onInputChange={handleInputChange}
+                                        onSubmit={handleFormSubmit}
+                                    />
+                                );
+                            }}
+                            onMove={handleKanbanMove}
+                        />
+                    )
+                }
 
                 {/* pagination */}
-                {_data && _data.length > 0 && (
-                    <div className={"w-full flex items-center rounded-b-md justify-between gap-3 px-3 py-2 bg-gray-50 border-t border-gray-200"}>
-                        <div className="text-gray-600">
-                            {t('Total')}: {_totalCount}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {(() => {
-                                const currentPage = getCurrentPageNumber();
-                                const totalPages = getTotalPages();
-                                const hasPrev = currentPage > 1;
-                                const hasNext = currentPage < totalPages;
+                {_data && _data.length > 0 && _dataViewType !== 'kanban' &&
+                    (
+                        <div className={"w-full flex items-center rounded-b-md justify-between gap-3 px-3 py-2 bg-gray-50 border-t border-gray-200"}>
+                            <div className="text-gray-600">
+                                {t('Total')}: {_totalCount}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {(() => {
+                                    const currentPage = getCurrentPageNumber();
+                                    const totalPages = getTotalPages();
+                                    const hasPrev = currentPage > 1;
+                                    const hasNext = currentPage < totalPages;
 
-                                return (
-                                    <>
-                                        <button
-                                            disabled={!hasPrev}
-                                            onClick={() => prevPage()}
-                                            className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {t('Prev')}
-                                        </button>
-                                        {
-                                            getVisiblePages().map((page) => (
-                                                <button
-                                                    key={page.pageNumber}
-                                                    onClick={() => {
-                                                        handlePageChange(page);
-                                                    }}
-                                                    className={"px-3 py-1 rounded-md border border-gray-300" + (_offset === page.offset ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}
-                                                >
-                                                    {page.pageNumber}
-                                                </button>
-                                            ))
-                                        }
-                                        <button
-                                            disabled={!hasNext}
-                                            onClick={() => nextPage()}
-                                            className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {t('Next')}
-                                        </button>
-                                    </>
-                                );
-                            })()}
+                                    return (
+                                        <>
+                                            <button
+                                                disabled={!hasPrev}
+                                                onClick={() => prevPage()}
+                                                className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {t('Prev')}
+                                            </button>
+                                            {
+                                                getVisiblePages().map((page) => (
+                                                    <button
+                                                        key={page.pageNumber}
+                                                        onClick={() => {
+                                                            handlePageChange(page);
+                                                        }}
+                                                        className={"px-3 py-1 rounded-md border border-gray-300" + (_offset === page.offset ? ' bg-[var(--primary)] text-[var(--primary-foreground)]' : '')}
+                                                    >
+                                                        {page.pageNumber}
+                                                    </button>
+                                                ))
+                                            }
+                                            <button
+                                                disabled={!hasNext}
+                                                onClick={() => nextPage()}
+                                                className="px-3 py-1 rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {t('Next')}
+                                            </button>
+                                        </>
+                                    );
+                                })()}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
             </div>
-
-
-
-            {EditComponent && _editItem !== null && (
-                <EditComponent
-                    isOpen={_editItem !== null}
-                    onClose={dismissEditModal}
-                    data={_editItem}
-
-                    editType={_editType}
-                    onInputChange={handleInputChange}
-                    onSubmit={handleFormSubmit}
-                />
-            )}
 
             {_deletingItems.length > 0 && (
                 <PopupModal

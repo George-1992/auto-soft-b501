@@ -17,7 +17,7 @@ export const Select = ({
     maxHeight = '200px',
     renderOption = null, // Custom render function for options
     renderValue = null,  // Custom render function for selected value
-    loading = false,
+    isLoading = false,
     loadingText = 'Loading...',
     noOptionsText = 'No options found',
     name = '',
@@ -114,6 +114,11 @@ export const Select = ({
     };
 
     const selectedOptions = getSelectedOptions();
+
+    // Value used only for native required validation on custom UI control
+    const requiredValidationValue = multiple
+        ? (Array.isArray(value) && value.length > 0 ? 'selected' : '')
+        : (selectedOptions ? 'selected' : '');
 
     // Handle option selection
     const handleSelectOption = (selectedOption) => {
@@ -242,8 +247,10 @@ export const Select = ({
 
     // Render selected value
     const renderSelectedValue = () => {
-        if (loading) {
-            return <span className="text-gray-500">{loadingText}</span>;
+        if (isLoading) {
+            return <div className="text-gray-500 ">
+                {loadingText}
+            </div>;
         }
 
         if (multiple && Array.isArray(value) && value.length > 0) {
@@ -310,11 +317,12 @@ export const Select = ({
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className={`
                     ${className}
-                    shadow-sm bg-white
+                    ${isLoading ? 'loading-shimmer' : ''}
+                    shadow-sm bg-[var(--input)]
                     rounded-md border border-gray-200 p-1 focus:none focus:ring-0 outline-0 focus:outline-none ]
                     flex items-center justify-between cursor-pointer
                     transition-all duration-200
-                    ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:scale-[0.98] '}
+                    ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:scale-[0.998] '}
                     ${error ? 'border-red-400 focus:outline-red-500' : ''}
                     ${isOpen ? 'border-[var(--ring)] outline-1 outline-offset-1 outline-[var(--ring)]' : ''}
                 `}
@@ -390,7 +398,7 @@ export const Select = ({
 
                         {/* Options list */}
                         <div className="overflow-y-auto slick-scrollbar" style={{ maxHeight: `calc(${maxHeight} - ${searchable ? '60px' : '0px'})` }}>
-                            {loading ? (
+                            {isLoading ? (
                                 <div className="px-3 py-2 text-gray-500 text-sm">
                                     {loadingText}
                                 </div>
@@ -470,6 +478,20 @@ export const Select = ({
                         type="hidden"
                         name={name}
                         value={multiple ? JSON.stringify(value || []) : (value || '')}
+                    />
+                )
+            }
+
+            {/* Native required validator for custom select */}
+            {
+                required && !disabled && (
+                    <input
+                        tabIndex={-1}
+                        value={requiredValidationValue}
+                        onChange={() => { }}
+                        required
+                        name={`__${name || id || 'select'}_required`}
+                        className="aaa w-[1px] h-[1px] absolute opacity-0 pointer-events-none"
                     />
                 )
             }

@@ -1,5 +1,6 @@
 import { clearAuthUnauthorized, setSessionCookie } from '#src/services/appRequest.js';
 import { createJwtToken, verifyJwtToken } from '#src/services/jwt.service.js';
+import { logger } from '#src/utils/logger.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 
@@ -10,8 +11,21 @@ const middleware = (req, res, next) => {
   const pathname = req.path || '';
   // console.log('>>>>>>>>>> token: ', token);
 
+  const requestUrl = req.originalUrl || req.url || '';
+  const referrer = req.get('Referrer') || req.get('Referer') || '';
+  const origin = req.get('Origin') || '';
+  const accessControlAllowOrigin = req.get('Access-Control-Allow-Origin') || '';
+  const requestHost = req.get('Host') || '';
+
+  // if (!origin.includes(requestHost)) {
+  //   logger.warn('middleware: Origin does not match request host, skipping auth check', {
+  //     origin,
+  //     requestHost,
+  //   });
+  // }
 
   const itsFor = req.body?.itsFor || req.query?.itsFor || '';
+  // console.log('>>>>>>>>>> itsFor: ', itsFor);
   if (allowList.includes(itsFor) || allowListPaths.includes(pathname)) {
     // logger.info('middleware: itsFor is in allowList, skipping auth check');
     return next();
