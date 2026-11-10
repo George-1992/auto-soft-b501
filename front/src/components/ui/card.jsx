@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 export default function Card({ children, className = '', isLoading = false, ...props }) {
     return (
-        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white p-5 ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
+        <div className={`rounded-md border-[1px] border-gray-400/60 bg-white p-4 ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
             {children}
         </div>
     );
@@ -41,13 +41,13 @@ export function ExpandableCard({
     };
 
     return (
-        <div className={`rounded-md border-[1.5px] border-gray-200 bg-white ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
+        <div className={`rounded-md border-[1px] border-gray-400/60 bg-white ${className} ${isLoading ? 'loading-shimmer' : ''}`} {...props}>
             <button
                 type="button"
                 onClick={handleToggle}
                 disabled={disabled}
                 aria-expanded={isExpanded}
-                className={`w-full flex items-center justify-between gap-3 p-2 text-left border-b border-gray-200 disabled:opacity-60 disabled:cursor-not-allowed ${headerClassName}`}
+                className={`w-full flex items-center justify-between gap-3 p-2 text-left border-b border-gray-200 disabled:opacity-60 disabled:cursor-not-allowed rounded-t-md ${headerClassName}`}
             >
                 <div className="font-semibold text-gray-900 flex items-center gap-2">
                     {icon && icon}

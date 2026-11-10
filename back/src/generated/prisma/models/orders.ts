@@ -378,6 +378,7 @@ export type ordersWhereInput = {
   vehicle?: Prisma.XOR<Prisma.VehiclesScalarRelationFilter, Prisma.vehiclesWhereInput>
   stage?: Prisma.XOR<Prisma.PipelineStagesScalarRelationFilter, Prisma.pipelineStagesWhereInput>
   orderLines?: Prisma.OrderLinesListRelationFilter
+  appointments?: Prisma.AppointmentsListRelationFilter
 }
 
 export type ordersOrderByWithRelationInput = {
@@ -410,6 +411,7 @@ export type ordersOrderByWithRelationInput = {
   vehicle?: Prisma.vehiclesOrderByWithRelationInput
   stage?: Prisma.pipelineStagesOrderByWithRelationInput
   orderLines?: Prisma.orderLinesOrderByRelationAggregateInput
+  appointments?: Prisma.appointmentsOrderByRelationAggregateInput
 }
 
 export type ordersWhereUniqueInput = Prisma.AtLeast<{
@@ -446,6 +448,7 @@ export type ordersWhereUniqueInput = Prisma.AtLeast<{
   vehicle?: Prisma.XOR<Prisma.VehiclesScalarRelationFilter, Prisma.vehiclesWhereInput>
   stage?: Prisma.XOR<Prisma.PipelineStagesScalarRelationFilter, Prisma.pipelineStagesWhereInput>
   orderLines?: Prisma.OrderLinesListRelationFilter
+  appointments?: Prisma.AppointmentsListRelationFilter
 }, "id" | "locationId_orderNumber">
 
 export type ordersOrderByWithAggregationInput = {
@@ -533,6 +536,7 @@ export type ordersCreateInput = {
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateInput = {
@@ -560,6 +564,7 @@ export type ordersUncheckedCreateInput = {
   vehicleId: string
   stageId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUpdateInput = {
@@ -587,6 +592,7 @@ export type ordersUpdateInput = {
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateInput = {
@@ -614,6 +620,7 @@ export type ordersUncheckedUpdateInput = {
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersCreateManyInput = {
@@ -794,6 +801,11 @@ export type ordersSumOrderByAggregateInput = {
   tax?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+}
+
+export type OrdersNullableScalarRelationFilter = {
+  is?: Prisma.ordersWhereInput | null
+  isNot?: Prisma.ordersWhereInput | null
 }
 
 export type OrdersScalarRelationFilter = {
@@ -981,6 +993,22 @@ export type EnumDiscountTypeFieldUpdateOperationsInput = {
   set?: $Enums.DiscountType
 }
 
+export type ordersCreateNestedOneWithoutAppointmentsInput = {
+  create?: Prisma.XOR<Prisma.ordersCreateWithoutAppointmentsInput, Prisma.ordersUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.ordersCreateOrConnectWithoutAppointmentsInput
+  connect?: Prisma.ordersWhereUniqueInput
+}
+
+export type ordersUpdateOneWithoutAppointmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ordersCreateWithoutAppointmentsInput, Prisma.ordersUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.ordersCreateOrConnectWithoutAppointmentsInput
+  upsert?: Prisma.ordersUpsertWithoutAppointmentsInput
+  disconnect?: Prisma.ordersWhereInput | boolean
+  delete?: Prisma.ordersWhereInput | boolean
+  connect?: Prisma.ordersWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ordersUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.ordersUpdateWithoutAppointmentsInput>, Prisma.ordersUncheckedUpdateWithoutAppointmentsInput>
+}
+
 export type ordersCreateNestedOneWithoutOrderLinesInput = {
   create?: Prisma.XOR<Prisma.ordersCreateWithoutOrderLinesInput, Prisma.ordersUncheckedCreateWithoutOrderLinesInput>
   connectOrCreate?: Prisma.ordersCreateOrConnectWithoutOrderLinesInput
@@ -1061,6 +1089,7 @@ export type ordersCreateWithoutWorkspaceInput = {
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutWorkspaceInput = {
@@ -1087,6 +1116,7 @@ export type ordersUncheckedCreateWithoutWorkspaceInput = {
   vehicleId: string
   stageId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutWorkspaceInput = {
@@ -1168,6 +1198,7 @@ export type ordersCreateWithoutLocationInput = {
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutLocationInput = {
@@ -1194,6 +1225,7 @@ export type ordersUncheckedCreateWithoutLocationInput = {
   vehicleId: string
   stageId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutLocationInput = {
@@ -1246,6 +1278,7 @@ export type ordersCreateWithoutCustomerInput = {
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutCustomerInput = {
@@ -1272,6 +1305,7 @@ export type ordersUncheckedCreateWithoutCustomerInput = {
   vehicleId: string
   stageId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutCustomerInput = {
@@ -1324,6 +1358,7 @@ export type ordersCreateWithoutVehicleInput = {
   location: Prisma.locationsCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutVehicleInput = {
@@ -1350,6 +1385,7 @@ export type ordersUncheckedCreateWithoutVehicleInput = {
   locationId: string
   stageId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutVehicleInput = {
@@ -1378,6 +1414,130 @@ export type ordersUpdateManyWithWhereWithoutVehicleInput = {
   data: Prisma.XOR<Prisma.ordersUpdateManyMutationInput, Prisma.ordersUncheckedUpdateManyWithoutVehicleInput>
 }
 
+export type ordersCreateWithoutAppointmentsInput = {
+  id?: string
+  orderNumber: number
+  status?: $Enums.WorkOrderStatus
+  name: string
+  customerNotes?: string | null
+  internalNotes?: string | null
+  startDate?: Date | string | null
+  dueDate?: Date | string | null
+  paymentTerms?: string | null
+  paymentStatus?: string | null
+  tax?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxType?: $Enums.DiscountType
+  discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.DiscountType
+  totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace: Prisma.workspacesCreateNestedOneWithoutOrdersInput
+  customer: Prisma.customersCreateNestedOneWithoutOrdersInput
+  location: Prisma.locationsCreateNestedOneWithoutOrdersInput
+  vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
+  stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
+  orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+}
+
+export type ordersUncheckedCreateWithoutAppointmentsInput = {
+  id?: string
+  orderNumber: number
+  status?: $Enums.WorkOrderStatus
+  name: string
+  customerNotes?: string | null
+  internalNotes?: string | null
+  startDate?: Date | string | null
+  dueDate?: Date | string | null
+  paymentTerms?: string | null
+  paymentStatus?: string | null
+  tax?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxType?: $Enums.DiscountType
+  discount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.DiscountType
+  totalPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspaceId: string
+  customerId: string
+  locationId: string
+  vehicleId: string
+  stageId: string
+  orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type ordersCreateOrConnectWithoutAppointmentsInput = {
+  where: Prisma.ordersWhereUniqueInput
+  create: Prisma.XOR<Prisma.ordersCreateWithoutAppointmentsInput, Prisma.ordersUncheckedCreateWithoutAppointmentsInput>
+}
+
+export type ordersUpsertWithoutAppointmentsInput = {
+  update: Prisma.XOR<Prisma.ordersUpdateWithoutAppointmentsInput, Prisma.ordersUncheckedUpdateWithoutAppointmentsInput>
+  create: Prisma.XOR<Prisma.ordersCreateWithoutAppointmentsInput, Prisma.ordersUncheckedCreateWithoutAppointmentsInput>
+  where?: Prisma.ordersWhereInput
+}
+
+export type ordersUpdateToOneWithWhereWithoutAppointmentsInput = {
+  where?: Prisma.ordersWhereInput
+  data: Prisma.XOR<Prisma.ordersUpdateWithoutAppointmentsInput, Prisma.ordersUncheckedUpdateWithoutAppointmentsInput>
+}
+
+export type ordersUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumWorkOrderStatusFieldUpdateOperationsInput | $Enums.WorkOrderStatus
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  customerNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tax?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
+  discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
+  totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.workspacesUpdateOneRequiredWithoutOrdersNestedInput
+  customer?: Prisma.customersUpdateOneRequiredWithoutOrdersNestedInput
+  location?: Prisma.locationsUpdateOneRequiredWithoutOrdersNestedInput
+  vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
+  stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
+  orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+}
+
+export type ordersUncheckedUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumWorkOrderStatusFieldUpdateOperationsInput | $Enums.WorkOrderStatus
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  customerNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tax?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
+  discount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
+  totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  stageColPosition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  locationId?: Prisma.StringFieldUpdateOperationsInput | string
+  vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
+  stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+}
+
 export type ordersCreateWithoutOrderLinesInput = {
   id?: string
   orderNumber: number
@@ -1402,6 +1562,7 @@ export type ordersCreateWithoutOrderLinesInput = {
   location: Prisma.locationsCreateNestedOneWithoutOrdersInput
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   stage: Prisma.pipelineStagesCreateNestedOneWithoutOrdersInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutOrderLinesInput = {
@@ -1428,6 +1589,7 @@ export type ordersUncheckedCreateWithoutOrderLinesInput = {
   locationId: string
   vehicleId: string
   stageId: string
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutOrderLinesInput = {
@@ -1470,6 +1632,7 @@ export type ordersUpdateWithoutOrderLinesInput = {
   location?: Prisma.locationsUpdateOneRequiredWithoutOrdersNestedInput
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutOrderLinesInput = {
@@ -1496,6 +1659,7 @@ export type ordersUncheckedUpdateWithoutOrderLinesInput = {
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersCreateWithoutStageInput = {
@@ -1522,6 +1686,7 @@ export type ordersCreateWithoutStageInput = {
   location: Prisma.locationsCreateNestedOneWithoutOrdersInput
   vehicle: Prisma.vehiclesCreateNestedOneWithoutOrdersInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutOrderInput
 }
 
 export type ordersUncheckedCreateWithoutStageInput = {
@@ -1548,6 +1713,7 @@ export type ordersUncheckedCreateWithoutStageInput = {
   locationId: string
   vehicleId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutOrderInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type ordersCreateOrConnectWithoutStageInput = {
@@ -1625,6 +1791,7 @@ export type ordersUpdateWithoutWorkspaceInput = {
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutWorkspaceInput = {
@@ -1651,6 +1818,7 @@ export type ordersUncheckedUpdateWithoutWorkspaceInput = {
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -1727,6 +1895,7 @@ export type ordersUpdateWithoutLocationInput = {
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutLocationInput = {
@@ -1753,6 +1922,7 @@ export type ordersUncheckedUpdateWithoutLocationInput = {
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateManyWithoutLocationInput = {
@@ -1829,6 +1999,7 @@ export type ordersUpdateWithoutCustomerInput = {
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutCustomerInput = {
@@ -1855,6 +2026,7 @@ export type ordersUncheckedUpdateWithoutCustomerInput = {
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateManyWithoutCustomerInput = {
@@ -1931,6 +2103,7 @@ export type ordersUpdateWithoutVehicleInput = {
   location?: Prisma.locationsUpdateOneRequiredWithoutOrdersNestedInput
   stage?: Prisma.pipelineStagesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutVehicleInput = {
@@ -1957,6 +2130,7 @@ export type ordersUncheckedUpdateWithoutVehicleInput = {
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateManyWithoutVehicleInput = {
@@ -2033,6 +2207,7 @@ export type ordersUpdateWithoutStageInput = {
   location?: Prisma.locationsUpdateOneRequiredWithoutOrdersNestedInput
   vehicle?: Prisma.vehiclesUpdateOneRequiredWithoutOrdersNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateWithoutStageInput = {
@@ -2059,6 +2234,7 @@ export type ordersUncheckedUpdateWithoutStageInput = {
   locationId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutOrderNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type ordersUncheckedUpdateManyWithoutStageInput = {
@@ -2093,10 +2269,12 @@ export type ordersUncheckedUpdateManyWithoutStageInput = {
 
 export type OrdersCountOutputType = {
   orderLines: number
+  appointments: number
 }
 
 export type OrdersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orderLines?: boolean | OrdersCountOutputTypeCountOrderLinesArgs
+  appointments?: boolean | OrdersCountOutputTypeCountAppointmentsArgs
 }
 
 /**
@@ -2114,6 +2292,13 @@ export type OrdersCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
  */
 export type OrdersCountOutputTypeCountOrderLinesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.orderLinesWhereInput
+}
+
+/**
+ * OrdersCountOutputType without action
+ */
+export type OrdersCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.appointmentsWhereInput
 }
 
 
@@ -2147,6 +2332,7 @@ export type ordersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   vehicle?: boolean | Prisma.vehiclesDefaultArgs<ExtArgs>
   stage?: boolean | Prisma.pipelineStagesDefaultArgs<ExtArgs>
   orderLines?: boolean | Prisma.orders$orderLinesArgs<ExtArgs>
+  appointments?: boolean | Prisma.orders$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrdersCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orders"]>
 
@@ -2246,6 +2432,7 @@ export type ordersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   vehicle?: boolean | Prisma.vehiclesDefaultArgs<ExtArgs>
   stage?: boolean | Prisma.pipelineStagesDefaultArgs<ExtArgs>
   orderLines?: boolean | Prisma.orders$orderLinesArgs<ExtArgs>
+  appointments?: boolean | Prisma.orders$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrdersCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ordersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2272,6 +2459,7 @@ export type $ordersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     vehicle: Prisma.$vehiclesPayload<ExtArgs>
     stage: Prisma.$pipelineStagesPayload<ExtArgs>
     orderLines: Prisma.$orderLinesPayload<ExtArgs>[]
+    appointments: Prisma.$appointmentsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2697,6 +2885,7 @@ export interface Prisma__ordersClient<T, Null = never, ExtArgs extends runtime.T
   vehicle<T extends Prisma.vehiclesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.vehiclesDefaultArgs<ExtArgs>>): Prisma.Prisma__vehiclesClient<runtime.Types.Result.GetResult<Prisma.$vehiclesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   stage<T extends Prisma.pipelineStagesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.pipelineStagesDefaultArgs<ExtArgs>>): Prisma.Prisma__pipelineStagesClient<runtime.Types.Result.GetResult<Prisma.$pipelineStagesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   orderLines<T extends Prisma.orders$orderLinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.orders$orderLinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$orderLinesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  appointments<T extends Prisma.orders$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.orders$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$appointmentsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3171,6 +3360,30 @@ export type orders$orderLinesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.OrderLinesScalarFieldEnum | Prisma.OrderLinesScalarFieldEnum[]
+}
+
+/**
+ * orders.appointments
+ */
+export type orders$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the appointments
+   */
+  select?: Prisma.appointmentsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the appointments
+   */
+  omit?: Prisma.appointmentsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.appointmentsInclude<ExtArgs> | null
+  where?: Prisma.appointmentsWhereInput
+  orderBy?: Prisma.appointmentsOrderByWithRelationInput | Prisma.appointmentsOrderByWithRelationInput[]
+  cursor?: Prisma.appointmentsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AppointmentsScalarFieldEnum | Prisma.AppointmentsScalarFieldEnum[]
 }
 
 /**

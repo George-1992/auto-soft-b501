@@ -407,12 +407,14 @@ export const ModelName = {
   vehicles: 'vehicles',
   services: 'services',
   orders: 'orders',
+  appointments: 'appointments',
   orderLines: 'orderLines',
   pipelines: 'pipelines',
   pipelineStages: 'pipelineStages',
   parts: 'parts',
   vehicleMakes: 'vehicleMakes',
-  vehicleModels: 'vehicleModels'
+  vehicleModels: 'vehicleModels',
+  vehicleVariants: 'vehicleVariants'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -428,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "accounts" | "users" | "usersAndAccounts" | "workspaces" | "notes" | "locations" | "customers" | "vehicles" | "services" | "orders" | "orderLines" | "pipelines" | "pipelineStages" | "parts" | "vehicleMakes" | "vehicleModels"
+    modelProps: "accounts" | "users" | "usersAndAccounts" | "workspaces" | "notes" | "locations" | "customers" | "vehicles" | "services" | "orders" | "appointments" | "orderLines" | "pipelines" | "pipelineStages" | "parts" | "vehicleMakes" | "vehicleModels" | "vehicleVariants"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1172,6 +1174,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    appointments: {
+      payload: Prisma.$appointmentsPayload<ExtArgs>
+      fields: Prisma.appointmentsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.appointmentsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.appointmentsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        findFirst: {
+          args: Prisma.appointmentsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.appointmentsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        findMany: {
+          args: Prisma.appointmentsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>[]
+        }
+        create: {
+          args: Prisma.appointmentsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        createMany: {
+          args: Prisma.appointmentsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.appointmentsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>[]
+        }
+        delete: {
+          args: Prisma.appointmentsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        update: {
+          args: Prisma.appointmentsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        deleteMany: {
+          args: Prisma.appointmentsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.appointmentsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.appointmentsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>[]
+        }
+        upsert: {
+          args: Prisma.appointmentsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$appointmentsPayload>
+        }
+        aggregate: {
+          args: Prisma.AppointmentsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAppointments>
+        }
+        groupBy: {
+          args: Prisma.appointmentsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppointmentsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.appointmentsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppointmentsCountAggregateOutputType> | number
+        }
+      }
+    }
     orderLines: {
       payload: Prisma.$orderLinesPayload<ExtArgs>
       fields: Prisma.orderLinesFieldRefs
@@ -1616,6 +1692,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    vehicleVariants: {
+      payload: Prisma.$vehicleVariantsPayload<ExtArgs>
+      fields: Prisma.vehicleVariantsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.vehicleVariantsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.vehicleVariantsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        findFirst: {
+          args: Prisma.vehicleVariantsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.vehicleVariantsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        findMany: {
+          args: Prisma.vehicleVariantsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>[]
+        }
+        create: {
+          args: Prisma.vehicleVariantsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        createMany: {
+          args: Prisma.vehicleVariantsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.vehicleVariantsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>[]
+        }
+        delete: {
+          args: Prisma.vehicleVariantsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        update: {
+          args: Prisma.vehicleVariantsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        deleteMany: {
+          args: Prisma.vehicleVariantsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.vehicleVariantsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.vehicleVariantsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>[]
+        }
+        upsert: {
+          args: Prisma.vehicleVariantsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$vehicleVariantsPayload>
+        }
+        aggregate: {
+          args: Prisma.VehicleVariantsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVehicleVariants>
+        }
+        groupBy: {
+          args: Prisma.vehicleVariantsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VehicleVariantsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.vehicleVariantsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VehicleVariantsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1822,6 +1972,22 @@ export const OrdersScalarFieldEnum = {
 export type OrdersScalarFieldEnum = (typeof OrdersScalarFieldEnum)[keyof typeof OrdersScalarFieldEnum]
 
 
+export const AppointmentsScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  workspaceId: 'workspaceId',
+  orderId: 'orderId',
+  customerId: 'customerId'
+} as const
+
+export type AppointmentsScalarFieldEnum = (typeof AppointmentsScalarFieldEnum)[keyof typeof AppointmentsScalarFieldEnum]
+
+
 export const OrderLinesScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -1870,13 +2036,15 @@ export type PipelineStagesScalarFieldEnum = (typeof PipelineStagesScalarFieldEnu
 
 export const PartsScalarFieldEnum = {
   id: 'id',
+  status: 'status',
   sku: 'sku',
   name: 'name',
   description: 'description',
   brand: 'brand',
+  purchasePrice: 'purchasePrice',
   price: 'price',
   quantity: 'quantity',
-  config: 'config',
+  partNumbers: 'partNumbers',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   workspaceId: 'workspaceId'
@@ -1904,6 +2072,37 @@ export const VehicleModelsScalarFieldEnum = {
 } as const
 
 export type VehicleModelsScalarFieldEnum = (typeof VehicleModelsScalarFieldEnum)[keyof typeof VehicleModelsScalarFieldEnum]
+
+
+export const VehicleVariantsScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  externalId: 'externalId',
+  kType: 'kType',
+  generation: 'generation',
+  aliases: 'aliases',
+  trim: 'trim',
+  yearFrom: 'yearFrom',
+  yearTo: 'yearTo',
+  bodyType: 'bodyType',
+  doors: 'doors',
+  fuelType: 'fuelType',
+  engineCode: 'engineCode',
+  displacement: 'displacement',
+  displacementL: 'displacementL',
+  powerKw: 'powerKw',
+  powerHp: 'powerHp',
+  cylinders: 'cylinders',
+  valves: 'valves',
+  aspiration: 'aspiration',
+  transmission: 'transmission',
+  driveType: 'driveType',
+  steeringSide: 'steeringSide',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleVariantsScalarFieldEnum = (typeof VehicleVariantsScalarFieldEnum)[keyof typeof VehicleVariantsScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2101,6 +2300,20 @@ export type ListEnumDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'AppointmentStatus'
+ */
+export type EnumAppointmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AppointmentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AppointmentStatus[]'
+ */
+export type ListEnumAppointmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AppointmentStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'OrderLineType'
  */
 export type EnumOrderLineTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderLineType'>
@@ -2115,6 +2328,48 @@ export type ListEnumOrderLineTypeFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'PartStatus'
+ */
+export type EnumPartStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PartStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PartStatus[]'
+ */
+export type ListEnumPartStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PartStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BodyType'
+ */
+export type EnumBodyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BodyType'>
+    
+
+
+/**
+ * Reference to a field of type 'BodyType[]'
+ */
+export type ListEnumBodyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BodyType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FuelType'
+ */
+export type EnumFuelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FuelType'>
+    
+
+
+/**
+ * Reference to a field of type 'FuelType[]'
+ */
+export type ListEnumFuelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FuelType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2125,6 +2380,62 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Aspiration'
+ */
+export type EnumAspirationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Aspiration'>
+    
+
+
+/**
+ * Reference to a field of type 'Aspiration[]'
+ */
+export type ListEnumAspirationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Aspiration[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Transmission'
+ */
+export type EnumTransmissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Transmission'>
+    
+
+
+/**
+ * Reference to a field of type 'Transmission[]'
+ */
+export type ListEnumTransmissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Transmission[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DriveType'
+ */
+export type EnumDriveTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DriveType'>
+    
+
+
+/**
+ * Reference to a field of type 'DriveType[]'
+ */
+export type ListEnumDriveTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DriveType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SteeringSide'
+ */
+export type EnumSteeringSideFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SteeringSide'>
+    
+
+
+/**
+ * Reference to a field of type 'SteeringSide[]'
+ */
+export type ListEnumSteeringSideFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SteeringSide[]'>
     
 
 /**
@@ -2288,12 +2599,14 @@ export type GlobalOmitConfig = {
   vehicles?: Prisma.vehiclesOmit
   services?: Prisma.servicesOmit
   orders?: Prisma.ordersOmit
+  appointments?: Prisma.appointmentsOmit
   orderLines?: Prisma.orderLinesOmit
   pipelines?: Prisma.pipelinesOmit
   pipelineStages?: Prisma.pipelineStagesOmit
   parts?: Prisma.partsOmit
   vehicleMakes?: Prisma.vehicleMakesOmit
   vehicleModels?: Prisma.vehicleModelsOmit
+  vehicleVariants?: Prisma.vehicleVariantsOmit
 }
 
 /* Types for Logging */

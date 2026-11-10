@@ -27,21 +27,25 @@ export type AggregateParts = {
 }
 
 export type PartsAvgAggregateOutputType = {
+  purchasePrice: runtime.Decimal | null
   price: runtime.Decimal | null
   quantity: number | null
 }
 
 export type PartsSumAggregateOutputType = {
+  purchasePrice: runtime.Decimal | null
   price: runtime.Decimal | null
   quantity: number | null
 }
 
 export type PartsMinAggregateOutputType = {
   id: string | null
+  status: $Enums.PartStatus | null
   sku: string | null
   name: string | null
   description: string | null
   brand: string | null
+  purchasePrice: runtime.Decimal | null
   price: runtime.Decimal | null
   quantity: number | null
   createdAt: Date | null
@@ -51,10 +55,12 @@ export type PartsMinAggregateOutputType = {
 
 export type PartsMaxAggregateOutputType = {
   id: string | null
+  status: $Enums.PartStatus | null
   sku: string | null
   name: string | null
   description: string | null
   brand: string | null
+  purchasePrice: runtime.Decimal | null
   price: runtime.Decimal | null
   quantity: number | null
   createdAt: Date | null
@@ -64,13 +70,15 @@ export type PartsMaxAggregateOutputType = {
 
 export type PartsCountAggregateOutputType = {
   id: number
+  status: number
   sku: number
   name: number
   description: number
   brand: number
+  purchasePrice: number
   price: number
   quantity: number
-  config: number
+  partNumbers: number
   createdAt: number
   updatedAt: number
   workspaceId: number
@@ -79,21 +87,25 @@ export type PartsCountAggregateOutputType = {
 
 
 export type PartsAvgAggregateInputType = {
+  purchasePrice?: true
   price?: true
   quantity?: true
 }
 
 export type PartsSumAggregateInputType = {
+  purchasePrice?: true
   price?: true
   quantity?: true
 }
 
 export type PartsMinAggregateInputType = {
   id?: true
+  status?: true
   sku?: true
   name?: true
   description?: true
   brand?: true
+  purchasePrice?: true
   price?: true
   quantity?: true
   createdAt?: true
@@ -103,10 +115,12 @@ export type PartsMinAggregateInputType = {
 
 export type PartsMaxAggregateInputType = {
   id?: true
+  status?: true
   sku?: true
   name?: true
   description?: true
   brand?: true
+  purchasePrice?: true
   price?: true
   quantity?: true
   createdAt?: true
@@ -116,13 +130,15 @@ export type PartsMaxAggregateInputType = {
 
 export type PartsCountAggregateInputType = {
   id?: true
+  status?: true
   sku?: true
   name?: true
   description?: true
   brand?: true
+  purchasePrice?: true
   price?: true
   quantity?: true
-  config?: true
+  partNumbers?: true
   createdAt?: true
   updatedAt?: true
   workspaceId?: true
@@ -217,13 +233,15 @@ export type partsGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 
 export type PartsGroupByOutputType = {
   id: string
+  status: $Enums.PartStatus
   sku: string
   name: string
   description: string | null
   brand: string | null
+  purchasePrice: runtime.Decimal
   price: runtime.Decimal
   quantity: number
-  config: runtime.JsonValue | null
+  partNumbers: string[]
   createdAt: Date
   updatedAt: Date
   workspaceId: string
@@ -254,65 +272,76 @@ export type partsWhereInput = {
   OR?: Prisma.partsWhereInput[]
   NOT?: Prisma.partsWhereInput | Prisma.partsWhereInput[]
   id?: Prisma.StringFilter<"parts"> | string
+  status?: Prisma.EnumPartStatusFilter<"parts"> | $Enums.PartStatus
   sku?: Prisma.StringFilter<"parts"> | string
   name?: Prisma.StringFilter<"parts"> | string
   description?: Prisma.StringNullableFilter<"parts"> | string | null
   brand?: Prisma.StringNullableFilter<"parts"> | string | null
+  purchasePrice?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFilter<"parts"> | number
-  config?: Prisma.JsonNullableFilter<"parts">
+  partNumbers?: Prisma.StringNullableListFilter<"parts">
   createdAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   workspaceId?: Prisma.StringFilter<"parts"> | string
   workspace?: Prisma.XOR<Prisma.WorkspacesScalarRelationFilter, Prisma.workspacesWhereInput>
   orderLines?: Prisma.OrderLinesListRelationFilter
+  locations?: Prisma.LocationsListRelationFilter
 }
 
 export type partsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
-  config?: Prisma.SortOrderInput | Prisma.SortOrder
+  partNumbers?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   workspace?: Prisma.workspacesOrderByWithRelationInput
   orderLines?: Prisma.orderLinesOrderByRelationAggregateInput
+  locations?: Prisma.locationsOrderByRelationAggregateInput
 }
 
 export type partsWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  sku?: string
   workspaceId_sku?: Prisma.partsWorkspaceIdSkuCompoundUniqueInput
   AND?: Prisma.partsWhereInput | Prisma.partsWhereInput[]
   OR?: Prisma.partsWhereInput[]
   NOT?: Prisma.partsWhereInput | Prisma.partsWhereInput[]
-  sku?: Prisma.StringFilter<"parts"> | string
+  status?: Prisma.EnumPartStatusFilter<"parts"> | $Enums.PartStatus
   name?: Prisma.StringFilter<"parts"> | string
   description?: Prisma.StringNullableFilter<"parts"> | string | null
   brand?: Prisma.StringNullableFilter<"parts"> | string | null
+  purchasePrice?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFilter<"parts"> | number
-  config?: Prisma.JsonNullableFilter<"parts">
+  partNumbers?: Prisma.StringNullableListFilter<"parts">
   createdAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   workspaceId?: Prisma.StringFilter<"parts"> | string
   workspace?: Prisma.XOR<Prisma.WorkspacesScalarRelationFilter, Prisma.workspacesWhereInput>
   orderLines?: Prisma.OrderLinesListRelationFilter
-}, "id" | "workspaceId_sku">
+  locations?: Prisma.LocationsListRelationFilter
+}, "id" | "sku" | "workspaceId_sku">
 
 export type partsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
-  config?: Prisma.SortOrderInput | Prisma.SortOrder
+  partNumbers?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
@@ -328,13 +357,15 @@ export type partsScalarWhereWithAggregatesInput = {
   OR?: Prisma.partsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.partsScalarWhereWithAggregatesInput | Prisma.partsScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"parts"> | string
+  status?: Prisma.EnumPartStatusWithAggregatesFilter<"parts"> | $Enums.PartStatus
   sku?: Prisma.StringWithAggregatesFilter<"parts"> | string
   name?: Prisma.StringWithAggregatesFilter<"parts"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"parts"> | string | null
   brand?: Prisma.StringNullableWithAggregatesFilter<"parts"> | string | null
+  purchasePrice?: Prisma.DecimalWithAggregatesFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalWithAggregatesFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntWithAggregatesFilter<"parts"> | number
-  config?: Prisma.JsonNullableWithAggregatesFilter<"parts">
+  partNumbers?: Prisma.StringNullableListFilter<"parts">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"parts"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"parts"> | Date | string
   workspaceId?: Prisma.StringWithAggregatesFilter<"parts"> | string
@@ -342,73 +373,87 @@ export type partsScalarWhereWithAggregatesInput = {
 
 export type partsCreateInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutPartsInput
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutPartInput
+  locations?: Prisma.locationsCreateNestedManyWithoutPartsInput
 }
 
 export type partsUncheckedCreateInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutPartInput
+  locations?: Prisma.locationsUncheckedCreateNestedManyWithoutPartsInput
 }
 
 export type partsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutPartsNestedInput
   orderLines?: Prisma.orderLinesUpdateManyWithoutPartNestedInput
+  locations?: Prisma.locationsUpdateManyWithoutPartsNestedInput
 }
 
 export type partsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutPartNestedInput
+  locations?: Prisma.locationsUncheckedUpdateManyWithoutPartsNestedInput
 }
 
 export type partsCreateManyInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
@@ -416,26 +461,30 @@ export type partsCreateManyInput = {
 
 export type partsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type partsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -456,6 +505,14 @@ export type PartsNullableScalarRelationFilter = {
   isNot?: Prisma.partsWhereInput | null
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type partsWorkspaceIdSkuCompoundUniqueInput = {
   workspaceId: string
   sku: string
@@ -463,29 +520,34 @@ export type partsWorkspaceIdSkuCompoundUniqueInput = {
 
 export type partsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   brand?: Prisma.SortOrder
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
-  config?: Prisma.SortOrder
+  partNumbers?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
 }
 
 export type partsAvgOrderByAggregateInput = {
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
 }
 
 export type partsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   brand?: Prisma.SortOrder
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -495,10 +557,12 @@ export type partsMaxOrderByAggregateInput = {
 
 export type partsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   brand?: Prisma.SortOrder
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -507,6 +571,7 @@ export type partsMinOrderByAggregateInput = {
 }
 
 export type partsSumOrderByAggregateInput = {
+  purchasePrice?: Prisma.SortOrder
   price?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
 }
@@ -553,6 +618,44 @@ export type partsUncheckedUpdateManyWithoutWorkspaceNestedInput = {
   deleteMany?: Prisma.partsScalarWhereInput | Prisma.partsScalarWhereInput[]
 }
 
+export type partsCreateNestedManyWithoutLocationsInput = {
+  create?: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput> | Prisma.partsCreateWithoutLocationsInput[] | Prisma.partsUncheckedCreateWithoutLocationsInput[]
+  connectOrCreate?: Prisma.partsCreateOrConnectWithoutLocationsInput | Prisma.partsCreateOrConnectWithoutLocationsInput[]
+  connect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+}
+
+export type partsUncheckedCreateNestedManyWithoutLocationsInput = {
+  create?: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput> | Prisma.partsCreateWithoutLocationsInput[] | Prisma.partsUncheckedCreateWithoutLocationsInput[]
+  connectOrCreate?: Prisma.partsCreateOrConnectWithoutLocationsInput | Prisma.partsCreateOrConnectWithoutLocationsInput[]
+  connect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+}
+
+export type partsUpdateManyWithoutLocationsNestedInput = {
+  create?: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput> | Prisma.partsCreateWithoutLocationsInput[] | Prisma.partsUncheckedCreateWithoutLocationsInput[]
+  connectOrCreate?: Prisma.partsCreateOrConnectWithoutLocationsInput | Prisma.partsCreateOrConnectWithoutLocationsInput[]
+  upsert?: Prisma.partsUpsertWithWhereUniqueWithoutLocationsInput | Prisma.partsUpsertWithWhereUniqueWithoutLocationsInput[]
+  set?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  disconnect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  delete?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  connect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  update?: Prisma.partsUpdateWithWhereUniqueWithoutLocationsInput | Prisma.partsUpdateWithWhereUniqueWithoutLocationsInput[]
+  updateMany?: Prisma.partsUpdateManyWithWhereWithoutLocationsInput | Prisma.partsUpdateManyWithWhereWithoutLocationsInput[]
+  deleteMany?: Prisma.partsScalarWhereInput | Prisma.partsScalarWhereInput[]
+}
+
+export type partsUncheckedUpdateManyWithoutLocationsNestedInput = {
+  create?: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput> | Prisma.partsCreateWithoutLocationsInput[] | Prisma.partsUncheckedCreateWithoutLocationsInput[]
+  connectOrCreate?: Prisma.partsCreateOrConnectWithoutLocationsInput | Prisma.partsCreateOrConnectWithoutLocationsInput[]
+  upsert?: Prisma.partsUpsertWithWhereUniqueWithoutLocationsInput | Prisma.partsUpsertWithWhereUniqueWithoutLocationsInput[]
+  set?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  disconnect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  delete?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  connect?: Prisma.partsWhereUniqueInput | Prisma.partsWhereUniqueInput[]
+  update?: Prisma.partsUpdateWithWhereUniqueWithoutLocationsInput | Prisma.partsUpdateWithWhereUniqueWithoutLocationsInput[]
+  updateMany?: Prisma.partsUpdateManyWithWhereWithoutLocationsInput | Prisma.partsUpdateManyWithWhereWithoutLocationsInput[]
+  deleteMany?: Prisma.partsScalarWhereInput | Prisma.partsScalarWhereInput[]
+}
+
 export type partsCreateNestedOneWithoutOrderLinesInput = {
   create?: Prisma.XOR<Prisma.partsCreateWithoutOrderLinesInput, Prisma.partsUncheckedCreateWithoutOrderLinesInput>
   connectOrCreate?: Prisma.partsCreateOrConnectWithoutOrderLinesInput
@@ -569,32 +672,51 @@ export type partsUpdateOneWithoutOrderLinesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.partsUpdateToOneWithWhereWithoutOrderLinesInput, Prisma.partsUpdateWithoutOrderLinesInput>, Prisma.partsUncheckedUpdateWithoutOrderLinesInput>
 }
 
+export type partsCreatepartNumbersInput = {
+  set: string[]
+}
+
+export type EnumPartStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PartStatus
+}
+
+export type partsUpdatepartNumbersInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
 export type partsCreateWithoutWorkspaceInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   orderLines?: Prisma.orderLinesCreateNestedManyWithoutPartInput
+  locations?: Prisma.locationsCreateNestedManyWithoutPartsInput
 }
 
 export type partsUncheckedCreateWithoutWorkspaceInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutPartInput
+  locations?: Prisma.locationsUncheckedCreateNestedManyWithoutPartsInput
 }
 
 export type partsCreateOrConnectWithoutWorkspaceInput = {
@@ -628,44 +750,107 @@ export type partsScalarWhereInput = {
   OR?: Prisma.partsScalarWhereInput[]
   NOT?: Prisma.partsScalarWhereInput | Prisma.partsScalarWhereInput[]
   id?: Prisma.StringFilter<"parts"> | string
+  status?: Prisma.EnumPartStatusFilter<"parts"> | $Enums.PartStatus
   sku?: Prisma.StringFilter<"parts"> | string
   name?: Prisma.StringFilter<"parts"> | string
   description?: Prisma.StringNullableFilter<"parts"> | string | null
   brand?: Prisma.StringNullableFilter<"parts"> | string | null
+  purchasePrice?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFilter<"parts"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFilter<"parts"> | number
-  config?: Prisma.JsonNullableFilter<"parts">
+  partNumbers?: Prisma.StringNullableListFilter<"parts">
   createdAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"parts"> | Date | string
   workspaceId?: Prisma.StringFilter<"parts"> | string
 }
 
-export type partsCreateWithoutOrderLinesInput = {
+export type partsCreateWithoutLocationsInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutPartsInput
+  orderLines?: Prisma.orderLinesCreateNestedManyWithoutPartInput
+}
+
+export type partsUncheckedCreateWithoutLocationsInput = {
+  id?: string
+  status?: $Enums.PartStatus
+  sku?: string
+  name: string
+  description?: string | null
+  brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  price?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  quantity?: number
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspaceId: string
+  orderLines?: Prisma.orderLinesUncheckedCreateNestedManyWithoutPartInput
+}
+
+export type partsCreateOrConnectWithoutLocationsInput = {
+  where: Prisma.partsWhereUniqueInput
+  create: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput>
+}
+
+export type partsUpsertWithWhereUniqueWithoutLocationsInput = {
+  where: Prisma.partsWhereUniqueInput
+  update: Prisma.XOR<Prisma.partsUpdateWithoutLocationsInput, Prisma.partsUncheckedUpdateWithoutLocationsInput>
+  create: Prisma.XOR<Prisma.partsCreateWithoutLocationsInput, Prisma.partsUncheckedCreateWithoutLocationsInput>
+}
+
+export type partsUpdateWithWhereUniqueWithoutLocationsInput = {
+  where: Prisma.partsWhereUniqueInput
+  data: Prisma.XOR<Prisma.partsUpdateWithoutLocationsInput, Prisma.partsUncheckedUpdateWithoutLocationsInput>
+}
+
+export type partsUpdateManyWithWhereWithoutLocationsInput = {
+  where: Prisma.partsScalarWhereInput
+  data: Prisma.XOR<Prisma.partsUpdateManyMutationInput, Prisma.partsUncheckedUpdateManyWithoutLocationsInput>
+}
+
+export type partsCreateWithoutOrderLinesInput = {
+  id?: string
+  status?: $Enums.PartStatus
+  sku?: string
+  name: string
+  description?: string | null
+  brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  price?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  quantity?: number
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace: Prisma.workspacesCreateNestedOneWithoutPartsInput
+  locations?: Prisma.locationsCreateNestedManyWithoutPartsInput
 }
 
 export type partsUncheckedCreateWithoutOrderLinesInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
+  locations?: Prisma.locationsUncheckedCreateNestedManyWithoutPartsInput
 }
 
 export type partsCreateOrConnectWithoutOrderLinesInput = {
@@ -686,84 +871,150 @@ export type partsUpdateToOneWithWhereWithoutOrderLinesInput = {
 
 export type partsUpdateWithoutOrderLinesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutPartsNestedInput
+  locations?: Prisma.locationsUpdateManyWithoutPartsNestedInput
 }
 
 export type partsUncheckedUpdateWithoutOrderLinesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  locations?: Prisma.locationsUncheckedUpdateManyWithoutPartsNestedInput
 }
 
 export type partsCreateManyWorkspaceInput = {
   id?: string
-  sku: string
+  status?: $Enums.PartStatus
+  sku?: string
   name: string
   description?: string | null
   brand?: string | null
+  purchasePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsCreatepartNumbersInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type partsUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderLines?: Prisma.orderLinesUpdateManyWithoutPartNestedInput
+  locations?: Prisma.locationsUpdateManyWithoutPartsNestedInput
 }
 
 export type partsUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutPartNestedInput
+  locations?: Prisma.locationsUncheckedUpdateManyWithoutPartsNestedInput
 }
 
 export type partsUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type partsUpdateWithoutLocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
+  sku?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.workspacesUpdateOneRequiredWithoutPartsNestedInput
+  orderLines?: Prisma.orderLinesUpdateManyWithoutPartNestedInput
+}
+
+export type partsUncheckedUpdateWithoutLocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
+  sku?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderLines?: Prisma.orderLinesUncheckedUpdateManyWithoutPartNestedInput
+}
+
+export type partsUncheckedUpdateManyWithoutLocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPartStatusFieldUpdateOperationsInput | $Enums.PartStatus
+  sku?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchasePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  partNumbers?: Prisma.partsUpdatepartNumbersInput | string[]
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -773,10 +1024,12 @@ export type partsUncheckedUpdateManyWithoutWorkspaceInput = {
 
 export type PartsCountOutputType = {
   orderLines: number
+  locations: number
 }
 
 export type PartsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orderLines?: boolean | PartsCountOutputTypeCountOrderLinesArgs
+  locations?: boolean | PartsCountOutputTypeCountLocationsArgs
 }
 
 /**
@@ -796,33 +1049,45 @@ export type PartsCountOutputTypeCountOrderLinesArgs<ExtArgs extends runtime.Type
   where?: Prisma.orderLinesWhereInput
 }
 
+/**
+ * PartsCountOutputType without action
+ */
+export type PartsCountOutputTypeCountLocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.locationsWhereInput
+}
+
 
 export type partsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  status?: boolean
   sku?: boolean
   name?: boolean
   description?: boolean
   brand?: boolean
+  purchasePrice?: boolean
   price?: boolean
   quantity?: boolean
-  config?: boolean
+  partNumbers?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
   workspace?: boolean | Prisma.workspacesDefaultArgs<ExtArgs>
   orderLines?: boolean | Prisma.parts$orderLinesArgs<ExtArgs>
+  locations?: boolean | Prisma.parts$locationsArgs<ExtArgs>
   _count?: boolean | Prisma.PartsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["parts"]>
 
 export type partsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  status?: boolean
   sku?: boolean
   name?: boolean
   description?: boolean
   brand?: boolean
+  purchasePrice?: boolean
   price?: boolean
   quantity?: boolean
-  config?: boolean
+  partNumbers?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -831,13 +1096,15 @@ export type partsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 
 export type partsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  status?: boolean
   sku?: boolean
   name?: boolean
   description?: boolean
   brand?: boolean
+  purchasePrice?: boolean
   price?: boolean
   quantity?: boolean
-  config?: boolean
+  partNumbers?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
@@ -846,22 +1113,25 @@ export type partsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 
 export type partsSelectScalar = {
   id?: boolean
+  status?: boolean
   sku?: boolean
   name?: boolean
   description?: boolean
   brand?: boolean
+  purchasePrice?: boolean
   price?: boolean
   quantity?: boolean
-  config?: boolean
+  partNumbers?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspaceId?: boolean
 }
 
-export type partsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sku" | "name" | "description" | "brand" | "price" | "quantity" | "config" | "createdAt" | "updatedAt" | "workspaceId", ExtArgs["result"]["parts"]>
+export type partsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "sku" | "name" | "description" | "brand" | "purchasePrice" | "price" | "quantity" | "partNumbers" | "createdAt" | "updatedAt" | "workspaceId", ExtArgs["result"]["parts"]>
 export type partsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.workspacesDefaultArgs<ExtArgs>
   orderLines?: boolean | Prisma.parts$orderLinesArgs<ExtArgs>
+  locations?: boolean | Prisma.parts$locationsArgs<ExtArgs>
   _count?: boolean | Prisma.PartsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type partsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -876,16 +1146,19 @@ export type $partsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     workspace: Prisma.$workspacesPayload<ExtArgs>
     orderLines: Prisma.$orderLinesPayload<ExtArgs>[]
+    locations: Prisma.$locationsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    status: $Enums.PartStatus
     sku: string
     name: string
     description: string | null
     brand: string | null
+    purchasePrice: runtime.Decimal
     price: runtime.Decimal
     quantity: number
-    config: runtime.JsonValue | null
+    partNumbers: string[]
     createdAt: Date
     updatedAt: Date
     workspaceId: string
@@ -1285,6 +1558,7 @@ export interface Prisma__partsClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workspace<T extends Prisma.workspacesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspacesDefaultArgs<ExtArgs>>): Prisma.Prisma__workspacesClient<runtime.Types.Result.GetResult<Prisma.$workspacesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   orderLines<T extends Prisma.parts$orderLinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.parts$orderLinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$orderLinesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  locations<T extends Prisma.parts$locationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.parts$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1315,13 +1589,15 @@ export interface Prisma__partsClient<T, Null = never, ExtArgs extends runtime.Ty
  */
 export interface partsFieldRefs {
   readonly id: Prisma.FieldRef<"parts", 'String'>
+  readonly status: Prisma.FieldRef<"parts", 'PartStatus'>
   readonly sku: Prisma.FieldRef<"parts", 'String'>
   readonly name: Prisma.FieldRef<"parts", 'String'>
   readonly description: Prisma.FieldRef<"parts", 'String'>
   readonly brand: Prisma.FieldRef<"parts", 'String'>
+  readonly purchasePrice: Prisma.FieldRef<"parts", 'Decimal'>
   readonly price: Prisma.FieldRef<"parts", 'Decimal'>
   readonly quantity: Prisma.FieldRef<"parts", 'Int'>
-  readonly config: Prisma.FieldRef<"parts", 'Json'>
+  readonly partNumbers: Prisma.FieldRef<"parts", 'String[]'>
   readonly createdAt: Prisma.FieldRef<"parts", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"parts", 'DateTime'>
   readonly workspaceId: Prisma.FieldRef<"parts", 'String'>
@@ -1747,6 +2023,30 @@ export type parts$orderLinesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.OrderLinesScalarFieldEnum | Prisma.OrderLinesScalarFieldEnum[]
+}
+
+/**
+ * parts.locations
+ */
+export type parts$locationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the locations
+   */
+  select?: Prisma.locationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the locations
+   */
+  omit?: Prisma.locationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.locationsInclude<ExtArgs> | null
+  where?: Prisma.locationsWhereInput
+  orderBy?: Prisma.locationsOrderByWithRelationInput | Prisma.locationsOrderByWithRelationInput[]
+  cursor?: Prisma.locationsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LocationsScalarFieldEnum | Prisma.LocationsScalarFieldEnum[]
 }
 
 /**

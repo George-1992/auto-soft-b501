@@ -217,7 +217,7 @@ export default function DataRenderer({
         }
         return false;
     };
-    const handleFormSubmit = async (e, thisEditType = 'new', showLoading = true) => {
+    const handleFormSubmit = async (e, thisEditType = '', showLoading = true) => {
         e?.preventDefault?.();
 
         // logger.info("handleFormSubmit e: ", e);
@@ -231,6 +231,8 @@ export default function DataRenderer({
 
             if (showLoading) _setLoading(true);
             const action = edt === 'new' ? 'create' : 'update';
+            // logger.info("handleFormSubmit edt",edt);
+            // logger.info("handleFormSubmit _editType",_editType);
             // logger.info("handleFormSubmit toSaveItem", action, toSaveItem);
             // return
 
@@ -368,7 +370,7 @@ export default function DataRenderer({
     const handleAddNew = async () => {
         try {
             // const nd = clearObjectValues(cloneDeep(sampleData));
-            // logger.info("handleAddNew nd", nd);
+            // logger.info("handleAddNew nd");
             _setEditType('new');
             _setEditItem({});
 
@@ -632,7 +634,7 @@ export default function DataRenderer({
 
         _setEditType('update');
         setTimeout(() => {
-            handleFormSubmit(toSaveData, 'update', false);
+            handleFormSubmit(toSaveData, 'update');
         }, 250);
     };
 
@@ -799,7 +801,7 @@ export default function DataRenderer({
             )}
 
             {/* tooltip */}
-            <div className="w-full py-3 gap-3 flex items-center justify-between">
+            <div className="w-full py-2 gap-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-full md:w-60 relative rounded-md">
                         <Input
@@ -893,7 +895,7 @@ export default function DataRenderer({
 
                 {/* data table */}
                 {_data && _data.length > 0 && _dataViewType === 'table' && (
-                    <div className="w-full overflow-hidden relative rounded-md">
+                    <div className="w-full overflow-hidden relative rounded-t-md">
                         <LoaderShimmer isLoading={_loading} />
                         <div className="w-full max-h-[calc(100vh-225px)] overflow-auto bg-gray-50 rounded-t-md border border-gray-200">
                             {/* header */}

@@ -136,8 +136,8 @@ export default function KanbanBoard({
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
                                         className={`${colClassName} p-1 shrink-0 w-80 h-full rounded-md transition flex flex-col ${snapshot.isDraggingOver
-                                            ? 'border-blue-500 bg-slate-50'
-                                            : 'border-gray-200 bg-slate-50'
+                                            ? 'border-blue-500 bg-gray-200'
+                                            : 'border-gray-200 bg-gray-100'
                                             }`}
                                     >
                                         {/* Column Header */}

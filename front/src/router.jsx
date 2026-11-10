@@ -8,7 +8,7 @@ import { createBrowserRouter, Outlet, redirect, RouterProvider } from 'react-rou
 import Header from '@/src/components/nav/header.jsx';
 import Sidebar from '@/src/components/nav/sidebar.jsx';
 import { setMetas } from '@/src/services/metas';
-import { BotIcon, BoxesIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, RouteIcon, ShellIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
+import { BotIcon, BoxesIcon, CalendarDaysIcon, CalendarIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, RouteIcon, ShellIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
 import ToasterSonnar from '@/src/components/ui/sonnar/sonnar';
 import Profile from '@/src/pages/profile';
 import Settings from '@/src/pages/settings';
@@ -22,6 +22,7 @@ import NotesPage from '@/src/pages/notes';
 import OrdersPage from '@/src/pages/orders';
 import PipelinesPage from '@/src/pages/pipelines';
 import InventoryPage from '@/src/pages/parts';
+import AppointmentsPage from '@/src/pages/appointments';
 
 // const AUTH_PATHS = GLOBALS.AUTH_PATHS || [];
 // const authRes = await auth();
@@ -79,10 +80,36 @@ const sidebarItems = [
         subItems: []
     },
     {
-        name: 'Orders',
-        icon: (props) => <WrenchIcon {...props} />,
-        path: '/orders',
-        subItems: []
+        name: 'Services',
+        icon: (props) => <ToolboxIcon {...props} />,
+        path: '/services',
+        expanded: false,
+        subItems: [
+            {
+                name: 'Orders',
+                icon: (props) => <WrenchIcon {...props} />,
+                path: '/services/orders',
+                subItems: []
+            },
+            {
+                name: 'Appointments',
+                icon: (props) => <CalendarDaysIcon {...props} />,
+                path: '/services/appointments',
+                subItems: []
+            },
+            {
+                name: 'Services',
+                icon: (props) => <ToolboxIcon {...props} />,
+                path: '/services/services',
+                subItems: []
+            },
+            {
+                name: 'Pipelines',
+                icon: (props) => <RouteIcon {...props} />,
+                path: '/services/pipelines',
+                subItems: []
+            },
+        ]
     },
     {
         name: 'Locations',
@@ -100,18 +127,6 @@ const sidebarItems = [
         name: 'Vehicles',
         icon: (props) => <CarFrontIcon {...props} />,
         path: '/vehicles',
-        subItems: []
-    },
-    {
-        name: 'Services',
-        icon: (props) => <ToolboxIcon {...props} />,
-        path: '/services',
-        subItems: []
-    },
-    {
-        name: 'Pipelines',
-        icon: (props) => <RouteIcon {...props} />,
-        path: '/pipelines',
         subItems: []
     },
     {
@@ -163,7 +178,7 @@ const router = createBrowserRouter([
                     <div className='shrink-0'>
                         <Header items={[]} />
                     </div>
-                    <div className='min-h-0 flex-1 w-full px-3 pb-3 overflow-auto'>
+                    <div className='min-h-0 flex-1 w-full px-3 py-5 pb-10 overflow-auto'>
                         <Outlet />
                         {/* <div className='h-10 md:h-20'></div> */}
                     </div>
@@ -179,10 +194,13 @@ const router = createBrowserRouter([
             { path: 'locations', element: <LocationsPage /> },
             { path: 'customers', element: <CustomersPage /> },
             { path: 'vehicles', element: <VehiclesPage /> },
-            { path: 'services', element: <ServicesPage /> },
-            { path: 'orders', element: <OrdersPage /> },
-            { path: 'pipelines', element: <PipelinesPage /> },
             { path: 'inventory', element: <InventoryPage /> },
+
+            { path: '/services/orders', element: <OrdersPage /> },
+            { path: '/services/appointments', element: <AppointmentsPage /> },
+            { path: '/services/services', element: <ServicesPage /> },
+            { path: '/services/pipelines', element: <PipelinesPage /> },
+
 
             { path: 'test', element: <Test /> },
             { path: 'test-2/:id', element: <Test2 /> },

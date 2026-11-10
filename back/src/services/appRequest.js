@@ -7,6 +7,7 @@ import makesAndModels from '../../data/vehicleMakes.json' with { type: 'json' };
 import Prisma from '#src/db/prisma/index.js';
 import { nanoid } from 'nanoid';
 import { TestFunc } from '#src/services/test.js';
+import { getRandomSku, getRandomString } from '#src/services/other.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -1836,6 +1837,8 @@ export const handleAppRequest = async (req, res) => {
             } else if (action === 'create') {
                 const itemsWithIds = addIdsToItems(items).map((item) => ({
                     ...item,
+                    sku: item.sku ?? getRandomSku(),
+                    purchasePrice: Number(item.purchasePrice ?? 0),
                     price: Number(item.price ?? 0),
                     quantity: Number(item.quantity ?? 0),
                 }));
@@ -1906,6 +1909,90 @@ export const handleAppRequest = async (req, res) => {
                 resObj.status = 'success';
             }
 
+        } else if (itsFor === 'appointments') {
+            const ids = getIdsFromData(items);
+            if (action === 'get') {
+                const parsedOrderNumber = Number(searchQuery);
+                const whereClause = {
+                    workspaceId: workspace.id,
+                    ...(ids.length ? { id: { in: ids } } : {}),
+                    ...(searchQuery ? {
+                        OR: [
+                            { notes: { contains: searchQuery, mode: 'insensitive' } },
+                            { customer: { firstName: { contains: searchQuery, mode: 'insensitive' } } },
+                            { customer: { lastName: { contains: searchQuery, mode: 'insensitive' } } },
+                            { order: { name: { contains: searchQuery, mode: 'insensitive' } } },
+                            ...(Number.isFinite(parsedOrderNumber) ? [{ order: { orderNumber: parsedOrderNumber } }] : []),
+                        ],
+                    } : {}),
+                    ...(filters.length ? filtersToPrismaWhere(filters) : {}),
+                };
+
+                const [result, totalCount] = await Promise.all([
+                    Prisma.appointments.findMany({
+                        where: whereClause,
+                        include: include,
+                        orderBy: [{ startTime: 'asc' }, { createdAt: 'desc' }],
+                        take: limit,
+                        skip: offset,
+                    }),
+                    Prisma.appointments.count({ where: whereClause }),
+                ]);
+
+                resObj.success = true;
+                resObj.message = 'Appointments retrieved successfully';
+                resObj.data = result;
+                resObj.totalCount = totalCount;
+                resObj.status = 'success';
+            } else if (action === 'create') {
+                const itemsWithIds = addIdsToItems(items);
+                const result = await Prisma.$transaction(
+                    itemsWithIds.map(item => Prisma.appointments.create({
+                        data: item,
+                        include: include,
+                    }))
+                );
+
+                resObj.success = true;
+                resObj.message = 'Appointment created successfully';
+                resObj.data = result;
+                resObj.status = 'success';
+            } else if (action === 'update') {
+                const result = await Prisma.$transaction(
+                    items.map(({ id, ...updateData }) =>
+                        Prisma.appointments.update({
+                            where: { id, workspaceId: workspace.id },
+                            data: updateData,
+                            include: include,
+                        })
+                    )
+                );
+
+                resObj.success = true;
+                resObj.message = 'Appointment updated successfully';
+                resObj.data = result;
+                resObj.status = 'success';
+            } else if (action === 'delete') {
+                const result = await Prisma.appointments.deleteMany({
+                    where: {
+                        id: { in: items.map((item) => item.id) },
+                        workspaceId: workspace.id,
+                    },
+                });
+
+                if (result.count === 0) {
+                    resObj.success = false;
+                    resObj.message = 'No appointments found to delete';
+                    resObj.data = null;
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                }
+
+                resObj.success = true;
+                resObj.message = 'Appointment deleted successfully';
+                resObj.data = result;
+                resObj.status = 'success';
+            }
         }
         else if (itsFor === 'test2') {
             return await TestFunc({ req, res });
@@ -1978,17 +2065,6 @@ export const clearAuthSuccess = (res) => {
         data: null,
     });
 };
-
-
-const randomString = (length) => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-};
 const dummyCustomersCreation = async ({ count, workspaceId }) => {
     try {
         const dummyCustomers = [];
@@ -2016,4 +2092,4 @@ const dummyCustomersCreation = async ({ count, workspaceId }) => {
     } catch (error) {
         logger.error('dummyCustomersCreation error:', error);
     }
-}
+};

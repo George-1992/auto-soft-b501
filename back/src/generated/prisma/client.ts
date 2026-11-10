@@ -92,6 +92,11 @@ export type services = Prisma.servicesModel
  */
 export type orders = Prisma.ordersModel
 /**
+ * Model appointments
+ * 
+ */
+export type appointments = Prisma.appointmentsModel
+/**
  * Model orderLines
  * 
  */
@@ -121,3 +126,8 @@ export type vehicleMakes = Prisma.vehicleMakesModel
  * 
  */
 export type vehicleModels = Prisma.vehicleModelsModel
+/**
+ * Model vehicleVariants
+ * 
+ */
+export type vehicleVariants = Prisma.vehicleVariantsModel

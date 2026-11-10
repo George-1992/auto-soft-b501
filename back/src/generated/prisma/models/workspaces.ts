@@ -191,6 +191,7 @@ export type workspacesWhereInput = {
   vehicles?: Prisma.VehiclesListRelationFilter
   locations?: Prisma.LocationsListRelationFilter
   pipelines?: Prisma.PipelinesListRelationFilter
+  appointments?: Prisma.AppointmentsListRelationFilter
 }
 
 export type workspacesOrderByWithRelationInput = {
@@ -208,6 +209,7 @@ export type workspacesOrderByWithRelationInput = {
   vehicles?: Prisma.vehiclesOrderByRelationAggregateInput
   locations?: Prisma.locationsOrderByRelationAggregateInput
   pipelines?: Prisma.pipelinesOrderByRelationAggregateInput
+  appointments?: Prisma.appointmentsOrderByRelationAggregateInput
 }
 
 export type workspacesWhereUniqueInput = Prisma.AtLeast<{
@@ -228,6 +230,7 @@ export type workspacesWhereUniqueInput = Prisma.AtLeast<{
   vehicles?: Prisma.VehiclesListRelationFilter
   locations?: Prisma.LocationsListRelationFilter
   pipelines?: Prisma.PipelinesListRelationFilter
+  appointments?: Prisma.AppointmentsListRelationFilter
 }, "id">
 
 export type workspacesOrderByWithAggregationInput = {
@@ -266,6 +269,7 @@ export type workspacesCreateInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateInput = {
@@ -282,6 +286,7 @@ export type workspacesUncheckedCreateInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUpdateInput = {
@@ -298,6 +303,7 @@ export type workspacesUpdateInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateInput = {
@@ -314,6 +320,7 @@ export type workspacesUncheckedUpdateInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateManyInput = {
@@ -504,6 +511,20 @@ export type workspacesUpdateOneRequiredWithoutOrdersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.workspacesUpdateToOneWithWhereWithoutOrdersInput, Prisma.workspacesUpdateWithoutOrdersInput>, Prisma.workspacesUncheckedUpdateWithoutOrdersInput>
 }
 
+export type workspacesCreateNestedOneWithoutAppointmentsInput = {
+  create?: Prisma.XOR<Prisma.workspacesCreateWithoutAppointmentsInput, Prisma.workspacesUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.workspacesCreateOrConnectWithoutAppointmentsInput
+  connect?: Prisma.workspacesWhereUniqueInput
+}
+
+export type workspacesUpdateOneRequiredWithoutAppointmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.workspacesCreateWithoutAppointmentsInput, Prisma.workspacesUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.workspacesCreateOrConnectWithoutAppointmentsInput
+  upsert?: Prisma.workspacesUpsertWithoutAppointmentsInput
+  connect?: Prisma.workspacesWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.workspacesUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.workspacesUpdateWithoutAppointmentsInput>, Prisma.workspacesUncheckedUpdateWithoutAppointmentsInput>
+}
+
 export type workspacesCreateNestedOneWithoutPipelinesInput = {
   create?: Prisma.XOR<Prisma.workspacesCreateWithoutPipelinesInput, Prisma.workspacesUncheckedCreateWithoutPipelinesInput>
   connectOrCreate?: Prisma.workspacesCreateOrConnectWithoutPipelinesInput
@@ -545,6 +566,7 @@ export type workspacesCreateWithoutAccountInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutAccountInput = {
@@ -560,6 +582,7 @@ export type workspacesUncheckedCreateWithoutAccountInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutAccountInput = {
@@ -612,6 +635,7 @@ export type workspacesCreateWithoutNotesInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutNotesInput = {
@@ -627,6 +651,7 @@ export type workspacesUncheckedCreateWithoutNotesInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutNotesInput = {
@@ -658,6 +683,7 @@ export type workspacesUpdateWithoutNotesInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutNotesInput = {
@@ -673,6 +699,7 @@ export type workspacesUncheckedUpdateWithoutNotesInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutLocationsInput = {
@@ -688,6 +715,7 @@ export type workspacesCreateWithoutLocationsInput = {
   services?: Prisma.servicesCreateNestedManyWithoutWorkspaceInput
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutLocationsInput = {
@@ -703,6 +731,7 @@ export type workspacesUncheckedCreateWithoutLocationsInput = {
   services?: Prisma.servicesUncheckedCreateNestedManyWithoutWorkspaceInput
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutLocationsInput = {
@@ -734,6 +763,7 @@ export type workspacesUpdateWithoutLocationsInput = {
   services?: Prisma.servicesUpdateManyWithoutWorkspaceNestedInput
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutLocationsInput = {
@@ -749,6 +779,7 @@ export type workspacesUncheckedUpdateWithoutLocationsInput = {
   services?: Prisma.servicesUncheckedUpdateManyWithoutWorkspaceNestedInput
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutCustomersInput = {
@@ -764,6 +795,7 @@ export type workspacesCreateWithoutCustomersInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutCustomersInput = {
@@ -779,6 +811,7 @@ export type workspacesUncheckedCreateWithoutCustomersInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutCustomersInput = {
@@ -810,6 +843,7 @@ export type workspacesUpdateWithoutCustomersInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutCustomersInput = {
@@ -825,6 +859,7 @@ export type workspacesUncheckedUpdateWithoutCustomersInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutVehiclesInput = {
@@ -840,6 +875,7 @@ export type workspacesCreateWithoutVehiclesInput = {
   services?: Prisma.servicesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutVehiclesInput = {
@@ -855,6 +891,7 @@ export type workspacesUncheckedCreateWithoutVehiclesInput = {
   services?: Prisma.servicesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutVehiclesInput = {
@@ -886,6 +923,7 @@ export type workspacesUpdateWithoutVehiclesInput = {
   services?: Prisma.servicesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutVehiclesInput = {
@@ -901,6 +939,7 @@ export type workspacesUncheckedUpdateWithoutVehiclesInput = {
   services?: Prisma.servicesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutServicesInput = {
@@ -916,6 +955,7 @@ export type workspacesCreateWithoutServicesInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutServicesInput = {
@@ -931,6 +971,7 @@ export type workspacesUncheckedCreateWithoutServicesInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutServicesInput = {
@@ -962,6 +1003,7 @@ export type workspacesUpdateWithoutServicesInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutServicesInput = {
@@ -977,6 +1019,7 @@ export type workspacesUncheckedUpdateWithoutServicesInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutOrdersInput = {
@@ -992,6 +1035,7 @@ export type workspacesCreateWithoutOrdersInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutOrdersInput = {
@@ -1007,6 +1051,7 @@ export type workspacesUncheckedCreateWithoutOrdersInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutOrdersInput = {
@@ -1038,6 +1083,7 @@ export type workspacesUpdateWithoutOrdersInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutOrdersInput = {
@@ -1048,6 +1094,87 @@ export type workspacesUncheckedUpdateWithoutOrdersInput = {
   accountId?: Prisma.StringFieldUpdateOperationsInput | string
   customers?: Prisma.customersUncheckedUpdateManyWithoutWorkspaceNestedInput
   notes?: Prisma.notesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  parts?: Prisma.partsUncheckedUpdateManyWithoutWorkspaceNestedInput
+  services?: Prisma.servicesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
+  pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type workspacesCreateWithoutAppointmentsInput = {
+  id?: string
+  name?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  account: Prisma.accountsCreateNestedOneWithoutWorkspacesInput
+  customers?: Prisma.customersCreateNestedManyWithoutWorkspaceInput
+  notes?: Prisma.notesCreateNestedManyWithoutWorkspaceInput
+  orders?: Prisma.ordersCreateNestedManyWithoutWorkspaceInput
+  parts?: Prisma.partsCreateNestedManyWithoutWorkspaceInput
+  services?: Prisma.servicesCreateNestedManyWithoutWorkspaceInput
+  vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
+  locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
+  pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+}
+
+export type workspacesUncheckedCreateWithoutAppointmentsInput = {
+  id?: string
+  name?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accountId: string
+  customers?: Prisma.customersUncheckedCreateNestedManyWithoutWorkspaceInput
+  notes?: Prisma.notesUncheckedCreateNestedManyWithoutWorkspaceInput
+  orders?: Prisma.ordersUncheckedCreateNestedManyWithoutWorkspaceInput
+  parts?: Prisma.partsUncheckedCreateNestedManyWithoutWorkspaceInput
+  services?: Prisma.servicesUncheckedCreateNestedManyWithoutWorkspaceInput
+  vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
+  locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
+  pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+}
+
+export type workspacesCreateOrConnectWithoutAppointmentsInput = {
+  where: Prisma.workspacesWhereUniqueInput
+  create: Prisma.XOR<Prisma.workspacesCreateWithoutAppointmentsInput, Prisma.workspacesUncheckedCreateWithoutAppointmentsInput>
+}
+
+export type workspacesUpsertWithoutAppointmentsInput = {
+  update: Prisma.XOR<Prisma.workspacesUpdateWithoutAppointmentsInput, Prisma.workspacesUncheckedUpdateWithoutAppointmentsInput>
+  create: Prisma.XOR<Prisma.workspacesCreateWithoutAppointmentsInput, Prisma.workspacesUncheckedCreateWithoutAppointmentsInput>
+  where?: Prisma.workspacesWhereInput
+}
+
+export type workspacesUpdateToOneWithWhereWithoutAppointmentsInput = {
+  where?: Prisma.workspacesWhereInput
+  data: Prisma.XOR<Prisma.workspacesUpdateWithoutAppointmentsInput, Prisma.workspacesUncheckedUpdateWithoutAppointmentsInput>
+}
+
+export type workspacesUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  account?: Prisma.accountsUpdateOneRequiredWithoutWorkspacesNestedInput
+  customers?: Prisma.customersUpdateManyWithoutWorkspaceNestedInput
+  notes?: Prisma.notesUpdateManyWithoutWorkspaceNestedInput
+  orders?: Prisma.ordersUpdateManyWithoutWorkspaceNestedInput
+  parts?: Prisma.partsUpdateManyWithoutWorkspaceNestedInput
+  services?: Prisma.servicesUpdateManyWithoutWorkspaceNestedInput
+  vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
+  locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
+  pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type workspacesUncheckedUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accountId?: Prisma.StringFieldUpdateOperationsInput | string
+  customers?: Prisma.customersUncheckedUpdateManyWithoutWorkspaceNestedInput
+  notes?: Prisma.notesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  orders?: Prisma.ordersUncheckedUpdateManyWithoutWorkspaceNestedInput
   parts?: Prisma.partsUncheckedUpdateManyWithoutWorkspaceNestedInput
   services?: Prisma.servicesUncheckedUpdateManyWithoutWorkspaceNestedInput
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1068,6 +1195,7 @@ export type workspacesCreateWithoutPipelinesInput = {
   services?: Prisma.servicesCreateNestedManyWithoutWorkspaceInput
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutPipelinesInput = {
@@ -1083,6 +1211,7 @@ export type workspacesUncheckedCreateWithoutPipelinesInput = {
   services?: Prisma.servicesUncheckedCreateNestedManyWithoutWorkspaceInput
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutPipelinesInput = {
@@ -1114,6 +1243,7 @@ export type workspacesUpdateWithoutPipelinesInput = {
   services?: Prisma.servicesUpdateManyWithoutWorkspaceNestedInput
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutPipelinesInput = {
@@ -1129,6 +1259,7 @@ export type workspacesUncheckedUpdateWithoutPipelinesInput = {
   services?: Prisma.servicesUncheckedUpdateManyWithoutWorkspaceNestedInput
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateWithoutPartsInput = {
@@ -1144,6 +1275,7 @@ export type workspacesCreateWithoutPartsInput = {
   vehicles?: Prisma.vehiclesCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesUncheckedCreateWithoutPartsInput = {
@@ -1159,6 +1291,7 @@ export type workspacesUncheckedCreateWithoutPartsInput = {
   vehicles?: Prisma.vehiclesUncheckedCreateNestedManyWithoutWorkspaceInput
   locations?: Prisma.locationsUncheckedCreateNestedManyWithoutWorkspaceInput
   pipelines?: Prisma.pipelinesUncheckedCreateNestedManyWithoutWorkspaceInput
+  appointments?: Prisma.appointmentsUncheckedCreateNestedManyWithoutWorkspaceInput
 }
 
 export type workspacesCreateOrConnectWithoutPartsInput = {
@@ -1190,6 +1323,7 @@ export type workspacesUpdateWithoutPartsInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutPartsInput = {
@@ -1205,6 +1339,7 @@ export type workspacesUncheckedUpdateWithoutPartsInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesCreateManyAccountInput = {
@@ -1227,6 +1362,7 @@ export type workspacesUpdateWithoutAccountInput = {
   vehicles?: Prisma.vehiclesUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateWithoutAccountInput = {
@@ -1242,6 +1378,7 @@ export type workspacesUncheckedUpdateWithoutAccountInput = {
   vehicles?: Prisma.vehiclesUncheckedUpdateManyWithoutWorkspaceNestedInput
   locations?: Prisma.locationsUncheckedUpdateManyWithoutWorkspaceNestedInput
   pipelines?: Prisma.pipelinesUncheckedUpdateManyWithoutWorkspaceNestedInput
+  appointments?: Prisma.appointmentsUncheckedUpdateManyWithoutWorkspaceNestedInput
 }
 
 export type workspacesUncheckedUpdateManyWithoutAccountInput = {
@@ -1265,6 +1402,7 @@ export type WorkspacesCountOutputType = {
   vehicles: number
   locations: number
   pipelines: number
+  appointments: number
 }
 
 export type WorkspacesCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1276,6 +1414,7 @@ export type WorkspacesCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   vehicles?: boolean | WorkspacesCountOutputTypeCountVehiclesArgs
   locations?: boolean | WorkspacesCountOutputTypeCountLocationsArgs
   pipelines?: boolean | WorkspacesCountOutputTypeCountPipelinesArgs
+  appointments?: boolean | WorkspacesCountOutputTypeCountAppointmentsArgs
 }
 
 /**
@@ -1344,6 +1483,13 @@ export type WorkspacesCountOutputTypeCountPipelinesArgs<ExtArgs extends runtime.
   where?: Prisma.pipelinesWhereInput
 }
 
+/**
+ * WorkspacesCountOutputType without action
+ */
+export type WorkspacesCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.appointmentsWhereInput
+}
+
 
 export type workspacesSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1360,6 +1506,7 @@ export type workspacesSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   vehicles?: boolean | Prisma.workspaces$vehiclesArgs<ExtArgs>
   locations?: boolean | Prisma.workspaces$locationsArgs<ExtArgs>
   pipelines?: boolean | Prisma.workspaces$pipelinesArgs<ExtArgs>
+  appointments?: boolean | Prisma.workspaces$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkspacesCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workspaces"]>
 
@@ -1400,6 +1547,7 @@ export type workspacesInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   vehicles?: boolean | Prisma.workspaces$vehiclesArgs<ExtArgs>
   locations?: boolean | Prisma.workspaces$locationsArgs<ExtArgs>
   pipelines?: boolean | Prisma.workspaces$pipelinesArgs<ExtArgs>
+  appointments?: boolean | Prisma.workspaces$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkspacesCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type workspacesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1421,6 +1569,7 @@ export type $workspacesPayload<ExtArgs extends runtime.Types.Extensions.Internal
     vehicles: Prisma.$vehiclesPayload<ExtArgs>[]
     locations: Prisma.$locationsPayload<ExtArgs>[]
     pipelines: Prisma.$pipelinesPayload<ExtArgs>[]
+    appointments: Prisma.$appointmentsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1831,6 +1980,7 @@ export interface Prisma__workspacesClient<T, Null = never, ExtArgs extends runti
   vehicles<T extends Prisma.workspaces$vehiclesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspaces$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$vehiclesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   locations<T extends Prisma.workspaces$locationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspaces$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pipelines<T extends Prisma.workspaces$pipelinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspaces$pipelinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$pipelinesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  appointments<T extends Prisma.workspaces$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspaces$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$appointmentsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2455,6 +2605,30 @@ export type workspaces$pipelinesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.PipelinesScalarFieldEnum | Prisma.PipelinesScalarFieldEnum[]
+}
+
+/**
+ * workspaces.appointments
+ */
+export type workspaces$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the appointments
+   */
+  select?: Prisma.appointmentsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the appointments
+   */
+  omit?: Prisma.appointmentsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.appointmentsInclude<ExtArgs> | null
+  where?: Prisma.appointmentsWhereInput
+  orderBy?: Prisma.appointmentsOrderByWithRelationInput | Prisma.appointmentsOrderByWithRelationInput[]
+  cursor?: Prisma.appointmentsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AppointmentsScalarFieldEnum | Prisma.AppointmentsScalarFieldEnum[]
 }
 
 /**

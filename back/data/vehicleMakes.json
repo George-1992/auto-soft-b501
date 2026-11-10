@@ -6,7 +6,34 @@
     "models": [
       {
         "modelName": "A-Class",
-        "id": "xuye6UJLbRfokMY1KWNS"
+        "id": "xuye6UJLbRfokMY1KWNS",
+        "years": [
+          2023,
+          2022,
+          2021,
+          2020
+        ],
+        "egnineTypes": [
+          "Petrol",
+          "Diesel",
+          "Hybrid",
+          "Electric"
+        ],
+        "engineCapacities": [
+          "1.3L",
+          "1.5L",
+          "2.0L"
+        ],
+        "transmissionTypes": [
+          "Automatic",
+          "Manual"
+        ],
+        "bodyTypes": [
+          "Hatchback",
+          "Sedan",
+          "Coupe",
+          "Convertible"
+        ]
       },
       {
         "modelName": "A-Klasse",

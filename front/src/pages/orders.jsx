@@ -11,7 +11,7 @@ import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import { randomString, toDisplayDate, toDisplayNumber } from "@/src/services/other";
 import _, { cloneDeep, random } from "lodash";
-import { BookmarkIcon, BoxesIcon, BuildingComplexIcon, CarFrontIcon, ChevronsRightIcon, CircleDollarSignIcon, Component, DownloadIcon, FileTextIcon, HashIcon, MailIcon, MapPinHouseIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, PrinterIcon, RouteIcon, ShellIcon, SquareTextIcon, SquareUserRoundIcon, Trash2Icon, WrenchIcon, XIcon } from "lucide-react";
+import { BookmarkIcon, BoxesIcon, BuildingComplexIcon, CarFrontIcon, ChevronsRightIcon, CircleDollarSignIcon, Component, DownloadIcon, FileTextIcon, HashIcon, MailIcon, MapPinHouseIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, PrinterIcon, RouteIcon, ShellIcon, SquareTextIcon, SquareUserRoundIcon, SunriseIcon, SunsetIcon, Trash2Icon, WrenchIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Car, User, Timer, Percent, MessageSquare, CalendarDays, ListOrdered, CheckCircle2, MoreHorizontal, Plus, X } from 'lucide-react';
@@ -834,16 +834,15 @@ const ThisEditComponent = ({
                         {/* total pricing */}
                         <div className="w-full flex justify-end">
                             <div></div>
-                            <div className="text-xl font-semibold">
+                            <div className="text-xl font-semibold flex flex-col gap-1 items-end">
                                 <div className="flex items-center gap-2">
                                     <label className="font-semibold">{t('Total Price')}</label>
                                 </div>
-                                <div className="h-10 px-3 rounded-md ">
+                                <div className="h-10 px-3 rounded-md w-fit">
                                     <CurrencySymbol />
                                     {toDisplayNumber(getTotalOrderPrice())}
                                 </div>
                             </div>
-
                         </div>
 
                         <CollapsibleCard className="w-full" title={t('Comments')} headerClassName="bg-gray-100">
@@ -972,7 +971,7 @@ const ThisCardViewer = ({
         { label: 'New Client', color: 'yellow' },
         { label: 'Friends & Family', color: 'red' },
     ];
-    const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80';
+    const PLACEHOLDER_IMAGE = 'https://www.edmunds.com/assets/m/ford/explorer/2016/oem/2016_ford_explorer_4dr-suv_platinum_fq_oem_1_815.jpg';
     const getOrderTotal = (data) => {
         const lines = data?.orderLines ?? [];
         const subtotal = lines.reduce((sum, l) => sum + Number(l.price || 0) * Number(l.quantity || 1), 0);
@@ -1011,68 +1010,63 @@ const ThisCardViewer = ({
 
     return (
         <div className="w-full max-w-sm bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-            <Image
-                src={data?.vehicle?.image ?? PLACEHOLDER_IMAGE}
-                alt="Vehicle"
-                className="w-full h-auto object-cover rounded-md"
-            />
-            <div className="flex justify-between">
-                <div className="flex items-center gap-2 text-gray-500 text-sm mt-2">
-                    <span>{data?.name || 'n/a'}</span>
-                    <HashIcon className="size-4 text-gray-500" />
-                    <span>{data?.orderNumber || 'RO-0000'}</span>
-                </div>
-                <div></div>
-            </div>
 
 
-
-
-            <div className="flex items-center justify-between gap-3 mt-2">
-                <h3 className="text-sm font-semibold text-gray-900 leading-snug">{getTitle(data)}</h3>
-                <span className="shrink-0 w-7 h-7 rounded-full bg-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-center">
-                    {assignee}
-                </span>
-            </div>
-
-            {/* <div className="flex flex-wrap items-center gap-2 mt-3">
-                {tags.map((tag) => (
-                    <span
-                        key={tag.label}
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${tagStyles[tag.color] ?? 'bg-gray-200 text-gray-800'}`}
-                    >
-                        {tag.label}
-                        <X size={12} className="opacity-50" />
-                    </span>
-                ))}
-                <button type="button" className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium bg-blue-50 text-blue-700">
-                    <Plus size={14} /> Add
-                </button>
-            </div> */}
-
-            <div className="flex items-center gap-3 p-0.5 my-1 border border-blue-200 rounded-lg bg-blue-50">
-                <span> {toDisplayDate(data?.startDate)}</span>
-                <div><ChevronsRightIcon className="size-4 text-gray-500" /></div>
-                <span> {toDisplayDate(data?.dueDate)}</span>
-            </div>
-
-            <div className="flex flex-col gap-2.5 mt-3 text-sm text-gray-800">
-                <div className="flex items-center gap-3">
-                    <Car size={18} className="text-gray-600" />
+            <div className="w-full relative min-h-12">
+                <Image
+                    src={data?.vehicle?.image ?? PLACEHOLDER_IMAGE}
+                    alt="Vehicle"
+                    className="w-full h-auto object-cover rounded-md"
+                />
+                <div className="text-base absolute bottom-2 left-2 bg-gray-800 bg-opacity-70 text-white px-2 py-1 rounded-md">
                     <span>
                         {`${data?.vehicle?.make?.name ?? ''} ${data?.vehicle?.model?.name ?? ''} ${data?.vehicle?.year ?? ''} ${data?.vehicle?.licensePlate ? `(${data.vehicle.licensePlate})` : ''}`}
                     </span>
                 </div>
-                <div className="flex items-center gap-3">
-                    <User size={18} className="text-gray-600" />
-                    <span>
-                        {data?.customer ? `${data.customer.firstName ?? ''} ${data.customer.lastName ?? ''} (${data.customer.email ?? ''})` : ''}
-                    </span>
+            </div>
+
+
+
+
+
+            <div className="flex items-center gap-3 p-0.5 text-sm">
+                <div className="flex items-center gap-1">
+                    {/* <SunriseIcon className="size-4 text-slate-500" /> */}
+                    <span> {toDisplayDate(data?.startDate)}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Timer size={18} className="text-gray-600" />
-                    <span>{hoursLeft} hrs left / {hoursBilled} hrs billed</span>
+                <div><ChevronsRightIcon className="size-4 text-gray-500" /></div>
+                <div className="flex items-center gap-1">
+                    {/* <SunsetIcon className="size-4 text-slate-50 bg-slate-400 rounded-sm" /> */}
+                    <span> {toDisplayDate(data?.dueDate)}</span>
                 </div>
+            </div>
+            <div className="flex gap-1 opacity-80 text-sm">
+                <span>{data?.name || 'n/a'}</span>
+                <div className="flex items-center gap-1">
+                    <HashIcon className="size-4 text-gray-500" />
+                    <span>{data?.orderNumber || 'RO-0000'}</span>
+                </div>
+            </div>
+
+
+            <div className="text-sm py-1">
+                <span>
+                    {data?.customer ? `${data.customer.firstName ?? ''} ${data.customer.lastName ?? ''} (${data.customer.email ?? ''})` : ''}
+                </span>
+            </div>
+
+
+
+
+            <div className="flex flex-wrap gap-1">
+                {(data?.orderLines || []).map((line, index) => {
+
+                    return (
+                        <div key={index} className="w-fit px-1 py-0.5 bg-olive-200 border border-olive-400 rounded-md">
+                            <span>{line?.name || 'n/a'}</span>
+                        </div>
+                    )
+                })}
             </div>
 
 

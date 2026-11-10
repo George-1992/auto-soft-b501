@@ -282,6 +282,7 @@ export type locationsWhereInput = {
   workspaceId?: Prisma.StringFilter<"locations"> | string
   workspace?: Prisma.XOR<Prisma.WorkspacesScalarRelationFilter, Prisma.workspacesWhereInput>
   orders?: Prisma.OrdersListRelationFilter
+  parts?: Prisma.PartsListRelationFilter
 }
 
 export type locationsOrderByWithRelationInput = {
@@ -300,6 +301,7 @@ export type locationsOrderByWithRelationInput = {
   workspaceId?: Prisma.SortOrder
   workspace?: Prisma.workspacesOrderByWithRelationInput
   orders?: Prisma.ordersOrderByRelationAggregateInput
+  parts?: Prisma.partsOrderByRelationAggregateInput
 }
 
 export type locationsWhereUniqueInput = Prisma.AtLeast<{
@@ -322,6 +324,7 @@ export type locationsWhereUniqueInput = Prisma.AtLeast<{
   workspaceId?: Prisma.StringFilter<"locations"> | string
   workspace?: Prisma.XOR<Prisma.WorkspacesScalarRelationFilter, Prisma.workspacesWhereInput>
   orders?: Prisma.OrdersListRelationFilter
+  parts?: Prisma.PartsListRelationFilter
 }, "id" | "workspaceId_name">
 
 export type locationsOrderByWithAggregationInput = {
@@ -379,6 +382,7 @@ export type locationsCreateInput = {
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutLocationsInput
   orders?: Prisma.ordersCreateNestedManyWithoutLocationInput
+  parts?: Prisma.partsCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsUncheckedCreateInput = {
@@ -396,6 +400,7 @@ export type locationsUncheckedCreateInput = {
   updatedAt?: Date | string
   workspaceId: string
   orders?: Prisma.ordersUncheckedCreateNestedManyWithoutLocationInput
+  parts?: Prisma.partsUncheckedCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsUpdateInput = {
@@ -413,6 +418,7 @@ export type locationsUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutLocationsNestedInput
   orders?: Prisma.ordersUpdateManyWithoutLocationNestedInput
+  parts?: Prisma.partsUpdateManyWithoutLocationsNestedInput
 }
 
 export type locationsUncheckedUpdateInput = {
@@ -430,6 +436,7 @@ export type locationsUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   orders?: Prisma.ordersUncheckedUpdateManyWithoutLocationNestedInput
+  parts?: Prisma.partsUncheckedUpdateManyWithoutLocationsNestedInput
 }
 
 export type locationsCreateManyInput = {
@@ -619,6 +626,44 @@ export type locationsUpdateOneRequiredWithoutOrdersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.locationsUpdateToOneWithWhereWithoutOrdersInput, Prisma.locationsUpdateWithoutOrdersInput>, Prisma.locationsUncheckedUpdateWithoutOrdersInput>
 }
 
+export type locationsCreateNestedManyWithoutPartsInput = {
+  create?: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput> | Prisma.locationsCreateWithoutPartsInput[] | Prisma.locationsUncheckedCreateWithoutPartsInput[]
+  connectOrCreate?: Prisma.locationsCreateOrConnectWithoutPartsInput | Prisma.locationsCreateOrConnectWithoutPartsInput[]
+  connect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+}
+
+export type locationsUncheckedCreateNestedManyWithoutPartsInput = {
+  create?: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput> | Prisma.locationsCreateWithoutPartsInput[] | Prisma.locationsUncheckedCreateWithoutPartsInput[]
+  connectOrCreate?: Prisma.locationsCreateOrConnectWithoutPartsInput | Prisma.locationsCreateOrConnectWithoutPartsInput[]
+  connect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+}
+
+export type locationsUpdateManyWithoutPartsNestedInput = {
+  create?: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput> | Prisma.locationsCreateWithoutPartsInput[] | Prisma.locationsUncheckedCreateWithoutPartsInput[]
+  connectOrCreate?: Prisma.locationsCreateOrConnectWithoutPartsInput | Prisma.locationsCreateOrConnectWithoutPartsInput[]
+  upsert?: Prisma.locationsUpsertWithWhereUniqueWithoutPartsInput | Prisma.locationsUpsertWithWhereUniqueWithoutPartsInput[]
+  set?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  disconnect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  delete?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  connect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  update?: Prisma.locationsUpdateWithWhereUniqueWithoutPartsInput | Prisma.locationsUpdateWithWhereUniqueWithoutPartsInput[]
+  updateMany?: Prisma.locationsUpdateManyWithWhereWithoutPartsInput | Prisma.locationsUpdateManyWithWhereWithoutPartsInput[]
+  deleteMany?: Prisma.locationsScalarWhereInput | Prisma.locationsScalarWhereInput[]
+}
+
+export type locationsUncheckedUpdateManyWithoutPartsNestedInput = {
+  create?: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput> | Prisma.locationsCreateWithoutPartsInput[] | Prisma.locationsUncheckedCreateWithoutPartsInput[]
+  connectOrCreate?: Prisma.locationsCreateOrConnectWithoutPartsInput | Prisma.locationsCreateOrConnectWithoutPartsInput[]
+  upsert?: Prisma.locationsUpsertWithWhereUniqueWithoutPartsInput | Prisma.locationsUpsertWithWhereUniqueWithoutPartsInput[]
+  set?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  disconnect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  delete?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  connect?: Prisma.locationsWhereUniqueInput | Prisma.locationsWhereUniqueInput[]
+  update?: Prisma.locationsUpdateWithWhereUniqueWithoutPartsInput | Prisma.locationsUpdateWithWhereUniqueWithoutPartsInput[]
+  updateMany?: Prisma.locationsUpdateManyWithWhereWithoutPartsInput | Prisma.locationsUpdateManyWithWhereWithoutPartsInput[]
+  deleteMany?: Prisma.locationsScalarWhereInput | Prisma.locationsScalarWhereInput[]
+}
+
 export type locationsCreateWithoutWorkspaceInput = {
   id?: string
   name: string
@@ -633,6 +678,7 @@ export type locationsCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.ordersCreateNestedManyWithoutLocationInput
+  parts?: Prisma.partsCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsUncheckedCreateWithoutWorkspaceInput = {
@@ -649,6 +695,7 @@ export type locationsUncheckedCreateWithoutWorkspaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.ordersUncheckedCreateNestedManyWithoutLocationInput
+  parts?: Prisma.partsUncheckedCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsCreateOrConnectWithoutWorkspaceInput = {
@@ -710,6 +757,7 @@ export type locationsCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.workspacesCreateNestedOneWithoutLocationsInput
+  parts?: Prisma.partsCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsUncheckedCreateWithoutOrdersInput = {
@@ -726,6 +774,7 @@ export type locationsUncheckedCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceId: string
+  parts?: Prisma.partsUncheckedCreateNestedManyWithoutLocationsInput
 }
 
 export type locationsCreateOrConnectWithoutOrdersInput = {
@@ -758,6 +807,7 @@ export type locationsUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.workspacesUpdateOneRequiredWithoutLocationsNestedInput
+  parts?: Prisma.partsUpdateManyWithoutLocationsNestedInput
 }
 
 export type locationsUncheckedUpdateWithoutOrdersInput = {
@@ -774,6 +824,62 @@ export type locationsUncheckedUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  parts?: Prisma.partsUncheckedUpdateManyWithoutLocationsNestedInput
+}
+
+export type locationsCreateWithoutPartsInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  phone?: string | null
+  timezone?: string
+  nextWorkOrderNumber?: number
+  state?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace: Prisma.workspacesCreateNestedOneWithoutLocationsInput
+  orders?: Prisma.ordersCreateNestedManyWithoutLocationInput
+}
+
+export type locationsUncheckedCreateWithoutPartsInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  phone?: string | null
+  timezone?: string
+  nextWorkOrderNumber?: number
+  state?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspaceId: string
+  orders?: Prisma.ordersUncheckedCreateNestedManyWithoutLocationInput
+}
+
+export type locationsCreateOrConnectWithoutPartsInput = {
+  where: Prisma.locationsWhereUniqueInput
+  create: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput>
+}
+
+export type locationsUpsertWithWhereUniqueWithoutPartsInput = {
+  where: Prisma.locationsWhereUniqueInput
+  update: Prisma.XOR<Prisma.locationsUpdateWithoutPartsInput, Prisma.locationsUncheckedUpdateWithoutPartsInput>
+  create: Prisma.XOR<Prisma.locationsCreateWithoutPartsInput, Prisma.locationsUncheckedCreateWithoutPartsInput>
+}
+
+export type locationsUpdateWithWhereUniqueWithoutPartsInput = {
+  where: Prisma.locationsWhereUniqueInput
+  data: Prisma.XOR<Prisma.locationsUpdateWithoutPartsInput, Prisma.locationsUncheckedUpdateWithoutPartsInput>
+}
+
+export type locationsUpdateManyWithWhereWithoutPartsInput = {
+  where: Prisma.locationsScalarWhereInput
+  data: Prisma.XOR<Prisma.locationsUpdateManyMutationInput, Prisma.locationsUncheckedUpdateManyWithoutPartsInput>
 }
 
 export type locationsCreateManyWorkspaceInput = {
@@ -805,6 +911,7 @@ export type locationsUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.ordersUpdateManyWithoutLocationNestedInput
+  parts?: Prisma.partsUpdateManyWithoutLocationsNestedInput
 }
 
 export type locationsUncheckedUpdateWithoutWorkspaceInput = {
@@ -821,6 +928,7 @@ export type locationsUncheckedUpdateWithoutWorkspaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.ordersUncheckedUpdateManyWithoutLocationNestedInput
+  parts?: Prisma.partsUncheckedUpdateManyWithoutLocationsNestedInput
 }
 
 export type locationsUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -838,6 +946,56 @@ export type locationsUncheckedUpdateManyWithoutWorkspaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type locationsUpdateWithoutPartsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  nextWorkOrderNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.workspacesUpdateOneRequiredWithoutLocationsNestedInput
+  orders?: Prisma.ordersUpdateManyWithoutLocationNestedInput
+}
+
+export type locationsUncheckedUpdateWithoutPartsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  nextWorkOrderNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  orders?: Prisma.ordersUncheckedUpdateManyWithoutLocationNestedInput
+}
+
+export type locationsUncheckedUpdateManyWithoutPartsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  nextWorkOrderNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
 
 /**
  * Count Type LocationsCountOutputType
@@ -845,10 +1003,12 @@ export type locationsUncheckedUpdateManyWithoutWorkspaceInput = {
 
 export type LocationsCountOutputType = {
   orders: number
+  parts: number
 }
 
 export type LocationsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | LocationsCountOutputTypeCountOrdersArgs
+  parts?: boolean | LocationsCountOutputTypeCountPartsArgs
 }
 
 /**
@@ -868,6 +1028,13 @@ export type LocationsCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Type
   where?: Prisma.ordersWhereInput
 }
 
+/**
+ * LocationsCountOutputType without action
+ */
+export type LocationsCountOutputTypeCountPartsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.partsWhereInput
+}
+
 
 export type locationsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -885,6 +1052,7 @@ export type locationsSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   workspaceId?: boolean
   workspace?: boolean | Prisma.workspacesDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.locations$ordersArgs<ExtArgs>
+  parts?: boolean | Prisma.locations$partsArgs<ExtArgs>
   _count?: boolean | Prisma.LocationsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["locations"]>
 
@@ -942,6 +1110,7 @@ export type locationsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type locationsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.workspacesDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.locations$ordersArgs<ExtArgs>
+  parts?: boolean | Prisma.locations$partsArgs<ExtArgs>
   _count?: boolean | Prisma.LocationsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type locationsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -956,6 +1125,7 @@ export type $locationsPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     workspace: Prisma.$workspacesPayload<ExtArgs>
     orders: Prisma.$ordersPayload<ExtArgs>[]
+    parts: Prisma.$partsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1367,6 +1537,7 @@ export interface Prisma__locationsClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workspace<T extends Prisma.workspacesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.workspacesDefaultArgs<ExtArgs>>): Prisma.Prisma__workspacesClient<runtime.Types.Result.GetResult<Prisma.$workspacesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   orders<T extends Prisma.locations$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.locations$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ordersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  parts<T extends Prisma.locations$partsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.locations$partsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$partsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1831,6 +2002,30 @@ export type locations$ordersArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.OrdersScalarFieldEnum | Prisma.OrdersScalarFieldEnum[]
+}
+
+/**
+ * locations.parts
+ */
+export type locations$partsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the parts
+   */
+  select?: Prisma.partsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the parts
+   */
+  omit?: Prisma.partsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.partsInclude<ExtArgs> | null
+  where?: Prisma.partsWhereInput
+  orderBy?: Prisma.partsOrderByWithRelationInput | Prisma.partsOrderByWithRelationInput[]
+  cursor?: Prisma.partsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PartsScalarFieldEnum | Prisma.PartsScalarFieldEnum[]
 }
 
 /**

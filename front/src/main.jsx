@@ -26,11 +26,11 @@ createRoot(document.getElementById('root')).render(
       className={'-z-10 opacity-30'}
     /> */}
 
-    <div
+    {/* <div
       className="fixed inset-0 w-full h-full -z-10 opacity-30 bg-repeat bg-auto bg-gray-50"
       style={{ backgroundImage: "url('/images/other/concrete-wall-with-rough-texture-small-drops-water-it_731790-75103.jpg')" }}
       aria-hidden="true"
-    />
+    /> */}
 
   </>
   // <StrictMode>

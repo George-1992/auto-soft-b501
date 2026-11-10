@@ -67,18 +67,19 @@ model workspaces {
   id   String @id @default(uuid())
   name String @default("Default Workspace")
 
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
-  accountId String      @map("account_id")
-  account   accounts    @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  customers customers[]
-  notes     notes[]
-  orders    orders[]
-  parts     parts[]
-  services  services[]
-  vehicles  vehicles[]
-  locations locations[]
-  pipelines pipelines[]
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamp(6)
+  accountId    String         @map("account_id")
+  account      accounts       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  customers    customers[]
+  notes        notes[]
+  orders       orders[]
+  parts        parts[]
+  services     services[]
+  vehicles     vehicles[]
+  locations    locations[]
+  pipelines    pipelines[]
+  appointments appointments[]
 
   @@index([name])
   @@index([accountId])
@@ -115,6 +116,7 @@ model locations {
   workspaceId String     @map("workspace_id")
   workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   orders      orders[]
+  parts       parts[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -130,12 +132,13 @@ model customers {
   address   String?
   notes     String?
 
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
-  workspaceId String     @map("workspace_id")
-  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  orders      orders[]
-  vehicles    vehicles[]
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId  String         @map("workspace_id")
+  workspace    workspaces     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orders       orders[]
+  vehicles     vehicles[]
+  appointments appointments[]
 
   @@unique([workspaceId, email])
   @@unique([workspaceId, phone])
@@ -206,25 +209,46 @@ model orders {
   totalPrice       Decimal         @default(0) @map("total_price") @db.Decimal(10, 2)
   stageColPosition String?         @default("a") @map("stage_col_position")
 
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
-  workspaceId String         @map("workspace_id")
-  workspace   workspaces     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customerId  String         @map("customer_id")
-  customer    customers      @relation(fields: [customerId], references: [id], onDelete: NoAction)
-  locationId  String         @map("location_id")
-  location    locations      @relation(fields: [locationId], references: [id], onDelete: NoAction)
-  vehicleId   String         @map("vehicle_id")
-  vehicle     vehicles       @relation(fields: [vehicleId], references: [id], onDelete: NoAction)
-  stageId     String         @map("stage_id")
-  stage       pipelineStages @relation(fields: [stageId], references: [id], onDelete: NoAction)
-  orderLines  orderLines[]
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId  String         @map("workspace_id")
+  workspace    workspaces     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId   String         @map("customer_id")
+  customer     customers      @relation(fields: [customerId], references: [id], onDelete: NoAction)
+  locationId   String         @map("location_id")
+  location     locations      @relation(fields: [locationId], references: [id], onDelete: NoAction)
+  vehicleId    String         @map("vehicle_id")
+  vehicle      vehicles       @relation(fields: [vehicleId], references: [id], onDelete: NoAction)
+  stageId      String         @map("stage_id")
+  stage        pipelineStages @relation(fields: [stageId], references: [id], onDelete: NoAction)
+  orderLines   orderLines[]
+  appointments appointments[]
 
   @@unique([locationId, orderNumber])
   @@index([customerId])
   @@index([status])
   @@index([vehicleId])
   @@index([workspaceId])
+}
+
+model appointments {
+  id        String            @id @default(uuid())
+  status    AppointmentStatus @default(scheduled)
+  startTime DateTime          @map("start_time") @db.Timestamp(6)
+  endTime   DateTime          @map("end_time") @db.Timestamp(6)
+  notes     String?
+
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  workspaceId String     @map("workspace_id")
+  workspace   workspaces @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orderId     String?    @map("order_id")
+  order       orders?    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId  String?    @map("customer_id")
+  customer    customers? @relation(fields: [customerId], references: [id], onDelete: NoAction)
+
+  @@index([workspaceId])
+  @@index([orderId])
 }
 
 enum OrderLineType {
@@ -284,7 +308,7 @@ model pipelineStages {
   position Int
 
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   pipelineId String    @map("pipeline_id")
   pipeline   pipelines @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   orders     orders[]
@@ -295,20 +319,23 @@ model pipelineStages {
 }
 
 model parts {
-  id          String  @id @default(uuid())
-  sku         String
-  name        String
-  description String?
-  brand       String?
-  price       Decimal @default(0) @db.Decimal(10, 2)
-  quantity    Int     @default(0)
-  config      Json?   @default("{}")
+  id            String     @id @default(uuid())
+  status        PartStatus @default(active)
+  sku           String     @unique @default(uuid())
+  name          String
+  description   String?
+  brand         String?
+  purchasePrice Decimal    @default(0) @map("purchase_price") @db.Decimal(10, 2)
+  price         Decimal    @default(0) @db.Decimal(10, 2)
+  quantity      Int        @default(0)
+  partNumbers   String[]   @default([]) @map("part_numbers")
 
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
   workspaceId String       @map("workspace_id")
   workspace   workspaces   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   orderLines  orderLines[]
+  locations   locations[]
 
   @@unique([workspaceId, sku])
   @@index([sku])
@@ -335,6 +362,105 @@ model vehicleModels {
   vehicles  vehicles[]
 
   @@index([makeId])
+}
+
+model vehicleVariants {
+  id         String  @id @default(uuid())
+  source     String  @default("custom")
+  externalId String? @map("external_id")
+  kType      Int?    @map("k_type") // TecDoc KType ID
+
+  generation String?
+  aliases    String[]  @default([])
+  trim       String?
+  yearFrom   Int       @map("year_from")
+  yearTo     Int?      @map("year_to")
+  bodyType   BodyType? @map("body_type")
+  doors      Int?
+
+  // Fuel & Powertrain
+  fuelType      FuelType?     @map("fuel_type")
+  engineCode    String?       @map("engine_code")
+  displacement  Int? // cc
+  displacementL Float?        @map("displacement_l") // e.g. 2.0
+  powerKw       Int?          @map("power_kw")
+  powerHp       Int?          @map("power_hp") // e.g. 150
+  cylinders     Int?
+  valves        Int?
+  aspiration    Aspiration?
+  transmission  Transmission?
+  driveType     DriveType?    @map("drive_type")
+
+  // Chassis & Regional Specs
+  steeringSide SteeringSide? @default(lhd) @map("steering_side")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@unique([source, externalId])
+  @@index([engineCode])
+  @@index([kType])
+  @@index([aliases], type: Gin)
+  @@index([generation])
+  @@map("vehicle_variants")
+}
+
+enum Aspiration {
+  naturally_aspirated
+  turbocharged
+  supercharged
+  twin_turbo
+
+  @@map("aspiration")
+}
+
+enum SteeringSide {
+  lhd
+  rhd
+
+  @@map("steering_side")
+}
+
+enum FuelType {
+  petrol
+  diesel
+  hybrid
+  phev
+  electric
+  lpg
+  cng
+
+  @@map("fuel_type")
+}
+
+enum Transmission {
+  manual
+  automatic
+  cvt
+  dct
+
+  @@map("transmission")
+}
+
+enum DriveType {
+  fwd
+  rwd
+  awd
+
+  @@map("drive_type")
+}
+
+enum BodyType {
+  hatchback
+  sedan
+  wagon
+  suv
+  coupe
+  convertible
+  van
+  pickup
+
+  @@map("body_type")
 }
 
 enum AccountRole {
@@ -446,4 +572,12 @@ enum WorkspaceRole {
   viewer
 
   @@map("workspace_role")
+}
+
+enum PartStatus {
+  active
+  inactive
+  discontinued
+
+  @@map("part_status")
 }

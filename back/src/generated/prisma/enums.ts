@@ -18,6 +18,70 @@ export const OrderLineType = {
 export type OrderLineType = (typeof OrderLineType)[keyof typeof OrderLineType]
 
 
+export const Aspiration = {
+  naturally_aspirated: 'naturally_aspirated',
+  turbocharged: 'turbocharged',
+  supercharged: 'supercharged',
+  twin_turbo: 'twin_turbo'
+} as const
+
+export type Aspiration = (typeof Aspiration)[keyof typeof Aspiration]
+
+
+export const SteeringSide = {
+  lhd: 'lhd',
+  rhd: 'rhd'
+} as const
+
+export type SteeringSide = (typeof SteeringSide)[keyof typeof SteeringSide]
+
+
+export const FuelType = {
+  petrol: 'petrol',
+  diesel: 'diesel',
+  hybrid: 'hybrid',
+  phev: 'phev',
+  electric: 'electric',
+  lpg: 'lpg',
+  cng: 'cng'
+} as const
+
+export type FuelType = (typeof FuelType)[keyof typeof FuelType]
+
+
+export const Transmission = {
+  manual: 'manual',
+  automatic: 'automatic',
+  cvt: 'cvt',
+  dct: 'dct'
+} as const
+
+export type Transmission = (typeof Transmission)[keyof typeof Transmission]
+
+
+export const DriveType = {
+  fwd: 'fwd',
+  rwd: 'rwd',
+  awd: 'awd'
+} as const
+
+export type DriveType = (typeof DriveType)[keyof typeof DriveType]
+
+
+export const BodyType = {
+  hatchback: 'hatchback',
+  sedan: 'sedan',
+  wagon: 'wagon',
+  suv: 'suv',
+  coupe: 'coupe',
+  convertible: 'convertible',
+  van: 'van',
+  pickup: 'pickup'
+} as const
+
+export type BodyType = (typeof BodyType)[keyof typeof BodyType]
+
+
 export const AccountRole = {
   owner: 'owner',
   admin: 'admin',
@@ -139,3 +203,12 @@ export const WorkspaceRole = {
 } as const
 
 export type WorkspaceRole = (typeof WorkspaceRole)[keyof typeof WorkspaceRole]
+
+
+export const PartStatus = {
+  active: 'active',
+  inactive: 'inactive',
+  discontinued: 'discontinued'
+} as const
+
+export type PartStatus = (typeof PartStatus)[keyof typeof PartStatus]

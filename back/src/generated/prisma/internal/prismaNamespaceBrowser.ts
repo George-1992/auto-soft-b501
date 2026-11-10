@@ -61,12 +61,14 @@ export const ModelName = {
   vehicles: 'vehicles',
   services: 'services',
   orders: 'orders',
+  appointments: 'appointments',
   orderLines: 'orderLines',
   pipelines: 'pipelines',
   pipelineStages: 'pipelineStages',
   parts: 'parts',
   vehicleMakes: 'vehicleMakes',
-  vehicleModels: 'vehicleModels'
+  vehicleModels: 'vehicleModels',
+  vehicleVariants: 'vehicleVariants'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -252,6 +254,22 @@ export const OrdersScalarFieldEnum = {
 export type OrdersScalarFieldEnum = (typeof OrdersScalarFieldEnum)[keyof typeof OrdersScalarFieldEnum]
 
 
+export const AppointmentsScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  workspaceId: 'workspaceId',
+  orderId: 'orderId',
+  customerId: 'customerId'
+} as const
+
+export type AppointmentsScalarFieldEnum = (typeof AppointmentsScalarFieldEnum)[keyof typeof AppointmentsScalarFieldEnum]
+
+
 export const OrderLinesScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -300,13 +318,15 @@ export type PipelineStagesScalarFieldEnum = (typeof PipelineStagesScalarFieldEnu
 
 export const PartsScalarFieldEnum = {
   id: 'id',
+  status: 'status',
   sku: 'sku',
   name: 'name',
   description: 'description',
   brand: 'brand',
+  purchasePrice: 'purchasePrice',
   price: 'price',
   quantity: 'quantity',
-  config: 'config',
+  partNumbers: 'partNumbers',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   workspaceId: 'workspaceId'
@@ -334,6 +354,37 @@ export const VehicleModelsScalarFieldEnum = {
 } as const
 
 export type VehicleModelsScalarFieldEnum = (typeof VehicleModelsScalarFieldEnum)[keyof typeof VehicleModelsScalarFieldEnum]
+
+
+export const VehicleVariantsScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  externalId: 'externalId',
+  kType: 'kType',
+  generation: 'generation',
+  aliases: 'aliases',
+  trim: 'trim',
+  yearFrom: 'yearFrom',
+  yearTo: 'yearTo',
+  bodyType: 'bodyType',
+  doors: 'doors',
+  fuelType: 'fuelType',
+  engineCode: 'engineCode',
+  displacement: 'displacement',
+  displacementL: 'displacementL',
+  powerKw: 'powerKw',
+  powerHp: 'powerHp',
+  cylinders: 'cylinders',
+  valves: 'valves',
+  aspiration: 'aspiration',
+  transmission: 'transmission',
+  driveType: 'driveType',
+  steeringSide: 'steeringSide',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleVariantsScalarFieldEnum = (typeof VehicleVariantsScalarFieldEnum)[keyof typeof VehicleVariantsScalarFieldEnum]
 
 
 export const SortOrder = {
