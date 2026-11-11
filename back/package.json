@@ -22,6 +22,8 @@
     "#src/*": "./src/*"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.102",
+    "@ai-sdk/google": "^4.0.117",
     "@ai-sdk/openai": "^4.0.94",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",

@@ -8,6 +8,8 @@ import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { logger } from '#src/utils/logger.js';
 import Prisma from '#src/db/prisma/index.js';
+import { google } from '@ai-sdk/google';
+import { anthropic } from '@ai-sdk/anthropic';
 
 const aiModelName = 'gpt-5.4-nano';
 
@@ -166,32 +168,17 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
             return msgs;
         }
 
-        // const response = await generateText({
-        //     model: openai(aiModelName),
-        //     messages: msgs,
-        //     system: system,
-        //     // tools: {
-        //     //     logToConsole: logToConsoleTool,
-        //     //     dbRequestTool: createDbRequestTool(account.id),
-        //     // },
-        //     stopWhen: stepCountIs(10),
-        //     experimental_output: Output.object({ schema: responseSchema }), // `output` in AI SDK v6
-        // });
-
-        // // logger.info('AI Request Response:', response);
-
-        // addMessage({
-        //     role: 'assistant',
-        //     content: response.text,
-        // });
-
-        // console.log('AI Request tools:', tools);
 
         const response = await generateText({
-            model: openai(aiModelName),
+            // model: openai('gpt-6-luna'),
+            // model: google('gemini-3.8-flash'),
+            model: anthropic('claude-haiku-5-5'),
             messages: msgs.map(({ role, content }) => ({ role, content })),
             system,
-            ...(Object.keys(tools).length > 0 ? { tools } : {}),
+            tools: {
+                ...tools,
+                web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
+            },
             stopWhen: stepCountIs(2),
             output: Output.object({ schema: responseSchema }),
         });

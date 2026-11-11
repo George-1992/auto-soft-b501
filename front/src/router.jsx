@@ -213,7 +213,7 @@ const router = createBrowserRouter([
             { path: '/services/services', element: <ServicesPage /> },
             { path: '/services/pipelines', element: <PipelinesPage /> },
 
-            { path: 'inventory/parts', element: <PartsSearchPage /> },
+            { path: 'inventory/parts', element: <InventoryPage /> },
             { path: 'inventory/search', element: <PartsSearchPage /> },
 
 

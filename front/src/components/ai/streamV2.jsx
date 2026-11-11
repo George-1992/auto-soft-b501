@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useState, useRef, useEffect } from "react";
+import { LoaderShimmer } from "@/src/components/ui/loader";
 
 
 export const streamToData = async (stream, onData, signal) => {
@@ -81,7 +82,7 @@ export const streamToData = async (stream, onData, signal) => {
 
 
 
-export const MessagesRenderer = ({ messages = [], onOptionClick }) => {
+export const MessagesRenderer = ({ messages = [], onOptionClick, isLoading = false, }) => {
 
     const scrollContainerRef = useRef(null);
 
@@ -94,6 +95,10 @@ export const MessagesRenderer = ({ messages = [], onOptionClick }) => {
             });
         }
     }, [messages.length]);
+
+    if (!messages || messages.length === 0) {
+        return null;
+    };
 
     return (
         <div ref={scrollContainerRef} className="w-full flex-1 flex-col items-center justify-center overflow-y-auto scrollbar-thumb-gray-500 scrollbar-track-transparent scrollbar-thin">
@@ -216,6 +221,14 @@ export const MessagesRenderer = ({ messages = [], onOptionClick }) => {
                     );
                 })}
 
+                {isLoading && (
+                    <div className="typing-dots">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                )}
+
                 {messages.length > 0 && <div className="w-full h-10"></div>}
             </div>
         </div>
@@ -231,6 +244,7 @@ export const AiInput = ({
     placeholder = 'Message AI...',
     maxLength,
     className = '',
+    isLoading = false,
 }) => {
     const textareaRef = useRef(null);
 
@@ -291,6 +305,8 @@ export const AiInput = ({
             >
                 <ChevronRightIcon className="h-4 w-4 text-[var(--primary-foreground)]" />
             </button>
+
+            <LoaderShimmer isLoading={isLoading} />
         </form>
     );
 };

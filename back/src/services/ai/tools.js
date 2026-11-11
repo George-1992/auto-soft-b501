@@ -105,7 +105,7 @@ export const createPartsSearchTool = ({ workspaceId }) => tool({
                 orderBy: { updatedAt: 'desc' },
             });
 
-            logger.info('result from partsSearchTool:', result);
+            // logger.info('result from partsSearchTool:', result);
             return result;
         } catch (error) {
             logger.error('Parts Search Tool Error:', error?.message || error);

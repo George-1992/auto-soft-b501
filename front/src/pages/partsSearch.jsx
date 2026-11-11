@@ -215,15 +215,14 @@ export default function PartsSearchPage() {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center p-4">
-            {_messages.length !== 0 &&
-                <MessagesRenderer
-                    messages={_messages}
-                    onOptionClick={handleOptionClick}
-                />
-            }
+            <MessagesRenderer
+                messages={_messages}
+                onOptionClick={handleOptionClick}
+            />
 
             <div className="w-full flex">
                 <AiInput
+                    isLoaing
                     value={_inputValue}
                     onChange={handleInputChange}
                     onSubmit={handleSearch}
