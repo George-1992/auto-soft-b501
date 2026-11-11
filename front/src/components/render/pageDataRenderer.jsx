@@ -801,19 +801,17 @@ export default function DataRenderer({
             )}
 
             {/* tooltip */}
-            <div className="w-full py-2 gap-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-full md:w-60 relative rounded-md">
-                        <Input
-                            type="text"
-                            id="search"
-                            value={_searchQuery}
-                            onChange={(e) => _setSearchQuery(e.target.value)}
-                            placeholder={t('🔍Search...')}
-                            className="bg-white"
-                        />
-                        <LoaderShimmer isLoading={_loading} />
-                    </div>
+            <div className="w-full py-2 gap-3 flex flex-col md:flex-row items-center justify-between">
+                <div className="flex flex-wrap md:flex-row items-center justify-start gap-3">
+                    <Input
+                        type="text"
+                        id="search"
+                        value={_searchQuery}
+                        isLoading={_loading}
+                        onChange={(e) => _setSearchQuery(e.target.value)}
+                        placeholder={t('🔍Search...')}
+                        className="w-full md:w-60 relative rounded-md"
+                    />
                     {dataViewOptions && dataViewOptions.length > 0 &&
                         <div className="relative bg-white rounded-md flex items-center justify-between border border-gray-200 text-gray-400 shadow-sm">
                             <LoaderShimmer isLoading={_loading} />
@@ -850,7 +848,7 @@ export default function DataRenderer({
                         </PrimaryButton>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 relative rounded-md">
+                <div className="w-full md:w-fit flex items-center gap-3 relative rounded-md hust">
                     {
                         _selectedItems.length > 0 && (
                             <div className="flex items-center gap-1"    >

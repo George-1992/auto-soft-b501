@@ -54,7 +54,7 @@ function ThisEditComponent({
     };
 
     return (
-        <PopupModal isOpen={isOpen} onClose={onClose}>
+        <PopupModal isOpen={isOpen} onClose={onClose} className="w-11/12 md:w-[700px] max-h-11/12 overflow-y-auto">
             <div className="w-full flex flex-col gap-3 p-5">
                 <form className="flex flex-col gap-5" onSubmit={handleFormSubmit}>
                     <div className="w-full flex flex-col gap-1">

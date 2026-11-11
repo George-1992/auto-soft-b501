@@ -58,7 +58,7 @@ export default function Header({ items }) {
                         )}
                     </div>
 
-                    <WebpushButton />
+                    {/* <WebpushButton /> */}
                     {/* <LanguageSwitch /> */}
                     <div className="relative" ref={menuRef}>
                         <button
