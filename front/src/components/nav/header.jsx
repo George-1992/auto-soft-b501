@@ -47,9 +47,7 @@ export default function Header({ items }) {
 
                 {/* settings */}
                 <div className="flex items-center gap-2">
-                    <SecondaryButton onClick={test} className="px-3 py-1">
-                        Test-3
-                    </SecondaryButton>
+
 
 
                     <div>
@@ -100,6 +98,9 @@ export default function Header({ items }) {
                                     <LogOutIcon className="size-4" />
                                     <span>Logout</span>
                                 </NavLink>
+                                <SecondaryButton onClick={test} className="px-3 py-1">
+                                    Test-3
+                                </SecondaryButton>
                             </div>
                         )}
                     </div>

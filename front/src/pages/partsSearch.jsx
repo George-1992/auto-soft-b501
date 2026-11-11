@@ -211,18 +211,19 @@ export default function PartsSearchPage() {
     };
 
 
-    logger.info('Current messages:', _messages);
+    logger.info('Current messages:', _isLoading, _messages);
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center p-4">
             <MessagesRenderer
+                isLoading={_isLoading}
                 messages={_messages}
                 onOptionClick={handleOptionClick}
             />
 
             <div className="w-full flex">
                 <AiInput
-                    isLoaing
+                    isLoading={_isLoading}
                     value={_inputValue}
                     onChange={handleInputChange}
                     onSubmit={handleSearch}

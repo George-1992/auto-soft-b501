@@ -139,7 +139,7 @@ export default function Sidebar({ items = [], isFooter = false }) {
             <div
                 className={
                     "fixed inset-y-0 z-50 flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-in-out  " +
-                    "md:m-2 rounded-xl " +
+                    "md:m-2 md:rounded-xl " +
                     "border border-gray-400/40 bg-white bg-opacity-10 " +
                     "backdrop-blur-[12px] backdrop-saturate-[100%] " +
                     (isMobileViewport
