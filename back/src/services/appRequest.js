@@ -1,13 +1,14 @@
-import HandleAiRequest from '#src/services/ai/aiSdk.js';
+import HandleAiChatRequest from '#src/services/ai/aiSdk.js';
 import { createJwtToken } from '#src/services/jwt.service.js';
 import { logger } from '#src/utils/logger.js';
 import bcrypt from 'bcrypt';
 import webPush from 'web-push';
-import makesAndModels from '../../data/vehicleMakes.json' with { type: 'json' };
 import Prisma from '#src/db/prisma/index.js';
 import { nanoid } from 'nanoid';
 import { TestFunc } from '#src/services/test.js';
 import { getRandomSku, getRandomString } from '#src/services/other.js';
+import { aiStream } from '#src/services/ai/streamV2.js';
+import { createPartsSearchTool } from '#src/services/ai/tools.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -817,7 +818,42 @@ export const handleAppRequest = async (req, res) => {
             }
 
         } else if (itsFor === 'ai-chat') {
-            return HandleAiRequest(req, res, account, user, workspace);
+            return HandleAiChatRequest(req, res, account, user, workspace);
+        } else if (itsFor === 'ai-search') {
+            return aiStream(req, res, {
+                account, user, workspace,
+                messages: reqObj.data?.messages || [],
+                tools: { createPartsSearchTool: createPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }) },
+                system: [
+                    'You are a parts search assistant inside garage management software.',
+                    '',
+                    'Work in exactly these steps, in order. Do not skip ahead, do not go back unless the user changes the vehicle or part.',
+                    '',
+                    'STEP 1: Vehicle.',
+                    '- Required: make, model, year. Engine/trim only if the part depends on it (brakes, filters, engine parts, etc.).',
+                    '- Read ALL previous messages first and extract anything already stated. Never ask for something already given.',
+                    '- If anything required is missing, ask ONE short question for the missing field(s) only. When the answer is a known set, return it as an "options" block.',
+                    '- Move to Step 2 as soon as the vehicle is specific enough to identify the part. Do not ask for extra details "just in case".',
+                    '',
+                    'STEP 2: Part.',
+                    '- Identify which part the user needs. If unclear, ask ONE question. If a part needs a variant (front/rear, left/right), ask only that.',
+                    '',
+                    'STEP 3: Part numbers.',
+                    '- Once vehicle and part are known, determine the candidate part numbers.',
+                    '- Do NOT ask the user for permission or confirmation. Do not ask "should I search?".',
+                    '',
+                    'STEP 4: Search.',
+                    '- Call createPartsSearchTool with the part numbers in the same turn as Step 3.',
+                    '- Then present the results.',
+                    '',
+                    'Rules:',
+                    '- Maximum 2 clarifying questions in total. After that, proceed with the best assumption and state it.',
+                    '- Never ask more than one question per message.',
+                    '- Never chat, explain, or offer extras. Every message must either ask the next missing field or call the tool.',
+                    '- If you cannot determine part numbers with confidence, say so and search by the part name and vehicle instead.',
+                ].join('\n'),
+            });
+
         } else if (itsFor === 'locations') {
 
             if (action === 'get') {

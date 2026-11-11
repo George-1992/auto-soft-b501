@@ -12,7 +12,7 @@ import { DefaultChatTransport } from 'ai';
 const VITE_API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function AiAgent({ className, account, user }) {
-    const { messages, status, sendMessage } = useChat({
+    const { messages, status, error, sendMessage } = useChat({
         transport: new DefaultChatTransport({
             api: `${import.meta.env.VITE_API_URL}`,
             credentials: 'include', // Ensures cookies are sent with cross-origin requests
@@ -104,6 +104,12 @@ export default function AiAgent({ className, account, user }) {
         }
     }, [status]);
 
+    useEffect(() => {
+        if (error) {
+            console.error('AI chat request failed:', error);
+        }
+    }, [error]);
+
 
     return (
         <div className={cn(
@@ -125,6 +131,12 @@ export default function AiAgent({ className, account, user }) {
                         'pb-4'
                     )}
                 >
+                    {error && (
+                        <div className="p-3 rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm">
+                            {error.message || 'AI request failed'}
+                        </div>
+                    )}
+
                     {/* <div className='w-60 h-[750px] flex-shrink-0 bg-red-300'>placeholder</div> */}
 
                     {messages.map((message, msgIndex) => (

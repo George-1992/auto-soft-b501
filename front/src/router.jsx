@@ -8,7 +8,7 @@ import { createBrowserRouter, Outlet, redirect, RouterProvider } from 'react-rou
 import Header from '@/src/components/nav/header.jsx';
 import Sidebar from '@/src/components/nav/sidebar.jsx';
 import { setMetas } from '@/src/services/metas';
-import { BotIcon, BoxesIcon, CalendarDaysIcon, CalendarIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, RouteIcon, ShellIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
+import { BotIcon, BoxesIcon, CalendarDaysIcon, CalendarIcon, CarFrontIcon, HomeIcon, ListChevronsUpDownIcon, MapPinned, NotebookTabsIcon, PackageSearchIcon, RouteIcon, ScanSearchIcon, SearchIcon, ShellIcon, StretchHorizontalIcon, TestTubeDiagonalIcon, ToolboxIcon, UsersRoundIcon, WrenchIcon } from 'lucide-react';
 import ToasterSonnar from '@/src/components/ui/sonnar/sonnar';
 import Profile from '@/src/pages/profile';
 import Settings from '@/src/pages/settings';
@@ -23,6 +23,7 @@ import OrdersPage from '@/src/pages/orders';
 import PipelinesPage from '@/src/pages/pipelines';
 import InventoryPage from '@/src/pages/parts';
 import AppointmentsPage from '@/src/pages/appointments';
+import PartsSearchPage from '@/src/pages/partsSearch';
 
 // const AUTH_PATHS = GLOBALS.AUTH_PATHS || [];
 // const authRes = await auth();
@@ -133,7 +134,19 @@ const sidebarItems = [
         name: 'Inventory',
         icon: (props) => <BoxesIcon {...props} />,
         path: '/inventory',
-        subItems: []
+        expanded: true,
+        subItems: [
+            {
+                name: 'Search',
+                icon: (props) => <ScanSearchIcon {...props} />,
+                path: '/inventory/search',
+            },
+            {
+                name: 'Parts',
+                icon: (props) => <PackageSearchIcon {...props} />,
+                path: '/inventory/parts',
+            },
+        ]
     },
     // {
     //     name: 'Notes',
@@ -194,12 +207,15 @@ const router = createBrowserRouter([
             { path: 'locations', element: <LocationsPage /> },
             { path: 'customers', element: <CustomersPage /> },
             { path: 'vehicles', element: <VehiclesPage /> },
-            { path: 'inventory', element: <InventoryPage /> },
 
             { path: '/services/orders', element: <OrdersPage /> },
             { path: '/services/appointments', element: <AppointmentsPage /> },
             { path: '/services/services', element: <ServicesPage /> },
             { path: '/services/pipelines', element: <PipelinesPage /> },
+
+            { path: 'inventory/parts', element: <PartsSearchPage /> },
+            { path: 'inventory/search', element: <PartsSearchPage /> },
+
 
 
             { path: 'test', element: <Test /> },

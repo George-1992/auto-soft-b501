@@ -8,6 +8,32 @@ import { logger } from '#src/utils/logger.js';
 import Prisma from '#src/db/prisma/index.js';
 
 const aiModelName = 'gpt-5.4-nano'; // Valid OpenAI model
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+
+const normalizeAiError = (error) => {
+    const err = error || {};
+    const message = err?.message || 'Unknown AI error';
+    const name = err?.name || 'AIError';
+    const isMissingApiKey =
+        name === 'AI_LoadAPIKeyError' ||
+        message.toLowerCase().includes('api key is missing');
+
+    if (isMissingApiKey) {
+        return {
+            statusCode: 500,
+            code: 'OPENAI_API_KEY_MISSING',
+            message: 'AI service is not configured. Missing OPENAI_API_KEY on backend.',
+            details: message,
+        };
+    }
+
+    return {
+        statusCode: 500,
+        code: name,
+        message: 'AI request failed. Please try again.',
+        details: message,
+    };
+};
 // Define the tool with Zod schema directly
 const logToConsoleTool = tool({
     description: 'Log a message to the console',
@@ -98,11 +124,27 @@ const createDbRequestTool = (accountId) => tool({
 });
 
 
-export default async function HandleAiRequest(req, res, account, user, workspace) {
+export default async function HandleAiChatRequest(req, res, account, user, workspace) {
     try {
 
         if (!account || !user || !workspace) {
             return res.status(400).json({ error: 'Missing account, user, or workspace information' });
+        }
+
+        if (!OPENAI_API_KEY) {
+            const formatted = normalizeAiError(new Error('OpenAI API key is missing. Set OPENAI_API_KEY in backend env.'));
+            logger.error('AI Config Error:', {
+                code: formatted.code,
+                message: formatted.message,
+                details: formatted.details,
+            });
+            return res.status(formatted.statusCode).json({
+                success: false,
+                status: 'error',
+                code: formatted.code,
+                message: formatted.message,
+                details: formatted.details,
+            });
         }
 
         const { messages } = req.body;
@@ -116,7 +158,6 @@ export default async function HandleAiRequest(req, res, account, user, workspace
                 + `if tools return no data, null or empty array use it to form your response.`
                 + `if valid data is returned from the tool, use it to form your response.`
                 + `if asked about pipline it means lead stages: lead, pendingApp, screening, preQualified, preApproval, active, pastClients, other.`
-
             ,
             messages: await convertToModelMessages(messages),
             tools: {
@@ -127,12 +168,35 @@ export default async function HandleAiRequest(req, res, account, user, workspace
             stopWhen: stepCountIs(10),//to allow multiple tool calls then response
         });
 
-        // logger.info('result steps:', await result?.steps);
+        // logger.info('result steps:', await result);
 
-        return result.pipeUIMessageStreamToResponse(res);
+        return result.pipeUIMessageStreamToResponse(res, {
+            onError: (error) => {
+                const formatted = normalizeAiError(error);
+                logger.error('AI Stream Error:', {
+                    code: formatted.code,
+                    message: formatted.message,
+                    details: formatted.details,
+                });
+
+                // This string is sent as stream error text and can be surfaced by the chat client.
+                return `${formatted.code}: ${formatted.message}`;
+            },
+        });
 
     } catch (error) {
-        logger.error('Error handling AI request:', error?.message || error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        const formatted = normalizeAiError(error);
+        logger.error('Error handling AI request:', {
+            code: formatted.code,
+            message: formatted.message,
+            details: formatted.details,
+        });
+        return res.status(formatted.statusCode).json({
+            success: false,
+            status: 'error',
+            code: formatted.code,
+            message: formatted.message,
+            details: formatted.details,
+        });
     }
-}
+};

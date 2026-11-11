@@ -71,10 +71,15 @@ export const sendBackRequest = async ({
                 ...toSendData,
                 body: JSON.stringify(toSendData.body),
             });
+            const isStream = response.headers.get('Content-Type')?.includes('text/event-stream');
+            if (isStream) {
+                return response;
+            } else {
+                resObj = await response.json();
+            }
+
 
             //sync it to local db
-            resObj = await response.json();
-
             if (resObj.success) {
                 // logger.info('sendBackRequest: syncing data to local db');
                 localDataSync({
