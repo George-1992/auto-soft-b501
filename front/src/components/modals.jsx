@@ -37,7 +37,7 @@ const ModalBase = ({ isOpen, onClose, children, className = '', backdropClassNam
     return (
         <div
             className={`
-                fixed inset-0 pt-10 md:pt-20 z-50 
+                fixed inset-0 pt-5 md:pt-10 z-50 
                 flex items-start justify-center 
                  bg-black/50 backdrop-blur-sm ${backdropClassName}
               

@@ -2038,6 +2038,7 @@ export const PartsScalarFieldEnum = {
   id: 'id',
   status: 'status',
   sku: 'sku',
+  barcode: 'barcode',
   name: 'name',
   description: 'description',
   brand: 'brand',
@@ -2045,6 +2046,9 @@ export const PartsScalarFieldEnum = {
   price: 'price',
   quantity: 'quantity',
   partNumbers: 'partNumbers',
+  otherNames: 'otherNames',
+  minStock: 'minStock',
+  supplier: 'supplier',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   workspaceId: 'workspaceId'

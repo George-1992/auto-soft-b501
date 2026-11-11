@@ -1,9 +1,12 @@
 import { AiInput, MessagesRenderer, streamToData } from "@/src/components/ai/streamV2";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import { Input } from "@/src/components/ui/inputs";
+import Image from "@/src/components/wraps/image";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import _ from "lodash";
+import { CarIcon } from "lucide-react";
+import { use, useEffect } from "react";
 import { useState } from "react";
 
 const dummyMessages = [
@@ -156,6 +159,7 @@ export default function PartsSearchPage() {
     const [_inputValue, _setInputValue] = useState("");
     const [_isLoading, _setIsLoading] = useState(false);
     const [_messages, _setMessages] = useState([]);
+    const [_vehicleInfo, _setVehicleInfo] = useState(null);
 
     const handleInputChange = (v) => {
         _setInputValue(v);
@@ -191,7 +195,15 @@ export default function PartsSearchPage() {
             }
 
             streamToData(response.body, (incoming) => {
+                logger.info('Incoming stream data:', incoming);
                 _setMessages((prev) => [...prev, ...incoming.filter(Boolean)]);
+                _setIsLoading(false);
+
+                if (incoming && incoming.length > 0) {
+                    if (incoming[incoming.length - 1].vehicle) {
+                        _setVehicleInfo(incoming[incoming.length - 1].vehicle);
+                    }
+                }
             }, null);
 
             _setInputValue('');
@@ -199,7 +211,7 @@ export default function PartsSearchPage() {
         } catch (error) {
             logger.error('Error searching for parts:', error);
         } finally {
-            _setIsLoading(false);
+            // _setIsLoading(false);
         }
     };
 
@@ -210,11 +222,27 @@ export default function PartsSearchPage() {
         handleSearch(option.value || '');
     };
 
+    // useEffect(() => {
+    //     // logger.info('Messages updated:', _messages.length);
+    //     if (_isLoading) {
+    //         // logger.info('Loading state is true, waiting for messages to update...');
+    //         _setIsLoading(false);
+    //     }
+    // }, [_messages.length]);
 
     logger.info('Current messages:', _isLoading, _messages);
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center p-4">
+
+            {
+                _vehicleInfo && (
+                    <div className="w-full mb-4">
+                        <SearchVehicleCard vehicleInfo={_vehicleInfo} />
+                    </div>
+                )
+            }
+
             <MessagesRenderer
                 isLoading={_isLoading}
                 messages={_messages}
@@ -233,4 +261,88 @@ export default function PartsSearchPage() {
     );
 }
 
+
+
+export const SearchVehicleCard = ({ vehicleInfo }) => {
+    if (!vehicleInfo) return null;
+
+    const {
+        image,
+        make,
+        model,
+        yearFrom,
+        yearTo,
+        generation,
+        trim,
+        bodyType,
+        doors,
+        fuelType,
+    } = vehicleInfo;
+
+    // Formatted year range
+    const yearDisplay = yearFrom
+        ? yearTo && yearTo !== yearFrom
+            ? `${yearFrom}–${yearTo}`
+            : yearFrom
+        : null;
+
+    // Filter out null/undefined details into tag pills so no vertical space is wasted
+    const details = [
+        yearDisplay && { label: 'Year', value: yearDisplay },
+        generation && { label: 'Gen', value: generation },
+        trim && { label: 'Trim', value: trim },
+        bodyType && { label: 'Body', value: bodyType },
+        fuelType && { label: 'Fuel', value: fuelType },
+        doors && { label: 'Doors', value: `${doors}D` },
+    ].filter(Boolean);
+
+    return (
+        <div className="flex h-32 w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+            {/* LEFT SIDE: Image Container */}
+            <div className="relative w-36 shrink-0 bg-slate-100">
+                {image ? (
+                    <img
+                        src={image}
+                        alt={`${make || 'Vehicle'} ${model || ''}`}
+                        className="h-full w-full object-cover"
+                    />
+                ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center p-2 text-slate-400">
+                        <CarIcon className="h-8 w-8" />
+                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            No Image
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* RIGHT SIDE: Text & Details Container */}
+            <div className="flex flex-1 flex-col justify-between p-3 min-w-0">
+                {/* Title & Year Line */}
+                <div>
+                    <h3 className="truncate text-base font-bold tracking-tight text-slate-900">
+                        {make || 'Unknown Make'} {model || 'Model'}
+                    </h3>
+                </div>
+
+                {/* Compact Tag Pills (Flex Wrap) */}
+                <div className="flex flex-wrap gap-1.5 overflow-hidden">
+                    {details.length > 0 ? (
+                        details.map((item, idx) => (
+                            <span
+                                key={idx}
+                                className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
+                            >
+                                <span className="text-slate-400 mr-1">{item.label}:</span>
+                                <strong className="font-semibold text-slate-900">{item.value}</strong>
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-xs text-slate-400">No additional details</span>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
 

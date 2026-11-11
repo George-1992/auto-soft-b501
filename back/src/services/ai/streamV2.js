@@ -149,7 +149,22 @@ const responseSchema = z.object({
             'Only add an "options" block when the user must pick from a fixed, known set of answers. ' +
             'Never add blocks for open ended answers.'
         ),
-});
+    vehicle: z.object({
+        image: z.string().nullable().describe('Image URL of the vehicle from the search query, if known.'),
+        make: z.string().nullable(),
+        model: z.string().nullable(),
+        yearFrom: z.number().nullable(),
+        yearTo: z.number().nullable(),
+        generation: z.string().nullable(),
+        trim: z.string().nullable(),
+        bodyType: z.string().nullable(),
+        doors: z.number().nullable(),
+        fuelType: z.string().nullable(),
+    }).nullable().describe(
+        'Vehicle identified so far. Fill on every response with everything known, null for unknown fields. ' +
+        'make, model and yearFrom must all be set before any part search.'
+    ),
+})
 
 export const aiRequest = async ({ system = '', messages = [], account, tools = {} }) => {
     const msgs = [...messages];
@@ -164,6 +179,8 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
             addMessage({
                 role: 'assistant',
                 content: 'Hello! How can I assist you today?',
+                render: [],
+                vehicle: null,
             });
             return msgs;
         }
@@ -185,11 +202,14 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
 
         const out = response.output;
         // logger.info('AI Request Response:', out);
-        addMessage({
-            role: 'assistant',
-            content: out.content,
-            render: out.render,
-        });
+        // addMessage({
+        //     role: 'assistant',
+        //     content: out.content,
+        //     render: out.render,
+        //     vehicle: out.vehicle ?? null,
+        // });
+
+        addMessage({ ...out, role: 'assistant' });
 
     } catch (error) {
         const formatted = normalizeAiError(error);

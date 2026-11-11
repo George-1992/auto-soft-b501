@@ -9,6 +9,9 @@ import { TestFunc } from '#src/services/test.js';
 import { getRandomSku, getRandomString } from '#src/services/other.js';
 import { aiStream } from '#src/services/ai/streamV2.js';
 import { createPartsSearchTool } from '#src/services/ai/tools.js';
+import { generateText, Output, stepCountIs } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { z } from 'zod';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -820,6 +823,44 @@ export const handleAppRequest = async (req, res) => {
         } else if (itsFor === 'ai-chat') {
             return HandleAiChatRequest(req, res, account, user, workspace);
         } else if (itsFor === 'ai-search') {
+            // return aiStream(req, res, {
+            //     account, user, workspace,
+            //     messages: reqObj.data?.messages || [],
+            //     tools: { createPartsSearchTool: createPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }) },
+            //     system: [
+            //         'You are a parts search assistant inside garage management software.',
+            //         '',
+            //         'Work in exactly these steps, in order. Do not skip ahead, do not go back unless the user changes the vehicle or part.',
+            //         '',
+            //         'STEP 1: Vehicle.',
+            //         '- Required: make, model, year. Engine/trim only if the part depends on it (brakes, filters, engine parts, etc.).',
+            //         '- Read ALL previous messages first and extract anything already stated. Never ask for something already given.',
+            //         '- If anything required is missing, ask ONE short question for the missing field(s) only. When the answer is a known set, return it as an "options" block.',
+            //         '- Move to Step 2 as soon as the vehicle is specific enough to identify the part. Do not ask for extra details "just in case".',
+            //         '',
+            //         'STEP 2: Part.',
+            //         '- Identify which part the user needs. If unclear, ask ONE question. If a part needs a variant (front/rear, left/right), ask only that.',
+            //         '',
+            //         'STEP 3: Part numbers.',
+            //         '- ALWAYS call web_search first to find OEM part numbers for the exact vehicle and part. Never rely on memory alone.',
+            //         '- Search for the make, model, year, part and variant, for example: "2016 Mercedes CLS550 W218 rear brake pads OEM part number".',
+            //         '- Only use numbers that appear in search results. If search finds nothing, say so in one line and ask for the VIN (counts as a clarifying question). Do not guess from memory.',
+            //         '- Write the numbers to the user in one short line before the inventory search, for example: "Candidate OEM numbers: X, Y, Z". Do not ask for confirmation.',
+            //         '',
+            //         'STEP 4: Search.',
+            //         '- In the same turn, right after that line, call createPartsSearchTool with those numbers.',
+            //         '- Never pass dummy values (like "00000000"). Pass all candidates in the partNumbers array.',
+            //         '- Only report inventory results that come from a createPartsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
+            //         '- Present the inventory results to the user.',
+            //         '',
+            //         'Rules:',
+            //         '- Maximum 2 clarifying questions in total. After that, proceed with the best assumption and state it.',
+            //         '- Never ask more than one question per message.',
+            //         '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, list the candidate part numbers and call createPartsSearchTool.',
+            //     ].join('\n'),
+            // });
+
+
             return aiStream(req, res, {
                 account, user, workspace,
                 messages: reqObj.data?.messages || [],
@@ -827,16 +868,21 @@ export const handleAppRequest = async (req, res) => {
                 system: [
                     'You are a parts search assistant inside garage management software.',
                     '',
-                    'Work in exactly these steps, in order. Do not skip ahead, do not go back unless the user changes the vehicle or part.',
+                    'The vehicle must be fully identified before anything else. Do not discuss, ask about, or search for any part until the vehicle is confirmed.',
                     '',
-                    'STEP 1: Vehicle.',
-                    '- Required: make, model, year. Engine/trim only if the part depends on it (brakes, filters, engine parts, etc.).',
+                    'STEP 1: Identify the vehicle (mandatory, always first).',
+                    '- Required: make, model, year. Also required: engine or trim when the part could depend on it.',
                     '- Read ALL previous messages first and extract anything already stated. Never ask for something already given.',
-                    '- If anything required is missing, ask ONE short question for the missing field(s) only. When the answer is a known set, return it as an "options" block.',
-                    '- Move to Step 2 as soon as the vehicle is specific enough to identify the part. Do not ask for extra details "just in case".',
+                    '- Fill the "vehicle" field in every response with everything known so far. Use null for unknown fields.',
+                    '- If the user mentions a part before the vehicle is known, ignore the part for now and ask for the missing vehicle detail. Remember the part and use it in Step 2.',
+                    '- If anything required is missing, ask ONE short question for the missing field only. When the answer is a known set, return it as an "options" block.',
+                    '- The vehicle counts as identified only when make, model and year are all set in the "vehicle" field.',
+                    '- Do not move to Step 2 until the vehicle is identified.',
                     '',
                     'STEP 2: Part.',
-                    '- Identify which part the user needs. If unclear, ask ONE question. If a part needs a variant (front/rear, left/right), ask only that.',
+                    '- Only start this step after the vehicle is identified.',
+                    '- Identify which part the user needs. If the user already named it earlier, use it and do not ask again.',
+                    '- If unclear, ask ONE question. If the part needs a variant (front/rear, left/right), ask only that.',
                     '',
                     'STEP 3: Part numbers.',
                     '- ALWAYS call web_search first to find OEM part numbers for the exact vehicle and part. Never rely on memory alone.',
@@ -851,11 +897,71 @@ export const handleAppRequest = async (req, res) => {
                     '- Present the inventory results to the user.',
                     '',
                     'Rules:',
+                    '- If the user changes the vehicle at any point, return to Step 1 and re-identify it before searching again.',
                     '- Maximum 2 clarifying questions in total. After that, proceed with the best assumption and state it.',
                     '- Never ask more than one question per message.',
                     '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, list the candidate part numbers and call createPartsSearchTool.',
                 ].join('\n'),
             });
+
+        } else if (itsFor === 'ai-partNumber-search') {
+
+            const query = reqObj.data?.query || '';
+            if (!query) {
+                resObj.success = false;
+                resObj.message = 'Missing query for ai-partNumber-search';
+                resObj.status = 'error';
+                return res.json(resObj);
+            };
+
+            const response = await generateText({
+                // model: openai('gpt-6-luna'),
+                // model: google('gemini-3.8-flash'),
+                model: anthropic('claude-haiku-5-5'),
+                messages: reqObj.data?.message || [{
+                    role: 'user',
+                    content: query,
+                }],
+                system: [
+                    'You are a parts search assistant inside parts store management software.',
+                    'The goal is to search and find the vehicle part number details and any relevant part number',
+                    '',
+                ].join('\n'),
+                tools: {
+                    // ...tools,
+                    web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
+                },
+                stopWhen: stepCountIs(3),
+                output: Output.object({
+                    schema: z.object({
+                        name: z.string().describe('make, model, year, engine/trim of the vehicle, part name and variant if applicable, in one line'),
+                        brand: z.string().describe('brand of the part if known, otherwise empty string'),
+                        description: z.string().describe('description of the part if known, otherwise empty string'),
+                        partNumbers: z
+                            .array(z.string())
+                            .describe('Array of candidate part numbers found in search results. Return an empty array [] if none found.'),
+                        otherNames: z
+                            .array(z.string())
+                            .describe('Array of other names or synonyms for the part if known, otherwise empty array []'),
+                    })
+                }),
+            });
+
+            const out = response.output;
+
+            // logger.info('ai-partNumbers response.out:', out);
+
+            if (!out || !out.name || !Array.isArray(out.partNumbers)) {
+                resObj.success = false;
+                resObj.message = 'AI response is missing required fields';
+                resObj.status = 'error';
+                return res.json(resObj);
+            }
+
+            resObj.success = true;
+            resObj.message = 'part number search completed successfully';
+            resObj.data = out;
+            resObj.status = 'success';
 
         } else if (itsFor === 'locations') {
 
