@@ -7,6 +7,8 @@ import { internetConnection } from "@/src/services/validation";
 const VITE_API_URL = import.meta.env.VITE_API_URL || '';
 const IS_DEV = GLOBALS.IS_DEV;
 
+// logger.info('backend service initialized', { VITE_API_URL, IS_DEV });
+
 export const endpoint = () => {
     // const protocol = IS_DEV ? 'http' : 'https';
     const url = `${VITE_API_URL}`;

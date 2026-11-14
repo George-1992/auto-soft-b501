@@ -1,5 +1,6 @@
-import { AiInput, MessagesRenderer, streamToData } from "@/src/components/ai/streamV2";
+import { AiInput, MessagesRenderer, streamToData } from "@/src/components/ai/parts";
 import { PrimaryButton } from "@/src/components/ui/buttons";
+import CopyEl from "@/src/components/ui/copyEl";
 import { Input } from "@/src/components/ui/inputs";
 import Image from "@/src/components/wraps/image";
 import { sendBackRequest } from "@/src/services/backend";
@@ -180,15 +181,9 @@ const dummyMessages2 = [
 export default function PartsSearchPage() {
 
 
-    const [_inputValue, _setInputValue] = useState("");
     const [_isLoading, _setIsLoading] = useState(false);
     const [_messages, _setMessages] = useState([]);
     const [_vehicleInfo, _setVehicleInfo] = useState(null);
-    const [_mediaFiles, _setMediaFiles] = useState([]);
-
-    const handleInputChange = (v) => {
-        _setInputValue(v);
-    };
 
 
     const mediasToMessageObject = async (medias = []) => {
@@ -200,15 +195,16 @@ export default function PartsSearchPage() {
         );
     };
 
-    const handleSearch = async (e) => {
-        e?.preventDefault?.();
+    const handleSearch = async (aiInput = { text: '', files: [] }) => {
+        // e?.preventDefault?.();
 
         try {
-            const txt = typeof e === 'string' ? e : _inputValue;
-            if (!txt || txt.trim() === '') {
-                logger.warn('Input value is empty. Please enter a search term.');
-                return;
-            };
+            let txt = aiInput?.text || '';
+            const _mediaFiles = aiInput?.files || [];
+
+            if (!txt) {
+                txt = _mediaFiles.map((file, index) => file.name + (index < _mediaFiles.length - 1 ? ', ' : '')).join('');
+            }
 
             const newMessages = [..._messages, { role: 'user', content: txt }];
             const mediaObjects = await mediasToMessageObject(_mediaFiles);
@@ -252,8 +248,6 @@ export default function PartsSearchPage() {
                 }
             }, null);
 
-            _setInputValue('');
-            _setMediaFiles([]);
 
         } catch (error) {
             logger.error('Error searching for parts:', error);
@@ -269,27 +263,7 @@ export default function PartsSearchPage() {
         handleSearch(option.value || '');
     };
 
-    const handleCameraCapture = (file) => {
-        if (!file) return;
 
-        logger.info('Captured image file:', {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-        });
-
-        // Placeholder until image upload is wired to backend.
-        _setInputValue((prev) => `${prev}${prev ? '\n' : ''}[image: ${file.name}]`);
-        _setMediaFiles((prev) => [...prev, file]);
-    };
-
-    // useEffect(() => {
-    //     // logger.info('Messages updated:', _messages.length);
-    //     if (_isLoading) {
-    //         // logger.info('Loading state is true, waiting for messages to update...');
-    //         _setIsLoading(false);
-    //     }
-    // }, [_messages.length]);
 
     logger.info('Current messages:', _isLoading, _messages);
 
@@ -312,12 +286,17 @@ export default function PartsSearchPage() {
 
             <div className="w-full flex">
                 <AiInput
+                    // onChange={handleInputChange}
+                    // onSubmit={handleSearch}
+                    // onMediaAdd={onMediaAdd}
+
                     isLoading={_isLoading}
-                    value={_inputValue}
-                    onChange={handleInputChange}
-                    onSubmit={handleSearch}
-                    onCameraCapture={handleCameraCapture}
                     isCamera={true}
+                    isUpload={true}
+                    onSend={(data) => {
+                        // logger.info('AiInput onSend data:', data);
+                        handleSearch(data);
+                    }}
                 />
             </div>
         </div>
@@ -382,10 +361,11 @@ export const SearchVehicleCard = ({ vehicleInfo }) => {
             {/* RIGHT SIDE: Text & Details Container */}
             <div className="flex flex-1 flex-col justify-between p-3 min-w-0">
                 {/* Title & Year Line */}
-                <div>
+                <div >
                     <h3 className="truncate text-base font-bold tracking-tight text-slate-900">
                         {make || 'Unknown Make'} {model || 'Model'}
                     </h3>
+                    <CopyEl text={vehicleInfo?.vin || 'Unknown VIN'} />
                 </div>
 
                 {/* Compact Tag Pills (Flex Wrap) */}

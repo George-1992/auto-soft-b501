@@ -6,6 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    allowedHosts: ['dev-b501.stepanyan.me'],
+  },
   plugins: [
     react(), tailwindcss(),
     VitePWA({
@@ -51,4 +54,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './'),
     },
   },
+
 })

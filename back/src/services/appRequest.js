@@ -8,7 +8,7 @@ import { nanoid } from 'nanoid';
 import { TestFunc } from '#src/services/test.js';
 import { getRandomSku, getRandomString } from '#src/services/other.js';
 import { aiStream } from '#src/services/ai/streamV2.js';
-import { createPartsSearchTool } from '#src/services/ai/tools.js';
+import { createPartsSearchTool, createVinSearchTool } from '#src/services/ai/tools.js';
 import { generateText, Output, stepCountIs } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
@@ -864,18 +864,22 @@ export const handleAppRequest = async (req, res) => {
             return aiStream(req, res, {
                 account, user, workspace,
                 messages: reqObj.data?.messages || [],
-                tools: { createPartsSearchTool: createPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }) },
+                tools: {
+                    partsSearchTool: createPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }),
+                    vinSearchTool: createVinSearchTool({ vin: '' }),
+                },
                 system: [
                     'You are a parts search assistant inside garage management software.',
                     '',
                     'The vehicle must be fully identified before anything else. Do not discuss, ask about, or search for any part until the vehicle is confirmed.',
                     '',
                     'STEP 1: Identify the vehicle (mandatory, always first).',
+                    '- Read ALL previous messages first and extract anything already stated (including any VIN, make, model, year, engine, or trim). Never ask for something already given.',
+                    '- VIN Priority: If a 17-character VIN is provided or available in the conversation, immediately call `vinSearchTool` to decode it and populate the "vehicle" fields before asking the user any questions.',
                     '- Required: make, model, year. Also required: engine or trim when the part could depend on it.',
-                    '- Read ALL previous messages first and extract anything already stated. Never ask for something already given.',
                     '- Fill the "vehicle" field in every response with everything known so far. Use null for unknown fields.',
-                    '- If the user mentions a part before the vehicle is known, ignore the part for now and ask for the missing vehicle detail. Remember the part and use it in Step 2.',
-                    '- If anything required is missing, ask ONE short question for the missing field only. When the answer is a known set, return it as an "options" block.',
+                    '- If the user mentions a part before the vehicle is known, ignore the part for now and resolve the missing vehicle details (via `vinSearchTool` if a VIN is present, or by asking). Remember the part and use it in Step 2.',
+                    '- If anything required is still missing (and no VIN was provided to decode it), ask ONE short question for the missing field only. When the answer is a known set, return it as an "options" block.',
                     '- The vehicle counts as identified only when make, model and year are all set in the "vehicle" field.',
                     '- Do not move to Step 2 until the vehicle is identified.',
                     '',
@@ -891,16 +895,16 @@ export const handleAppRequest = async (req, res) => {
                     '- Write the numbers to the user in one short line before the inventory search, for example: "Candidate OEM numbers: X, Y, Z". Do not ask for confirmation.',
                     '',
                     'STEP 4: Search.',
-                    '- In the same turn, right after that line, call createPartsSearchTool with those numbers.',
+                    '- In the same turn, right after that line, call partsSearchTool with those numbers.',
                     '- Never pass dummy values (like "00000000"). Pass all candidates in the partNumbers array.',
-                    '- Only report inventory results that come from a createPartsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
+                    '- Only report inventory results that come from a partsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
                     '- Present the inventory results to the user.',
                     '',
                     'Rules:',
                     '- If the user changes the vehicle at any point, return to Step 1 and re-identify it before searching again.',
                     '- Maximum 2 clarifying questions in total. After that, proceed with the best assumption and state it.',
                     '- Never ask more than one question per message.',
-                    '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, list the candidate part numbers and call createPartsSearchTool.',
+                    '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, list the candidate part numbers and call partsSearchTool.',
                 ].join('\n'),
             });
 

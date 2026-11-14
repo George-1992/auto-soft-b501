@@ -1,5 +1,6 @@
 
 import Prisma from "#src/db/prisma/index.js";
+import { fetchFromNHTSA } from "#src/services/nhtsa.js";
 import { logger } from "#src/utils/logger.js";
 import { tool } from "ai";
 import { z } from "zod";
@@ -126,5 +127,24 @@ export const createFindPartNumbersTool = ({ workspaceId }) => tool({
     execute: async ({ make, model, year, engine, part }) => {
         // query your fitment source here and return { partNumbers: [...] }
         return { partNumbers: [] };
+    },
+});
+
+
+export const createVinSearchTool = ({ vin ='' }) => tool({
+    description: 'Search for vehicle information by VIN using the NHTSA API.',
+    inputSchema: z.object({
+        vin: z.string().length(17).describe('The 17-character VIN to search for.'),
+    }),
+    execute: async ({ vin }) => {
+        try {
+            logger.info('=======  TOOL START: vinSearchTool ======');
+            logger.info({ vin });
+            const result = await fetchFromNHTSA({ vin });
+            return result;
+        } catch (error) {
+            logger.error('VIN Search Tool Error:', error?.message || error);
+            return { error: error?.message || 'error searching VIN' };
+        }
     },
 });

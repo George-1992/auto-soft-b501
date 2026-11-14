@@ -150,7 +150,7 @@ const responseSchema = z.object({
             'Never add blocks for open ended answers.'
         ),
     vehicle: z.object({
-        image: z.string().nullable().describe('Image URL of the vehicle from the search query, if known.'),
+        vin: z.string().describe('VIN of the vehicle from the search query, or "" if unknown.'), image: z.string().nullable().describe('Image URL of the vehicle from the search query, if known.'),
         make: z.string().nullable(),
         model: z.string().nullable(),
         yearFrom: z.number().nullable(),
@@ -201,9 +201,9 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
         });
 
         const out = response.output;
-        const usage = response?.totalUsage ||response.usage || {};
+        const usage = response?.totalUsage || response.usage || {};
         logger.info('AI Request usage:', usage);
-        
+
         // logger.info('AI Request Response:', out);
         // addMessage({
         //     role: 'assistant',

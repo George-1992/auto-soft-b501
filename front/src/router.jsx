@@ -81,6 +81,24 @@ const sidebarItems = [
         subItems: []
     },
     {
+        name: 'Inventory',
+        icon: (props) => <BoxesIcon {...props} />,
+        path: '/inventory',
+        expanded: true,
+        subItems: [
+            {
+                name: 'Search',
+                icon: (props) => <ScanSearchIcon {...props} />,
+                path: '/inventory/search',
+            },
+            {
+                name: 'Parts',
+                icon: (props) => <PackageSearchIcon {...props} />,
+                path: '/inventory/parts',
+            },
+        ]
+    },
+    {
         name: 'Services',
         icon: (props) => <ToolboxIcon {...props} />,
         path: '/services',
@@ -129,24 +147,6 @@ const sidebarItems = [
         icon: (props) => <CarFrontIcon {...props} />,
         path: '/vehicles',
         subItems: []
-    },
-    {
-        name: 'Inventory',
-        icon: (props) => <BoxesIcon {...props} />,
-        path: '/inventory',
-        expanded: true,
-        subItems: [
-            {
-                name: 'Search',
-                icon: (props) => <ScanSearchIcon {...props} />,
-                path: '/inventory/search',
-            },
-            {
-                name: 'Parts',
-                icon: (props) => <PackageSearchIcon {...props} />,
-                path: '/inventory/parts',
-            },
-        ]
     },
     // {
     //     name: 'Notes',
