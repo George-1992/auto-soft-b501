@@ -4,6 +4,7 @@ import { Input } from "@/src/components/ui/inputs";
 import Image from "@/src/components/wraps/image";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
+import { fileToBase64 } from "@/src/services/other";
 import _ from "lodash";
 import { CarIcon } from "lucide-react";
 import { use, useEffect } from "react";
@@ -152,6 +153,29 @@ const dummyMessages = [
         ]
     }
 ];
+const dummyMessages2 = [
+    {
+        "role": "user",
+        "content": "[image: Screenshot_562 (1).png]"
+    },
+    {
+        "content": "Vehicle identified from the registration: 2012 Mercedes-Benz CLS 550 coupe, White Pearl, 300 kW / 408 hp. Which part do you need?",
+        "render": [],
+        "vehicle": {
+            "image": null,
+            "make": "Mercedes-Benz",
+            "model": "CLS 550",
+            "yearFrom": 2012,
+            "yearTo": null,
+            "generation": null,
+            "trim": null,
+            "bodyType": "Coupe",
+            "doors": null,
+            "fuelType": null
+        },
+        "role": "assistant"
+    }
+]
 
 export default function PartsSearchPage() {
 
@@ -160,9 +184,20 @@ export default function PartsSearchPage() {
     const [_isLoading, _setIsLoading] = useState(false);
     const [_messages, _setMessages] = useState([]);
     const [_vehicleInfo, _setVehicleInfo] = useState(null);
+    const [_mediaFiles, _setMediaFiles] = useState([]);
 
     const handleInputChange = (v) => {
         _setInputValue(v);
+    };
+
+
+    const mediasToMessageObject = async (medias = []) => {
+        return await Promise.all(
+            medias.map(async (file) => ({
+                type: 'image',
+                image: await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
+            }))
+        );
     };
 
     const handleSearch = async (e) => {
@@ -176,13 +211,24 @@ export default function PartsSearchPage() {
             };
 
             const newMessages = [..._messages, { role: 'user', content: txt }];
+            const mediaObjects = await mediasToMessageObject(_mediaFiles);
+            const userMessageForApi = {
+                role: 'user',
+                content: mediaObjects.length > 0
+                    ? [{ type: 'text', text: txt }, ...mediaObjects]
+                    : txt,
+            };
+            // logger.info('mediaObjects:', mediaObjects);
+            // return;
+
             _setMessages(newMessages);
             _setIsLoading(true);
+
             const response = await sendBackRequest({
                 itsFor: 'ai-search',
                 action: 'searchParts',
                 data: {
-                    messages: newMessages,
+                    messages: [...newMessages, userMessageForApi],
                 },
             });
 
@@ -207,6 +253,7 @@ export default function PartsSearchPage() {
             }, null);
 
             _setInputValue('');
+            _setMediaFiles([]);
 
         } catch (error) {
             logger.error('Error searching for parts:', error);
@@ -222,6 +269,20 @@ export default function PartsSearchPage() {
         handleSearch(option.value || '');
     };
 
+    const handleCameraCapture = (file) => {
+        if (!file) return;
+
+        logger.info('Captured image file:', {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+        });
+
+        // Placeholder until image upload is wired to backend.
+        _setInputValue((prev) => `${prev}${prev ? '\n' : ''}[image: ${file.name}]`);
+        _setMediaFiles((prev) => [...prev, file]);
+    };
+
     // useEffect(() => {
     //     // logger.info('Messages updated:', _messages.length);
     //     if (_isLoading) {
@@ -233,7 +294,7 @@ export default function PartsSearchPage() {
     logger.info('Current messages:', _isLoading, _messages);
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center p-4">
+        <div className="w-full h-[calc(100vh-11.5rem)] flex flex-col items-center justify-center p-2 md:p-4">
 
             {
                 _vehicleInfo && (
@@ -255,6 +316,8 @@ export default function PartsSearchPage() {
                     value={_inputValue}
                     onChange={handleInputChange}
                     onSubmit={handleSearch}
+                    onCameraCapture={handleCameraCapture}
+                    isCamera={true}
                 />
             </div>
         </div>

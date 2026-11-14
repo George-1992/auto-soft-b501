@@ -7,15 +7,16 @@ import middleware from '#src/middleware/middleware.js';
 import cookieParser from 'cookie-parser';
 
 
-const __dirname =  path.resolve(path.dirname(''));
+const __dirname = path.resolve(path.dirname(''));
 const corsOptions = {
     origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173',],
     credentials: true,
 };
- 
+
 const app = express();
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 app.use(middleware);
 app.use(attachLogger);

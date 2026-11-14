@@ -201,6 +201,9 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
         });
 
         const out = response.output;
+        const usage = response?.totalUsage ||response.usage || {};
+        logger.info('AI Request usage:', usage);
+        
         // logger.info('AI Request Response:', out);
         // addMessage({
         //     role: 'assistant',

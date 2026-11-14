@@ -295,13 +295,13 @@ function ThisEditComponent({
     ];
 
     return (
-        <PopupModal isOpen={isOpen} onClose={onClose} className="w-11/12 md:w-[700px] px-3">
+        <PopupModal isOpen={isOpen} onClose={onClose} className="w-11/12 md:w-[700px] px-3 ">
             <div className="w-full">
                 <div className="search w-full bg-slate-200 rounded-md p-2 shadow-sm">
                     <div className="flex items-center gap-2 mb-1">
                         <SearchIcon className="w-5 h-5 text-sky-700" />
                         <label htmlFor="">
-                            {t('Search for part details by part number or name')}
+                            {t('Searchby part number or name')}
                         </label>
 
                     </div>
@@ -325,7 +325,7 @@ function ThisEditComponent({
                     </div>
                 </div>
                 <div className="h-7"></div>
-                <form id={formId} className="flex flex-col gap-5 overflow-y-auto max-h-[clamp(300px,70dvh,800px)]" onSubmit={handleFormSubmit}>
+                <form id={formId} className="flex flex-col gap-5 overflow-y-auto max-h-[clamp(300px,55dvh,800px)] md:max-h-[clamp(300px,80dvh,800px)]" onSubmit={handleFormSubmit}>
 
                     {inputs.map((row, rowIndex) => (
                         <div key={rowIndex} className="w-full flex flex-col md:flex-row gap-1">

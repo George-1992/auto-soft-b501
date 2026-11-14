@@ -258,3 +258,17 @@ export const toDisplayDate = (value, options = { defaultValue: 'n/a' }) => {
         return options.defaultValue;
     }
 }
+
+export const fileToBase64 = (file) => {
+    try {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    } catch (error) {
+        logger.error('fileToBase64 error ==> ', error);
+        return null;
+    }
+};
