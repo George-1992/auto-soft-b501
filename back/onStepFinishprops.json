@@ -1,0 +1,147 @@
+{
+  "callId": "call-j9US1IGzevVKLNZLbnAVTeRz",
+  "stepNumber": 1,
+  "model": {
+    "provider": "anthropic.messages",
+    "modelId": "claude-haiku-5-5"
+  },
+  "runtimeContext": {},
+  "toolsContext": {},
+  "content": [
+    {
+      "type": "reasoning",
+      "text": "",
+      "providerMetadata": {
+        "anthropic": {
+          "signature": "CAQS0QsKEAgTGAI4AUIIdGhpbmtpbmcSDOoiyAxz6DKwIfPRUBoMXiJYA+ByB5zYUriGIjAPzhtbtlTZT2W9s/nGZmq2ktbRmMpWREfVc8BvhJI8TZUGcS2bjT35f31f/KoFqs0q7grwotypt9hrF1JCocJk4wf/fv4faPH3VffW2bD1gJlOFG+43n7b96aANZn7KwVDj289SVTl+0iW4bE9OWgKWk1SJeW+xii2p6yOLZYleE04LUS2WitVL6Exx8RcyzrKWSLP2YsezWoJufkacnUXinrDBucNSkn/QcWYv73UYZ5SVsDSmai/jaQDI7KPl1Hzlud2TYszD15hU3i5I7BzY7DavP3TFC807sbpihpGUO8WPxBAUpdmU/N9Grzm32D7yKQstYvq5eOMNKulK14Mlr4Gcj6/kKTVzYT9pa2nZdLeAumTNZJnWPeOUB5rbVzNhPIRguvaXQGni1jMf0bw6V4j521uYl8dxO+Ax+bHKhHeqbYMMjDTtiPeXvuUadhtaqIgSJWIsob40Jfx+927cg38weZc/jABaMbHYLqkeR/AORx4iBp5kOrZWanNeh3YxsKwUYcNO4o0nOQg2Ez42DZnYsp+0X31Qu5hXEx1TvhI1+j5J5bM80Z3TaOJdSa1OW3gaQdkSQ0hiCORo5zOXksHg9MEVwIBeTeB133+Eb5zZ1tayVV4G3fDKOFleuUqfmXs8c9n/Vhnyg61YvdBfNAqUYLcoLcVmaCANkfZKIJjlYmYuG2R2iWUQu07hhqi/ieGc5B2rznLt64n+wW09KMpgtMPaVS2IsTPFG7tYxIEonJPyJuaRM5FiArjTnqhZEWyYSjVyqUU8veg5CKZWK0Mnlg7YQv5eHVjV46h3SxQwoW5W716txlmbQ/p+cQnVoQsj13AXQURiP6RMZwnfa8pVO8t8osV/ny0mDpIubpPVHS+sK0CEdIZEklpaYhajhL0nrLqmk/FvpOQNCsYBktjxH6O/72eWMuG9zQ7JNI27ev+epiDlQfqlYAWff7RmIVV4k/BRdOGFsDg9tv2kBWCESDY5N7ratYGq3rLl/fzSbXT6mMR4WTCq2Gg7MUXCE+Rs/VdwhsXfK60qRwqHJvX3VW5/nZTTEzIYATYKP12UnXUuxpJ+CbxaHlTm7U4ha1eZnrRaIvCcKRGCwZIb2xLs3TdVWC1AQ+XXhpPa2PD81+XHnuKEOXYcqo1ZxC5r2b5B1GWbpNQUAXjrNON1Qu33kwk/HgJPR6T9M5MBYgtW/XRRTDtkZh1qBdehVFursH4hOBBxqb2/iWV0GvTlDnuSUVdguD3KS9EsfHHX9AKmPgi7Cuqto5VK3MisQSXxRzj0ZQM+yRtDzlFByKmSB1Qmnl6qNlxuWW/25kWCuNWjCENVlqlHXccoOCXa3QYuTihEFzo+OtLCdLRSwNjOf54O/Kw+meznhOpuDRyOK5YNUGcawZ5fNF/KCJ+iorhkmSPq9d8iOUGvGPBXNxz6iVGvMz1eITawk9Fuaffi4QcnHDPa52MehR95KZPg3zJ7955YgzmGgD+16n0btP1Fs07G4V3DRqrlFYEHKdi+6/zpB5Ko+zVAd+jACX029V+pddmm78lmxEQS2beeO/w/kbUs8Ks0BRZ2/kWxD6+S9EQVPWu6fxdkNiC1ejr5NIFJ94+L/yTjsuHTnWzdtnedOsYbBDqfGjGrubi4vxji5UoRBXnf5KH//H+4s/UISGaTuI4OQ8FT54MwSxAk8jSwku67sOLUOYuNHF7c99gTdie/FdmJfCo+dWDAVuKySMs8Mnc0S4kbhQjriiEc1w4EQJFYUWmw7KoHbGuabxR+1WjPXKClh8Vxom71KnpxfHW4iDlodhpozim7jrerK7aqt/dlgk0D/zWgiJx3UpsNkcwgDimlMn22STtAALW0u/mOTX8uTyZ1CTtIQsIFgFXLcyOz443JPv2v/n4TwTt57I8EMiDvfvtuN1TGho8CKX8GAE="
+        }
+      }
+    },
+    {
+      "type": "text",
+      "text": "{\"content\":[{\"type\":\"options\",\"prompt\":\"Vehicle identified: 2020 Chevrolet Trax LS. Which part do you need?\",\"options\":[{\"id\":\"1\",\"label\":\"Front brake pads\",\"value\":\"Front brake pads\"},{\"id\":\"2\",\"label\":\"Rear brake pads\",\"value\":\"Rear brake pads\"},{\"id\":\"3\",\"label\":\"Oil filter\",\"value\":\"Oil filter\"},{\"id\":\"4\",\"label\":\"Air filter\",\"value\":\"Air filter\"},{\"id\":\"5\",\"label\":\"Other part\",\"value\":\"I need a different part\"}]}],\"vehicle\":{\"type\":\"vehicle\",\"vin\":\"KL7CJKSB5LB059328\",\"image\":null,\"make\":\"Chevrolet\",\"model\":\"Trax\",\"yearFrom\":2020,\"yearTo\":2020,\"generation\":null,\"trim\":\"LS\",\"bodyType\":\"Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV]\",\"doors\":null,\"fuelType\":\"Gasoline\",\"sources\":[\"vinSearchTool\"]}}"
+    }
+  ],
+  "finishReason": "stop",
+  "rawFinishReason": "end_turn",
+  "usage": {
+    "inputTokens": 7207,
+    "inputTokenDetails": {
+      "noCacheTokens": 7207,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0
+    },
+    "outputTokens": 692,
+    "outputTokenDetails": {
+      "textTokens": 350,
+      "reasoningTokens": 342
+    },
+    "totalTokens": 7899,
+    "raw": {
+      "service_tier": "standard",
+      "input_tokens": 7207,
+      "output_tokens": 692,
+      "output_tokens_details": {
+        "thinking_tokens": 342
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "speed": "standard"
+    }
+  },
+  "performance": {
+    "effectiveOutputTokensPerSecond": 214.77699893527102,
+    "effectiveTotalTokensPerSecond": 2451.623575996685,
+    "stepTimeMs": 3222.0006000000003,
+    "responseTimeMs": 3221.946499999999,
+    "toolExecutionMs": {}
+  },
+  "warnings": [],
+  "request": {},
+  "response": {
+    "id": "msg_011Ch57r1zB7RCzQr3P6sKr8",
+    "timestamp": "2026-11-15T17:36:33.441Z",
+    "modelId": "claude-haiku-5-5",
+    "headers": {
+      "anthropic-organization-id": "54912b60-962f-4ede-a678-edaf15037b66",
+      "anthropic-ratelimit-input-tokens-limit": "5000000",
+      "anthropic-ratelimit-input-tokens-remaining": "4996000",
+      "anthropic-ratelimit-input-tokens-reset": "2026-11-15T17:36:29Z",
+      "anthropic-ratelimit-output-tokens-limit": "1000000",
+      "anthropic-ratelimit-output-tokens-remaining": "999000",
+      "anthropic-ratelimit-output-tokens-reset": "2026-11-15T17:36:32Z",
+      "anthropic-ratelimit-requests-limit": "10000",
+      "anthropic-ratelimit-requests-remaining": "9999",
+      "anthropic-ratelimit-requests-reset": "2026-11-15T17:36:29Z",
+      "anthropic-ratelimit-tokens-limit": "6000000",
+      "anthropic-ratelimit-tokens-remaining": "5995000",
+      "anthropic-ratelimit-tokens-reset": "2026-11-15T17:36:29Z",
+      "anthropic-workspace-id": "wrkspc_01KF8RQztNYwkU9NtP326GM8",
+      "cf-cache-status": "DYNAMIC",
+      "cf-ray": "a5b004b52acc68dd-SOF",
+      "connection": "keep-alive",
+      "content-encoding": "br",
+      "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+      "content-type": "application/json",
+      "date": "Sun, 15 Nov 2026 17:36:32 GMT",
+      "request-id": "req_011Ch57r1hZSmw4md8RaHbe7",
+      "server": "cloudflare",
+      "server-timing": "x-originResponse;dur=2997",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "traceresponse": "00-d7b55e5a71fabe049eb777668a89877d-078e7d58d77e6167-01",
+      "transfer-encoding": "chunked",
+      "vary": "Accept-Encoding",
+      "x-robots-tag": "none"
+    },
+    "messages": [
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "reasoning",
+            "text": "",
+            "providerOptions": {
+              "anthropic": {
+                "signature": "CAQS0QsKEAgTGAI4AUIIdGhpbmtpbmcSDOoiyAxz6DKwIfPRUBoMXiJYA+ByB5zYUriGIjAPzhtbtlTZT2W9s/nGZmq2ktbRmMpWREfVc8BvhJI8TZUGcS2bjT35f31f/KoFqs0q7grwotypt9hrF1JCocJk4wf/fv4faPH3VffW2bD1gJlOFG+43n7b96aANZn7KwVDj289SVTl+0iW4bE9OWgKWk1SJeW+xii2p6yOLZYleE04LUS2WitVL6Exx8RcyzrKWSLP2YsezWoJufkacnUXinrDBucNSkn/QcWYv73UYZ5SVsDSmai/jaQDI7KPl1Hzlud2TYszD15hU3i5I7BzY7DavP3TFC807sbpihpGUO8WPxBAUpdmU/N9Grzm32D7yKQstYvq5eOMNKulK14Mlr4Gcj6/kKTVzYT9pa2nZdLeAumTNZJnWPeOUB5rbVzNhPIRguvaXQGni1jMf0bw6V4j521uYl8dxO+Ax+bHKhHeqbYMMjDTtiPeXvuUadhtaqIgSJWIsob40Jfx+927cg38weZc/jABaMbHYLqkeR/AORx4iBp5kOrZWanNeh3YxsKwUYcNO4o0nOQg2Ez42DZnYsp+0X31Qu5hXEx1TvhI1+j5J5bM80Z3TaOJdSa1OW3gaQdkSQ0hiCORo5zOXksHg9MEVwIBeTeB133+Eb5zZ1tayVV4G3fDKOFleuUqfmXs8c9n/Vhnyg61YvdBfNAqUYLcoLcVmaCANkfZKIJjlYmYuG2R2iWUQu07hhqi/ieGc5B2rznLt64n+wW09KMpgtMPaVS2IsTPFG7tYxIEonJPyJuaRM5FiArjTnqhZEWyYSjVyqUU8veg5CKZWK0Mnlg7YQv5eHVjV46h3SxQwoW5W716txlmbQ/p+cQnVoQsj13AXQURiP6RMZwnfa8pVO8t8osV/ny0mDpIubpPVHS+sK0CEdIZEklpaYhajhL0nrLqmk/FvpOQNCsYBktjxH6O/72eWMuG9zQ7JNI27ev+epiDlQfqlYAWff7RmIVV4k/BRdOGFsDg9tv2kBWCESDY5N7ratYGq3rLl/fzSbXT6mMR4WTCq2Gg7MUXCE+Rs/VdwhsXfK60qRwqHJvX3VW5/nZTTEzIYATYKP12UnXUuxpJ+CbxaHlTm7U4ha1eZnrRaIvCcKRGCwZIb2xLs3TdVWC1AQ+XXhpPa2PD81+XHnuKEOXYcqo1ZxC5r2b5B1GWbpNQUAXjrNON1Qu33kwk/HgJPR6T9M5MBYgtW/XRRTDtkZh1qBdehVFursH4hOBBxqb2/iWV0GvTlDnuSUVdguD3KS9EsfHHX9AKmPgi7Cuqto5VK3MisQSXxRzj0ZQM+yRtDzlFByKmSB1Qmnl6qNlxuWW/25kWCuNWjCENVlqlHXccoOCXa3QYuTihEFzo+OtLCdLRSwNjOf54O/Kw+meznhOpuDRyOK5YNUGcawZ5fNF/KCJ+iorhkmSPq9d8iOUGvGPBXNxz6iVGvMz1eITawk9Fuaffi4QcnHDPa52MehR95KZPg3zJ7955YgzmGgD+16n0btP1Fs07G4V3DRqrlFYEHKdi+6/zpB5Ko+zVAd+jACX029V+pddmm78lmxEQS2beeO/w/kbUs8Ks0BRZ2/kWxD6+S9EQVPWu6fxdkNiC1ejr5NIFJ94+L/yTjsuHTnWzdtnedOsYbBDqfGjGrubi4vxji5UoRBXnf5KH//H+4s/UISGaTuI4OQ8FT54MwSxAk8jSwku67sOLUOYuNHF7c99gTdie/FdmJfCo+dWDAVuKySMs8Mnc0S4kbhQjriiEc1w4EQJFYUWmw7KoHbGuabxR+1WjPXKClh8Vxom71KnpxfHW4iDlodhpozim7jrerK7aqt/dlgk0D/zWgiJx3UpsNkcwgDimlMn22STtAALW0u/mOTX8uTyZ1CTtIQsIFgFXLcyOz443JPv2v/n4TwTt57I8EMiDvfvtuN1TGho8CKX8GAE="
+              }
+            }
+          },
+          {
+            "type": "text",
+            "text": "{\"content\":[{\"type\":\"options\",\"prompt\":\"Vehicle identified: 2020 Chevrolet Trax LS. Which part do you need?\",\"options\":[{\"id\":\"1\",\"label\":\"Front brake pads\",\"value\":\"Front brake pads\"},{\"id\":\"2\",\"label\":\"Rear brake pads\",\"value\":\"Rear brake pads\"},{\"id\":\"3\",\"label\":\"Oil filter\",\"value\":\"Oil filter\"},{\"id\":\"4\",\"label\":\"Air filter\",\"value\":\"Air filter\"},{\"id\":\"5\",\"label\":\"Other part\",\"value\":\"I need a different part\"}]}],\"vehicle\":{\"type\":\"vehicle\",\"vin\":\"KL7CJKSB5LB059328\",\"image\":null,\"make\":\"Chevrolet\",\"model\":\"Trax\",\"yearFrom\":2020,\"yearTo\":2020,\"generation\":null,\"trim\":\"LS\",\"bodyType\":\"Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV]\",\"doors\":null,\"fuelType\":\"Gasoline\",\"sources\":[\"vinSearchTool\"]}}"
+          }
+        ]
+      }
+    ]
+  },
+  "providerMetadata": {
+    "anthropic": {
+      "usage": {
+        "service_tier": "standard",
+        "input_tokens": 7207,
+        "output_tokens": 692,
+        "output_tokens_details": {
+          "thinking_tokens": 342
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "stopSequence": null,
+      "serviceTier": "standard",
+      "iterations": null,
+      "container": null,
+      "contextManagement": null
+    }
+  }
+}

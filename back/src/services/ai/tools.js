@@ -106,7 +106,7 @@ export const createPartsSearchTool = ({ workspaceId }) => tool({
                 orderBy: { updatedAt: 'desc' },
             });
 
-            // logger.info('result from partsSearchTool:', result);
+            // console.log('result from partsSearchTool:', result);
             return result;
         } catch (error) {
             logger.error('Parts Search Tool Error:', error?.message || error);
@@ -129,9 +129,7 @@ export const createFindPartNumbersTool = ({ workspaceId }) => tool({
         return { partNumbers: [] };
     },
 });
-
-
-export const createVinSearchTool = ({ vin ='' }) => tool({
+export const createVinSearchTool = ({ vin = '' }) => tool({
     description: 'Search for vehicle information by VIN using the NHTSA API.',
     inputSchema: z.object({
         vin: z.string().length(17).describe('The 17-character VIN to search for.'),

@@ -7,170 +7,148 @@ import {
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { logger } from '#src/utils/logger.js';
-import Prisma from '#src/db/prisma/index.js';
 import { google } from '@ai-sdk/google';
 import { anthropic } from '@ai-sdk/anthropic';
+import { responseSchema } from '#src/services/ai/responseTypes.js';
+import { normalizeAiError } from '#src/services/ai/logs.js';
+import fs from 'fs';
+import path from 'path';
 
-const aiModelName = 'gpt-5.4-nano';
 
-const normalizeAiError = (error) => {
-    const err = error || {};
-    const message = err?.message || 'Unknown AI error';
-    const name = err?.name || 'AIError';
-    const isMissingApiKey =
-        name === 'AI_LoadAPIKeyError' ||
-        message.toLowerCase().includes('api key is missing');
+const toPublicToolLabel = (toolName = '') => {
+    const key = String(toolName || '').toLowerCase();
 
-    if (isMissingApiKey) {
-        return {
-            statusCode: 500,
-            code: 'OPENAI_API_KEY_MISSING',
-            message: 'AI service is not configured. Missing OPENAI_API_KEY on backend.',
-            details: message,
-        };
+    if (key.includes('web_search') || key.includes('websearch')) {
+        return 'search';
+    }
+    if (key.includes('vinsearch') || key.includes('vin_search')) {
+        return 'VIN lookup';
+    }
+    if (key.includes('partssearch') || key.includes('parts_search')) {
+        return 'inventory lookup';
     }
 
-    return {
-        statusCode: 500,
-        code: name,
-        message: 'AI request failed. Please try again.',
-        details: message,
-    };
+    return 'data lookup';
 };
-// Define the tool with Zod schema directly
-const logToConsoleTool = tool({
-    description: 'Log a message to the console',
-    inputSchema: z.object({
-        message: z
-            .string()
-            .describe('The message to log to the console'),
-    }),
-    execute: async ({ message }) => {
-        logger.info('=======  TOOL ====== Console log from AI:', message);
-    },
-});
+export const toModelMessage = ({ messages = [], system = '' }) => {
+    const arr = [];
 
-const createDbRequestTool = (accountId) => tool({
-    description: 'Query database tables using Prisma-style query options. Account scope is applied automatically.',
-    inputSchema: z.object({
-        table: z
-            .enum(['notes'])
-            .default('notes')
-            .describe('Target Prisma model to run findMany against'),
-        where: z
-            .object({
-                id: z.string().optional(),
-                title: z.string().optional(),
-                content: z.string().optional(),
-                accountId: z.string().optional(),
-                workspaceId: z.string().optional(),
-            })
-            .default({})
-            .describe('Optional notes filters. accountId is injected server-side.'),
-        limit: z
-            .coerce.number()
-            .int()
-            .min(1)
-            .max(100)
-            .default(20)
-            .describe('Maximum number of records to return'),
-        offset: z
-            .coerce.number()
-            .int()
-            .min(0)
-            .default(0)
-            .describe('Number of records to skip'),
-        orderBy: z
-            .object({
-                field: z.enum(['createdAt', 'updatedAt', 'title']).default('updatedAt'),
-                direction: z.enum(['asc', 'desc']).default('desc'),
-            })
-            .optional()
-            .describe('Sort configuration for notes'),
-    }),
-    execute: async ({ table, where, limit, offset, orderBy }) => {
-        try {
-            logger.info('=======  TOOL START: dbRequestTool ======');
+    try {
+        let vehicle = {};
 
-            if (!accountId) {
-                logger.error('DB Request Tool: missing accountId in server context');
-                return [];
+        for (const message of messages) {
+            // 1. Merge vehicle state globally for the system prompt
+            if (message?.vehicle && typeof message.vehicle === 'object') {
+                vehicle = { ...vehicle, ...message.vehicle };
             }
 
-            const whereClause = {
-                ...(where || {}),
-                accountId,
-            };
-
-            if (table !== 'notes') {
-                logger.error('DB Request Tool: unsupported table requested:', table);
-                return [];
+            // 2. Clone content safely without mutating the original message
+            let normalizedContent = [];
+            if (Array.isArray(message?.content)) {
+                normalizedContent = message.content.map((part) => {
+                    if (part.type === 'options') {
+                        return { type: 'text', text: part?.prompt || '' };
+                    }
+                    if (part.type === 'partNumber') {
+                        return {
+                            type: 'text',
+                            text: [
+                                `Source: ${part?.source || 'N/A'}`,
+                                `Manufacturer: ${part?.manufacturer || 'N/A'}`,
+                                `Label: ${part?.label || 'N/A'}`,
+                                `Value: ${part?.value || 'N/A'}`,
+                                `Description: ${part?.description || 'N/A'}`,
+                            ].join('\n'),
+                        };
+                    }
+                    return { ...part };
+                });
+            } else if (typeof message?.content === 'string') {
+                normalizedContent = [{ type: 'text', text: message.content }];
             }
 
-            const result = await Prisma.notes.findMany({
-                where: whereClause,
-                ...(typeof limit === 'number' ? { take: limit } : {}),
-                ...(typeof offset === 'number' ? { skip: offset } : {}),
-                ...(orderBy?.field && orderBy?.direction
-                    ? { orderBy: { [orderBy.field]: orderBy.direction } }
-                    : {}),
+            // 3. Keep searched parts tied to the exact turn they occurred in
+            if (Array.isArray(message?.parts) && message.parts.length > 0) {
+                normalizedContent.push({
+                    type: 'text',
+                    text: `Searched Parts Context:\n${JSON.stringify(message.parts, null, 2)}`,
+                });
+            }
+
+            // Build clean message without custom properties (vehicle, parts)
+            const { vehicle: _v, parts: _p, ...cleanMessage } = message;
+            arr.push({
+                ...cleanMessage,
+                content: normalizedContent,
             });
-
-            return result;
-
-        } catch (error) {
-            logger.error('DB Request Tool Error:', error?.message || error);
-            return error?.message || 'error getting data';
         }
-    },
-});
 
+        const systemExtras = Object.keys(vehicle).length > 0
+            ? `\n\nActive Vehicle Info:\n${JSON.stringify(vehicle, null, 2)}`
+            : '';
 
-const optionSchema = z.object({
-    id: z.string(),
-    value: z.string(),
-    image: z.string().nullable(),
-});
+        return {
+            system: `${system || ''}${systemExtras}`,
+            messages: arr,
+            vehicle,
+        };
+    } catch (error) {
+        logger.error('Error in toModelMessage:', error?.message || error);
+        return { system, messages: arr, vehicle: {} };
+    }
+};
 
-const blockSchema = z.object({
-    type: z.enum(['text', 'options', 'card']).describe('options = clickable choices the user picks from'),
-    title: z.string().nullable().describe('Short question or heading. Used by options and card.'),
-    content: z.string().nullable().describe('Body text. Used by text and card. Null for options.'),
-    image: z.string().nullable().describe('Image URL, only if known. Otherwise null.'),
-    options: z.array(optionSchema).nullable().describe('Only for type options. Null for other types.'),
-});
+export const aiRequest = async ({
+    system = '',
+    messages = [],
+    account,
+    tools = {},
+    onProgress = null,
+    signal = null,
+}) => {
 
-const responseSchema = z.object({
-    content: z.string().describe('The assistant reply as plain text. Always present.'),
-    render: z
-        .array(blockSchema)
-        .describe(
-            'UI blocks shown under the reply. Return an empty array [] by default. ' +
-            'Only add an "options" block when the user must pick from a fixed, known set of answers. ' +
-            'Never add blocks for open ended answers.'
-        ),
-    vehicle: z.object({
-        vin: z.string().describe('VIN of the vehicle from the search query, or "" if unknown.'), image: z.string().nullable().describe('Image URL of the vehicle from the search query, if known.'),
-        make: z.string().nullable(),
-        model: z.string().nullable(),
-        yearFrom: z.number().nullable(),
-        yearTo: z.number().nullable(),
-        generation: z.string().nullable(),
-        trim: z.string().nullable(),
-        bodyType: z.string().nullable(),
-        doors: z.number().nullable(),
-        fuelType: z.string().nullable(),
-    }).nullable().describe(
-        'Vehicle identified so far. Fill on every response with everything known, null for unknown fields. ' +
-        'make, model and yearFrom must all be set before any part search.'
-    ),
-})
-
-export const aiRequest = async ({ system = '', messages = [], account, tools = {} }) => {
     const msgs = [...messages];
     const addMessage = async (message) => {
         msgs.push(message);
     };
+    const safeUrl = (str) => {
+        try {
+            return new URL(str);
+        } catch {
+            return null;
+        }
+    };
+    const reportProgress = (payload = {}) => {
+        try {
+            if (typeof onProgress === 'function') {
+                onProgress({
+                    phase: payload.phase || 'processing',
+                    message: payload.message || 'Processing request...',
+                    meta: payload.meta || {},
+                    at: new Date().toISOString(),
+                });
+            }
+        } catch (error) {
+            logger.warn('Progress callback failed:', error?.message || error);
+        }
+    };
+    const getToolNames = (arr = []) => {
+        try {
+            const names = arr
+                .map((item) => item?.toolName || item?.name || item?.type)
+                .filter(Boolean);
+
+            return [...new Set(names)];
+        } catch (error) {
+            logger.error('Error in getToolNames:', error?.message || error);
+            return [];
+        }
+    };
+    const toPublicToolLabels = (toolNames = []) => {
+        const labels = toolNames.map(toPublicToolLabel).filter(Boolean);
+        return [...new Set(labels)];
+    };
+
     try {
 
         // if messages is empty, add default assistant message response
@@ -178,53 +156,114 @@ export const aiRequest = async ({ system = '', messages = [], account, tools = {
             // logger.info('No messages provided, adding default assistant message.');
             addMessage({
                 role: 'assistant',
-                content: 'Hello! How can I assist you today?',
-                render: [],
-                vehicle: null,
+                parts: [{ type: 'text', text: 'Hello! How can I assist you today?' }],
             });
             return msgs;
         }
 
+        reportProgress({
+            phase: 'preparing',
+            message: 'Preparing your request...',
+        });
+
+        const { system: modelSystem, messages: modelMessages } = toModelMessage({ messages: msgs, system });
+        // const filePath = path.join(__dirname, 'modelMessages.json');
+        const logDir = path.join(process.cwd(), 'logs');
+        // const filePath = path.join(logDir, 'modelMessages.json');
+        // // Ensure directory exists once at startup, or use recursive mkdir
+        // fs.promises.mkdir(logDir, { recursive: true })
+        //     .then(() => fs.promises.writeFile(filePath, JSON.stringify(modelMessages, null, 2)))
+        //     .catch(console.error);
 
         const response = await generateText({
             // model: openai('gpt-6-luna'),
             // model: google('gemini-3.8-flash'),
             model: anthropic('claude-haiku-5-5'),
-            messages: msgs.map(({ role, content }) => ({ role, content })),
-            system,
+            messages: modelMessages,
+            system: modelSystem,
             tools: {
                 ...tools,
                 web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
             },
-            stopWhen: stepCountIs(2),
+            stopWhen: stepCountIs(5),
+            abortSignal: signal || undefined,
+            // onStepFinish: (props) => {
+            //     // logger.info('Step finished props:', props);
+            //     const randomSuffix = Math.random().toString(36).substring(2, 8);
+            //     fs.promises.writeFile(path.join(logDir, `onStepFinishprops_${randomSuffix}.json`), JSON.stringify(props, null, 2)).catch(console.error);
+            // },
+            onStepFinish: ({ toolCalls = [], toolResults = [] } = {}) => {
+                const callNames = getToolNames(toolCalls);
+                if (callNames.length > 0) {
+                    const publicLabels = toPublicToolLabels(callNames);
+                    const toolLabel = publicLabels.length === 1
+                        ? `Using: ${publicLabels[0]}`
+                        : `Using: ${publicLabels.join(', ')}`;
+
+                    reportProgress({
+                        phase: 'tooling',
+                        message: toolLabel,
+                        meta: {
+                            tools: publicLabels,
+                            toolCount: callNames.length,
+                        },
+                    });
+                    return;
+                }
+
+                const resultNames = getToolNames(toolResults);
+                if (resultNames.length > 0 || (Array.isArray(toolResults) && toolResults.length > 0)) {
+                    const publicLabels = toPublicToolLabels(resultNames);
+                    const toolLabel = publicLabels.length === 0
+                        ? 'Processing retrieved data...'
+                        : publicLabels.length === 1
+                            ? `Processing results from: ${publicLabels[0]}`
+                            : `Processing results from: ${publicLabels.join(', ')}`;
+
+                    reportProgress({
+                        phase: 'processing',
+                        message: toolLabel,
+                        meta: {
+                            tools: publicLabels,
+                            resultCount: Array.isArray(toolResults) ? toolResults.length : 0,
+                        },
+                    });
+                    return;
+                }
+
+                reportProgress({
+                    phase: 'reasoning',
+                    message: 'Analyzing details...',
+                });
+            },
             output: Output.object({ schema: responseSchema }),
         });
 
         const out = response.output;
         const usage = response?.totalUsage || response.usage || {};
-        logger.info('AI Request usage:', usage);
+        // logger.info('AI Request usage:', usage);
 
-        // logger.info('AI Request Response:', out);
-        // addMessage({
-        //     role: 'assistant',
-        //     content: out.content,
-        //     render: out.render,
-        //     vehicle: out.vehicle ?? null,
-        // });
+        reportProgress({
+            phase: 'finalizing',
+            message: 'Finalizing response...',
+            meta: { usage },
+        });
 
         addMessage({ ...out, role: 'assistant' });
 
     } catch (error) {
         const formatted = normalizeAiError(error);
-        logger.error('Error in aiRequest:', {
-            code: formatted.code,
-            message: formatted.message,
-            details: formatted.details,
+        logger.error('Error in aiRequest:', formatted);
+
+        reportProgress({
+            phase: 'error',
+            message: formatted?.message || 'Request failed.',
+            meta: { code: formatted?.code || 'unknown_error' },
         });
 
         addMessage({
             role: 'assistant',
-            content: `Error: ${formatted.code}: ${formatted.message}`,
+            content: [{ type: 'text', text: `Error: ${formatted.code}: ${formatted.message}` }],
         });
     }
 
@@ -247,30 +286,6 @@ export const aiStream = async (req, res,
             return searchQuery;
         };
 
-        const theAiStream = async function* ({ signal }) {
-            const searchQuery = dataFromBody();
-            // logger.info('AI Search Query:', searchQuery);
-
-            const aires = await aiRequest({
-                account: account,
-                system: system,
-                messages: messages,
-                tools: tools,
-            });
-
-            const finalMessage = aires.at(-1);
-            if (!finalMessage) {
-                return;
-            }
-
-            if (signal.aborted) {
-                return;
-            }
-
-            yield finalMessage;
-        };
-
-
         res.status(200);
         res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
         res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -286,12 +301,36 @@ export const aiStream = async (req, res,
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         };
 
-        for await (const chunk of theAiStream({ signal: controller.signal })) {
-            // logger.info('Streaming chunk:', chunk);
-            send('delta', chunk);
+        send('status', {
+            phase: 'started',
+            message: 'Starting request...',
+            at: new Date().toISOString(),
+        });
+
+        const searchQuery = dataFromBody();
+        // logger.info('AI Search Query:', searchQuery);
+
+        const aires = await aiRequest({
+            account: account,
+            system: system,
+            messages: messages,
+            tools: tools,
+            signal: controller.signal,
+            onProgress: (payload) => {
+                // logger.info('AI Progress:', payload);
+                if (!controller.signal.aborted) {
+                    send('status', payload);
+                }
+            },
+        });
+
+        const finalMessage = aires.at(-1);
+        if (!controller.signal.aborted && finalMessage) {
+            send('delta', finalMessage);
         }
 
         send('done', {});
+
         res.end();
     } catch (error) {
         logger.error('Error in handleAiSearchRequest:', error?.message || error);
