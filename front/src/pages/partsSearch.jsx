@@ -212,7 +212,7 @@ export default function PartsSearchPage() {
 
 
     const [_isLoading, _setIsLoading] = useState(false);
-    const [_messages, _setMessages] = useState(dummyMessages);
+    const [_messages, _setMessages] = useState([]);
     const [_vehicleInfo, _setVehicleInfo] = useState(getVehicleFromMessages(_messages) || null);
     const [_streamStatus, _setStreamStatus] = useState('');
 
