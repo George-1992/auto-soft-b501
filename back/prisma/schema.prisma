@@ -321,28 +321,44 @@ model pipelineStages {
 model parts {
   id            String     @id @default(uuid())
   status        PartStatus @default(active)
-  sku           String     @unique @default(uuid())
-  barcode       String?    @unique
+  sku           String     @default(uuid())
+  barcode       String?
   name          String
   description   String?
   brand         String?
+  unit          PartUnit   @default(piece)
   purchasePrice Decimal    @default(0) @map("purchase_price") @db.Decimal(10, 2)
   price         Decimal    @default(0) @db.Decimal(10, 2)
-  quantity      Int        @default(0)
+  quantity      Decimal    @default(0) @db.Decimal(10, 3)
+  partNumber    String?    @map("part_number")
   partNumbers   String[]   @default([]) @map("part_numbers")
   otherNames    String[]   @default([]) @map("other_names")
-  minStock      Int        @default(0) @map("min_stock")
+  minStock      Decimal    @default(0) @map("min_stock") @db.Decimal(10, 3)
   supplier      String?
+  imageUrl      String?    @map("image_url")
+  otherImages   String[]   @default([]) @map("other_images")
+  otherDetails  Json?      @default("{}") @map("other_details")
 
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt   DateTime?    @map("deleted_at") @db.Timestamp(6)
   workspaceId String       @map("workspace_id")
   workspace   workspaces   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   orderLines  orderLines[]
   locations   locations[]
 
+  // Removed redundant @@index([sku]) since @@unique([workspaceId, sku]) handles tenant-scoped SKU lookups
+
+  // Multi-tenant unique constraints (automatically create composite B-tree indexes)
   @@unique([workspaceId, sku])
-  @@index([sku])
+  @@unique([workspaceId, barcode])
+  // Tenant-scoped B-tree indexes for common list and lookup queries
+  @@index([workspaceId])
+  @@index([workspaceId, partNumber])
+  @@index([workspaceId, status])
+  // Added GIN indexes to accelerate array searches (`has` / `@>`) on aftermarket numbers and aliases
+  @@index([partNumbers], type: Gin)
+  @@index([otherNames], type: Gin)
 }
 
 model vehicleMakes {
@@ -407,6 +423,19 @@ model vehicleVariants {
   @@index([aliases], type: Gin)
   @@index([generation])
   @@map("vehicle_variants")
+}
+
+enum PartUnit {
+  piece
+  box
+  pack
+  set
+  roll
+  meter
+  liter
+  gallon
+
+  @@map("part_unit")
 }
 
 enum Aspiration {

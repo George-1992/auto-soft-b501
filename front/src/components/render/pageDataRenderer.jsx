@@ -217,17 +217,38 @@ export default function DataRenderer({
         }
         return false;
     };
+    const checkIsNewItem = (item, sourceData = _data) => {
+        //checl if id already exists in _data, if not, it's a new item
+        if (!sourceData || !item) return true;
+        const itemId = item?.id ?? item?.ID ?? item;
+
+        if (Array.isArray(sourceData)) {
+            return !sourceData.some((i) => {
+                const iId = i?.id ?? i?.ID ?? i;
+                return String(iId) === String(itemId);
+            });
+        } else if (typeof sourceData === 'object') {
+            const dataId = sourceData?.id ?? sourceData?.ID ?? sourceData;
+            return String(dataId) !== String(itemId);
+        }
+        return true;
+    };
     const handleFormSubmit = async (e, thisEditType = '', showLoading = true) => {
-        e?.preventDefault?.();
-
-        // logger.info("handleFormSubmit e: ", e);
-
+        let resObj = {
+            success: false,
+            message: 'Error saving item',
+            data: null,
+        };
         try {
+            e?.preventDefault?.();
+
             const edt = thisEditType || _editType;
             const isForm = e && e.target && e.target.tagName === 'FORM';
             const toSaveItem = isForm
                 ? new FormData(e.target)
                 : e;
+            // logger.info("handleFormSubmit toSaveItem", toSaveItem);
+            // return;
 
             if (showLoading) _setLoading(true);
             const action = edt === 'new' ? 'create' : 'update';
@@ -256,11 +277,24 @@ export default function DataRenderer({
                 const incomingItems = Array.isArray(response.data) ? response.data : [response.data];
                 const getId = (item) => item?.id ?? item?.ID ?? item;
                 _setData((prev) => {
-                    let newItems = [...prev];
+                    const baseItems = Array.isArray(prev) ? [...prev] : [];
+                    let newItems = baseItems;
+
                     if (edt === 'new') {
-                        newItems.unshift(...incomingItems);
+                        for (const incomingItem of incomingItems) {
+                            if (!incomingItem) continue;
+
+                            if (checkIsNewItem(incomingItem, newItems)) {
+                                newItems.unshift(incomingItem);
+                            } else {
+                                const incomingId = String(getId(incomingItem));
+                                newItems = newItems.map((existingItem) =>
+                                    String(getId(existingItem)) === incomingId ? incomingItem : existingItem
+                                );
+                            }
+                        }
                     } else if (edt === 'update') {
-                        newItems = prev.map((item) => {
+                        newItems = baseItems.map((item) => {
                             const incomingItem = incomingItems.find(i => String(getId(i)) === String(getId(item)));
                             return incomingItem ? incomingItem : item;
                         });
@@ -268,7 +302,7 @@ export default function DataRenderer({
                     return newItems;
                 });
 
-                dismissEditModal();
+                // dismissEditModal();
             } else {
                 logger.error("handleFormSubmit error", response.message || 'Error saving item');
                 notify({
@@ -277,15 +311,23 @@ export default function DataRenderer({
                 });
             }
 
+            resObj = response;
+            return resObj;
+
         } catch (error) {
             logger.error("handleFormSubmit error", error);
             notify({
                 type: 'error',
                 message: 'Error saving item',
             });
+
+            resObj.success = false;
+            resObj.message = error?.message || 'Error saving item';
+            return resObj;
         } finally {
             if (showLoading) _setLoading(false);
         }
+
     };
     const handleInputChange = (field, value) => {
 
@@ -387,6 +429,15 @@ export default function DataRenderer({
             _setSelectedItems(_selectedItems.filter((id) => id !== itemId));
         } else {
             _setSelectedItems([..._selectedItems, itemId]);
+        }
+    };
+    const handleSelectAllItems = () => {
+        if (_selectedItems.length === _data.length) {
+            clearSelectedItems();
+        }
+        else {
+            const allIds = _data.map(item => item?.id);
+            _setSelectedItems(allIds);
         }
     };
     const clearSelectedItems = () => {
@@ -900,10 +951,19 @@ export default function DataRenderer({
                             {columns.length > 0 && (
                                 <div className="flex items-center gap-2 px-3 py-2 min-w-max border-b border-gray-200">
                                     <div
-                                        className="font-semibold text-gray-700 flex-shrink-0 text-center"
+                                        className="font-semibold text-gray-700 flex items-center justify-center gap-2 flex-shrink-0"
                                         style={{ width: '120px' }}
                                     >
-                                        {t('Actions')}
+                                        {/* select all */}
+                                        <div className="flex items-center justify-center gap-2 flex-shrink-0" >
+                                            <button onClick={handleSelectAllItems}>
+                                                {_selectedItems.length === _data.length
+                                                    ? <SquareCheckIcon className="size-5" />
+                                                    : <SquareIcon className="size-5" />
+                                                }
+                                            </button>
+                                        </div>
+                                        <span>{t('Actions')}</span>
                                     </div>
                                     {columns.map((col, index) => {
                                         const colWidth = col.width || defaultColWidth;

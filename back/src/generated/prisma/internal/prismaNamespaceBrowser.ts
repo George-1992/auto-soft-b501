@@ -324,15 +324,21 @@ export const PartsScalarFieldEnum = {
   name: 'name',
   description: 'description',
   brand: 'brand',
+  unit: 'unit',
   purchasePrice: 'purchasePrice',
   price: 'price',
   quantity: 'quantity',
+  partNumber: 'partNumber',
   partNumbers: 'partNumbers',
   otherNames: 'otherNames',
   minStock: 'minStock',
   supplier: 'supplier',
+  imageUrl: 'imageUrl',
+  otherImages: 'otherImages',
+  otherDetails: 'otherDetails',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
   workspaceId: 'workspaceId'
 } as const
 

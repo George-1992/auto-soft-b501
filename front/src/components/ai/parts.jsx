@@ -496,6 +496,75 @@ const SingleMessageRenderer = ({ message = {}, onOptionClick }) => {
     </>
 };
 
+const compressFiles = async (files) => {
+    const options = {
+        maxSizeMB: 1,              // Target max file size (1MB is standard for web/chat)
+        maxWidthOrHeight: 1920,    // Cap longest edge (1920px or 2048px is standard)
+        useWebWorker: true,        // Runs off main thread so UI doesn't freeze
+        fileType: 'image/webp',    // Modern format: ~30% smaller than JPEG with transparency support
+        initialQuality: 0.8,       // Sweet spot between visual fidelity and size
+    };
+
+    const compressibleTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const minCompressBytes = 64 * 1024;
+
+    return Promise.all(
+        files.map(async (file) => {
+            // Skip GIFs, SVGs, PDFs, etc.
+            if (!compressibleTypes.includes(file.type)) {
+                logger.info('UploadButton compression skipped (unsupported type):', {
+                    name: file.name,
+                    type: file.type,
+                });
+                return file;
+            }
+
+            // Skip tiny files where recompression gains are usually negligible.
+            if (file.size <= minCompressBytes) {
+                logger.info('UploadButton compression skipped (small file):', {
+                    name: file.name,
+                    sizeKB: (file.size / 1024).toFixed(1),
+                });
+                return file;
+            }
+
+            try {
+                const compressedBlob = await imageCompression(file, options);
+
+                // Safety check: only use compressed version if it's actually smaller
+                if (compressedBlob.size >= file.size) {
+                    logger.info('UploadButton compression kept original (no gain):', {
+                        name: file.name,
+                        beforeKB: (file.size / 1024).toFixed(1),
+                        afterKB: (compressedBlob.size / 1024).toFixed(1),
+                    });
+                    return file;
+                }
+
+                // Update extension to .webp if converted
+                const newName = file.name.replace(/\.[^/.]+$/, '.webp');
+                const outFile = new File([compressedBlob], newName, {
+                    type: compressedBlob.type,
+                    lastModified: Date.now(),
+                });
+
+                logger.info('UploadButton compression success:', {
+                    name: file.name,
+                    output: outFile.name,
+                    beforeKB: (file.size / 1024).toFixed(1),
+                    afterKB: (outFile.size / 1024).toFixed(1),
+                    savedPercent: (((file.size - outFile.size) / file.size) * 100).toFixed(1),
+                });
+
+                return outFile;
+            } catch (error) {
+                logger.error('Compression failed, falling back to original:', error);
+                return file;
+            }
+        })
+    );
+};
+
 
 
 // ========  MAIN ======================
@@ -948,7 +1017,6 @@ export const AiInput = ({
         </form>
     );
 };
-
 export function CameraCaptureButton({
     className = '',
     disabled,
@@ -988,10 +1056,11 @@ export function CameraCaptureButton({
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            onImageCaptured(file);
+            const [compressedFile] = await compressFiles([file]);
+            onImageCaptured(compressedFile || file);
         }
         // Reset input so the user can take another photo of the same name/slot
         e.target.value = '';
@@ -1054,74 +1123,6 @@ export function UploadButton({
     };
 
 
-    const compressFiles = async (files) => {
-        const options = {
-            maxSizeMB: 1,              // Target max file size (1MB is standard for web/chat)
-            maxWidthOrHeight: 1920,    // Cap longest edge (1920px or 2048px is standard)
-            useWebWorker: true,        // Runs off main thread so UI doesn't freeze
-            fileType: 'image/webp',    // Modern format: ~30% smaller than JPEG with transparency support
-            initialQuality: 0.8,       // Sweet spot between visual fidelity and size
-        };
-
-        const compressibleTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        const minCompressBytes = 64 * 1024;
-
-        return Promise.all(
-            files.map(async (file) => {
-                // Skip GIFs, SVGs, PDFs, etc.
-                if (!compressibleTypes.includes(file.type)) {
-                    logger.info('UploadButton compression skipped (unsupported type):', {
-                        name: file.name,
-                        type: file.type,
-                    });
-                    return file;
-                }
-
-                // Skip tiny files where recompression gains are usually negligible.
-                if (file.size <= minCompressBytes) {
-                    logger.info('UploadButton compression skipped (small file):', {
-                        name: file.name,
-                        sizeKB: (file.size / 1024).toFixed(1),
-                    });
-                    return file;
-                }
-
-                try {
-                    const compressedBlob = await imageCompression(file, options);
-
-                    // Safety check: only use compressed version if it's actually smaller
-                    if (compressedBlob.size >= file.size) {
-                        logger.info('UploadButton compression kept original (no gain):', {
-                            name: file.name,
-                            beforeKB: (file.size / 1024).toFixed(1),
-                            afterKB: (compressedBlob.size / 1024).toFixed(1),
-                        });
-                        return file;
-                    }
-
-                    // Update extension to .webp if converted
-                    const newName = file.name.replace(/\.[^/.]+$/, '.webp');
-                    const outFile = new File([compressedBlob], newName, {
-                        type: compressedBlob.type,
-                        lastModified: Date.now(),
-                    });
-
-                    logger.info('UploadButton compression success:', {
-                        name: file.name,
-                        output: outFile.name,
-                        beforeKB: (file.size / 1024).toFixed(1),
-                        afterKB: (outFile.size / 1024).toFixed(1),
-                        savedPercent: (((file.size - outFile.size) / file.size) * 100).toFixed(1),
-                    });
-
-                    return outFile;
-                } catch (error) {
-                    logger.error('Compression failed, falling back to original:', error);
-                    return file;
-                }
-            })
-        );
-    };
 
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files || []);
@@ -1158,9 +1159,6 @@ export function UploadButton({
         </>
     );
 };
-
-
-// ============= IN message parts ==============
 
 
 export const PartsInMessages = ({ parts = [], onOptionClick }) => {
@@ -1267,4 +1265,30 @@ export const PartsInMessages = ({ parts = [], onOptionClick }) => {
             </div>
         </div>
     );
+};
+
+export const BulkPartsFromFiles = ({ files = [], onChange = () => { }, className = "" }) => {
+
+    // const [_files, _setFiles] = useState(files || []);
+
+    const handleFileAdded = (file) => {
+        // logger.info('BulkPartsFromFiles file added:', file);
+        onChange([file]);
+    }
+
+    return (
+        <div className={className || ""}>
+            {/* <button onClick={(e) => { e.preventDefault(); }} className="cursor-pointer hover:scale-[98%] transition-transform duration-200">
+                <Image
+                    src="/images/other/camera_3.png"
+                    alt="AI Icon"
+                    className="w-6 h-auto"
+                />
+            </button> */}
+            <CameraCaptureButton
+                disabled={false}
+                onImageCaptured={handleFileAdded}
+            />
+        </div>
+    )
 };

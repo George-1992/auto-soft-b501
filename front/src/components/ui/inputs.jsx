@@ -7,11 +7,13 @@ export const Input = React.forwardRef(({
     disabled = false,
     isLoading = false,
     onChange = () => { },
+    children,
     ...props
 }, ref) => {
     const baseClass = 'w-full h-9 rounded-md border p-2 focus:outline-none focus:ring-0';
     const stateClass = error ? 'border-red-400' : 'border-gray-300';
     const bgClass = isLoading ? 'loading-shimmer' : '';
+    const hasChildren = Boolean(children);
 
     const handleChange = (e) => {
         if (disabled || isLoading) return;
@@ -30,16 +32,37 @@ export const Input = React.forwardRef(({
         onChange(e);
     };
 
+    const inputClassName = `bg-[var(--input)] ${baseClass} ${stateClass} ${bgClass} ${hasChildren ? 'pr-12' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : ''} ${className}`.trim();
+
+    if (!hasChildren) {
+        return (
+            <input
+                ref={ref}
+                {...props}
+                onChange={handleChange}
+                disabled={disabled || isLoading}
+                aria-busy={isLoading}
+                aria-invalid={!!error}
+                className={inputClassName}
+            />
+        );
+    }
+
     return (
-        <input
-            ref={ref}
-            {...props}
-            onChange={handleChange}
-            disabled={disabled || isLoading}
-            aria-busy={isLoading}
-            aria-invalid={!!error}
-            className={`bg-[var(--input)] ${baseClass} ${stateClass} ${bgClass} ${disabled ? 'cursor-not-allowed opacity-50' : ''} ${className}`.trim()}
-        />
+        <div className="relative w-full">
+            <input
+                ref={ref}
+                {...props}
+                onChange={handleChange}
+                disabled={disabled || isLoading}
+                aria-busy={isLoading}
+                aria-invalid={!!error}
+                className={inputClassName}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center">
+                {children}
+            </div>
+        </div>
     );
 });
 

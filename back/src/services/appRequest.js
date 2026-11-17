@@ -874,53 +874,75 @@ export const handleAppRequest = async (req, res) => {
 
         } else if (itsFor === 'ai-partNumber-search') {
 
-            const query = reqObj.data?.query || '';
-            if (!query) {
-                resObj.success = false;
-                resObj.message = 'Missing query for ai-partNumber-search';
-                resObj.status = 'error';
-                return res.json(resObj);
-            };
+            const messages = reqObj.data?.messages || [];
+
+            let msgs = messages;
+            const hasMedia = messages.some(
+                (m) => Array.isArray(m.content) && m.content.some((p) => p.type === 'image' || p.type === 'file'),
+            );
+
+            if (hasMedia) {
+                const { text } = await generateText({
+                    model: anthropic('claude-haiku-5-5'),
+                    messages,
+                    system: 'Reply with only the part number printed on the part or box. No brand, dimensions, or material codes. If there are several parts, one part number per line.',
+                });
+                msgs = [{ role: 'user', content: text.trim() }];
+            }
 
             const response = await generateText({
                 // model: openai('gpt-6-luna'),
                 // model: google('gemini-3.8-flash'),
                 model: anthropic('claude-haiku-5-5'),
-                messages: reqObj.data?.message || [{
-                    role: 'user',
-                    content: query,
-                }],
+                messages: msgs,
                 system: [
-                    '-You are a parts search assistant inside parts store management software.',
-                    '-The goal is to search and find the vehicle part number details and any relevant part number',
-                    '-Make sure to include the searched part name as well in partNumbers.',
+                    'You are a vehicle parts search assistant inside parts store management software.',
+                    'Your goal is to retrieve complete vehicle fitment, OEM/interchange part numbers, and clean catalog product descriptions.',
+                    'The user message contains one or more part numbers, one per line. Return one entry per part number.',
                     '',
+                    '### MULTI-QUERY CATALOG SEARCH (MANDATORY FOR EVERY PART NUMBER)',
+                    'For EACH part number, you MUST find both vehicle fitment AND interchange/cross-reference numbers:',
+                    '1. **Primary Search:** Search the exact part number (e.g., `"MKD930"`).',
+                    '2. **Interchange Follow-Up Search (Required if Primary Search lacks cross-references or full vehicle years):** Run a second search specifically for cross-references and fitment (e.g., `"MKD930" interchange OR "cross reference" OR OEM`).',
+                    '3. **FMSI / Base Number Pattern:** Remember that aftermarket brake/part numbers often share a base FMSI number across brands (e.g., `MKD930` corresponds to `D930`, `ACT930`, `NAD930`, `102.09300`). Always capture those equivalent numbers in `partNumbers`.',
+                    '',
+                    '### STRICT CATALOG OUTPUT RULES (APPLIES TO ALL FIELDS)',
+                    '- **Catalog Tone Only:** Write every field as clean, final e-commerce/POS catalog data. NEVER write audit logs, search commentary, or disclaimers in ANY field (`name`, `description`, `otherNames`).',
+                    '  - NEVER mention websites searched (e.g., do NOT write `"per a parts listing (gbayltd.online)"`).',
+                    '  - NEVER mention missing data, unconfirmed details, or rejected search results (e.g., do NOT write `"Years and engine not confirmed"`, `"Box label dimensions not used"`, or `"other MKD-numbered results were not treated as cross-references"`).',
+                    '- **`name`:** `[Make Model Year-Range] [Official Part Name]` (e.g., `"Lexus RX300 2002-2003 Front Disc Brake Pad Set"`). If years are unknown, use `[Make Model] [Part Name]` or just `[Part Name]`. Never put part numbers or notes in `name`.',
+                    '- **`brand`:** Manufacturer/brand name (e.g., `"Friction Master"`). Leave `""` only if completely unknown.',
+                    '- **`description`:** Clean 1–2 sentence product summary stating vehicle application, position (Front/Rear), material/specs, and key interchange references.',
+                    '- **`partNumber`:** Exact searched part number.',
+                    '- **`partNumbers`:** Array of all OEM and aftermarket interchange/cross-reference numbers (e.g., `["D930", "ACT930", "NAD930", "102.09300"]`).',
+                    '- **`otherNames`:** Array of clean, generic catalog search terms (e.g., `["Front Disc Brake Pads", "Front Brake Pad Set", "Semi-Metallic Brake Pads"]`). Do NOT include part numbers or brand names inside `otherNames`.',
                 ].join('\n'),
                 tools: {
-                    // ...tools,
                     web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
                 },
                 stopWhen: stepCountIs(3),
-                output: Output.object({
-                    schema: z.object({
+                output: Output.array({
+                    element: z.object({
                         name: z.string().describe('make, model, year, engine/trim of the vehicle, part name and variant if applicable, in one line'),
                         brand: z.string().describe('brand of the part if known, otherwise empty string'),
                         description: z.string().describe('description of the part if known, otherwise empty string'),
+                        partNumber: z.string().describe('The main partNumber coming from input data , text or image , whatever user is sending.'),
+                        barcode: z.string().describe('Barcode of the part if known either from input or image (the most likely source), otherwise empty string'),
+                        quantity: z.number().describe('Quantity of the part if known, otherwise 0'),
                         partNumbers: z
                             .array(z.string())
                             .describe('Array of candidate part numbers found in search results. Return an empty array [] if none found.'),
                         otherNames: z
                             .array(z.string())
                             .describe('Array of other names or synonyms for the part if known, otherwise empty array []'),
-                    })
+                    }),
                 }),
             });
-
             const out = response.output;
 
             // logger.info('ai-partNumbers response.out:', out);
 
-            if (!out || !out.name || !Array.isArray(out.partNumbers)) {
+            if (out.length === 0 || !out.every(item => item.name && item.partNumber)) {
                 resObj.success = false;
                 resObj.message = 'AI response is missing required fields';
                 resObj.status = 'error';
@@ -1957,27 +1979,76 @@ export const handleAppRequest = async (req, res) => {
                     quantity: Number(item.quantity ?? 0),
                 }));
 
-                const duplicateCheck = await Prisma.parts.findMany({
+                const existingParts = await Prisma.parts.findMany({
                     where: {
                         workspaceId: workspace.id,
-                        OR: itemsWithIds.map(item => ({ sku: item.sku })),
+                        partNumber: { in: itemsWithIds.map(item => item.partNumber).filter(Boolean) },
                     },
                 });
 
-                if (duplicateCheck.length > 0) {
-                    resObj.success = false;
-                    resObj.message = 'One or more parts already exist with the same SKU';
-                    resObj.data = duplicateCheck;
-                    resObj.status = 'error';
-                    return res.json(resObj);
+                const existingByPartNumber = new Map();
+                for (const part of existingParts) {
+                    if (part.partNumber && !existingByPartNumber.has(part.partNumber)) {
+                        existingByPartNumber.set(part.partNumber, part);
+                    }
                 }
 
-                const result = await Prisma.$transaction(
-                    itemsWithIds.map(item => Prisma.parts.create({ data: item }))
-                );
+                const itemsToCreate = [];
+                const incrementsById = new Map();
+
+                for (const item of itemsWithIds) {
+                    if (item.partNumber && existingByPartNumber.has(item.partNumber)) {
+                        const existing = existingByPartNumber.get(item.partNumber);
+                        const currentIncrement = Number(incrementsById.get(existing.id) ?? 0);
+                        incrementsById.set(existing.id, currentIncrement + Number(item.quantity ?? 0));
+                    } else {
+                        itemsToCreate.push(item);
+                    }
+                }
+
+                if (itemsToCreate.length > 0) {
+                    const duplicateCheck = await Prisma.parts.findMany({
+                        where: {
+                            workspaceId: workspace.id,
+                            OR: itemsToCreate.map(item => ({
+                                sku: item.sku,
+                            })),
+                        },
+                    });
+
+                    if (duplicateCheck.length > 0) {
+                        resObj.success = false;
+                        resObj.message = 'One or more parts already exist with the same SKU';
+                        resObj.data = duplicateCheck;
+                        resObj.status = 'error';
+                        return res.json(resObj);
+                    }
+                }
+
+                const result = await Prisma.$transaction(async (tx) => {
+                    const updatedParts = [];
+
+                    for (const [id, incrementBy] of incrementsById.entries()) {
+                        const updated = await tx.parts.update({
+                            where: { id, workspaceId: workspace.id },
+                            data: {
+                                quantity: {
+                                    increment: Number(incrementBy ?? 0),
+                                },
+                            },
+                        });
+                        updatedParts.push(updated);
+                    }
+
+                    const createdParts = await Promise.all(
+                        itemsToCreate.map(item => tx.parts.create({ data: item }))
+                    );
+
+                    return [...updatedParts, ...createdParts];
+                });
 
                 resObj.success = true;
-                resObj.message = 'Part created successfully';
+                resObj.message = 'Parts processed successfully';
                 resObj.data = result;
                 resObj.status = 'success';
 

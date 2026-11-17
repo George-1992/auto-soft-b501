@@ -433,6 +433,13 @@ export type EnumPartStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumPartStatusFilter<$PrismaModel> | $Enums.PartStatus
 }
 
+export type EnumPartUnitFilter<$PrismaModel = never> = {
+  equals?: $Enums.PartUnit | Prisma.EnumPartUnitFieldRefInput<$PrismaModel>
+  in?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPartUnitFilter<$PrismaModel> | $Enums.PartUnit
+}
+
 export type EnumPartStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PartStatus | Prisma.EnumPartStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PartStatus[] | Prisma.ListEnumPartStatusFieldRefInput<$PrismaModel>
@@ -441,6 +448,16 @@ export type EnumPartStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPartStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPartStatusFilter<$PrismaModel>
+}
+
+export type EnumPartUnitWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PartUnit | Prisma.EnumPartUnitFieldRefInput<$PrismaModel>
+  in?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPartUnitWithAggregatesFilter<$PrismaModel> | $Enums.PartUnit
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPartUnitFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPartUnitFilter<$PrismaModel>
 }
 
 export type EnumBodyTypeNullableFilter<$PrismaModel = never> = {
@@ -977,6 +994,13 @@ export type NestedEnumPartStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumPartStatusFilter<$PrismaModel> | $Enums.PartStatus
 }
 
+export type NestedEnumPartUnitFilter<$PrismaModel = never> = {
+  equals?: $Enums.PartUnit | Prisma.EnumPartUnitFieldRefInput<$PrismaModel>
+  in?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPartUnitFilter<$PrismaModel> | $Enums.PartUnit
+}
+
 export type NestedEnumPartStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PartStatus | Prisma.EnumPartStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PartStatus[] | Prisma.ListEnumPartStatusFieldRefInput<$PrismaModel>
@@ -985,6 +1009,16 @@ export type NestedEnumPartStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPartStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPartStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPartUnitWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PartUnit | Prisma.EnumPartUnitFieldRefInput<$PrismaModel>
+  in?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PartUnit[] | Prisma.ListEnumPartUnitFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPartUnitWithAggregatesFilter<$PrismaModel> | $Enums.PartUnit
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPartUnitFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPartUnitFilter<$PrismaModel>
 }
 
 export type NestedEnumBodyTypeNullableFilter<$PrismaModel = never> = {

@@ -18,6 +18,20 @@ export const OrderLineType = {
 export type OrderLineType = (typeof OrderLineType)[keyof typeof OrderLineType]
 
 
+export const PartUnit = {
+  piece: 'piece',
+  box: 'box',
+  pack: 'pack',
+  set: 'set',
+  roll: 'roll',
+  meter: 'meter',
+  liter: 'liter',
+  gallon: 'gallon'
+} as const
+
+export type PartUnit = (typeof PartUnit)[keyof typeof PartUnit]
+
+
 export const Aspiration = {
   naturally_aspirated: 'naturally_aspirated',
   turbocharged: 'turbocharged',

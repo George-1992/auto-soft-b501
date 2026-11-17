@@ -2042,15 +2042,21 @@ export const PartsScalarFieldEnum = {
   name: 'name',
   description: 'description',
   brand: 'brand',
+  unit: 'unit',
   purchasePrice: 'purchasePrice',
   price: 'price',
   quantity: 'quantity',
+  partNumber: 'partNumber',
   partNumbers: 'partNumbers',
   otherNames: 'otherNames',
   minStock: 'minStock',
   supplier: 'supplier',
+  imageUrl: 'imageUrl',
+  otherImages: 'otherImages',
+  otherDetails: 'otherDetails',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
   workspaceId: 'workspaceId'
 } as const
 
@@ -2342,6 +2348,20 @@ export type EnumPartStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'PartStatus[]'
  */
 export type ListEnumPartStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PartStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PartUnit'
+ */
+export type EnumPartUnitFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PartUnit'>
+    
+
+
+/**
+ * Reference to a field of type 'PartUnit[]'
+ */
+export type ListEnumPartUnitFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PartUnit[]'>
     
 
 
