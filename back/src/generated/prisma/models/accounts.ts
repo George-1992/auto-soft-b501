@@ -200,6 +200,7 @@ export type accountsWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"accounts"> | Date | string
   usersAndAccounts?: Prisma.UsersAndAccountsListRelationFilter
   workspaces?: Prisma.WorkspacesListRelationFilter
+  sessions?: Prisma.SessionsListRelationFilter
 }
 
 export type accountsOrderByWithRelationInput = {
@@ -212,6 +213,7 @@ export type accountsOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   usersAndAccounts?: Prisma.usersAndAccountsOrderByRelationAggregateInput
   workspaces?: Prisma.workspacesOrderByRelationAggregateInput
+  sessions?: Prisma.sessionsOrderByRelationAggregateInput
 }
 
 export type accountsWhereUniqueInput = Prisma.AtLeast<{
@@ -227,6 +229,7 @@ export type accountsWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"accounts"> | Date | string
   usersAndAccounts?: Prisma.UsersAndAccountsListRelationFilter
   workspaces?: Prisma.WorkspacesListRelationFilter
+  sessions?: Prisma.SessionsListRelationFilter
 }, "id">
 
 export type accountsOrderByWithAggregationInput = {
@@ -265,6 +268,7 @@ export type accountsCreateInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateInput = {
@@ -277,6 +281,7 @@ export type accountsUncheckedCreateInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUpdateInput = {
@@ -289,6 +294,7 @@ export type accountsUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateInput = {
@@ -301,6 +307,7 @@ export type accountsUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsCreateManyInput = {
@@ -412,6 +419,20 @@ export type accountsUpdateOneRequiredWithoutWorkspacesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.accountsUpdateToOneWithWhereWithoutWorkspacesInput, Prisma.accountsUpdateWithoutWorkspacesInput>, Prisma.accountsUncheckedUpdateWithoutWorkspacesInput>
 }
 
+export type accountsCreateNestedOneWithoutSessionsInput = {
+  create?: Prisma.XOR<Prisma.accountsCreateWithoutSessionsInput, Prisma.accountsUncheckedCreateWithoutSessionsInput>
+  connectOrCreate?: Prisma.accountsCreateOrConnectWithoutSessionsInput
+  connect?: Prisma.accountsWhereUniqueInput
+}
+
+export type accountsUpdateOneRequiredWithoutSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.accountsCreateWithoutSessionsInput, Prisma.accountsUncheckedCreateWithoutSessionsInput>
+  connectOrCreate?: Prisma.accountsCreateOrConnectWithoutSessionsInput
+  upsert?: Prisma.accountsUpsertWithoutSessionsInput
+  connect?: Prisma.accountsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.accountsUpdateToOneWithWhereWithoutSessionsInput, Prisma.accountsUpdateWithoutSessionsInput>, Prisma.accountsUncheckedUpdateWithoutSessionsInput>
+}
+
 export type accountsCreateWithoutUsersAndAccountsInput = {
   id?: string
   name?: string
@@ -421,6 +442,7 @@ export type accountsCreateWithoutUsersAndAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateWithoutUsersAndAccountsInput = {
@@ -432,6 +454,7 @@ export type accountsUncheckedCreateWithoutUsersAndAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsCreateOrConnectWithoutUsersAndAccountsInput = {
@@ -459,6 +482,7 @@ export type accountsUpdateWithoutUsersAndAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateWithoutUsersAndAccountsInput = {
@@ -470,6 +494,7 @@ export type accountsUncheckedUpdateWithoutUsersAndAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsCreateWithoutWorkspacesInput = {
@@ -481,6 +506,7 @@ export type accountsCreateWithoutWorkspacesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateWithoutWorkspacesInput = {
@@ -492,6 +518,7 @@ export type accountsUncheckedCreateWithoutWorkspacesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsCreateOrConnectWithoutWorkspacesInput = {
@@ -519,6 +546,7 @@ export type accountsUpdateWithoutWorkspacesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateWithoutWorkspacesInput = {
@@ -530,6 +558,71 @@ export type accountsUncheckedUpdateWithoutWorkspacesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
+}
+
+export type accountsCreateWithoutSessionsInput = {
+  id?: string
+  name?: string
+  status?: $Enums.AccountStatus
+  country?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
+  workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
+}
+
+export type accountsUncheckedCreateWithoutSessionsInput = {
+  id?: string
+  name?: string
+  status?: $Enums.AccountStatus
+  country?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
+  workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
+}
+
+export type accountsCreateOrConnectWithoutSessionsInput = {
+  where: Prisma.accountsWhereUniqueInput
+  create: Prisma.XOR<Prisma.accountsCreateWithoutSessionsInput, Prisma.accountsUncheckedCreateWithoutSessionsInput>
+}
+
+export type accountsUpsertWithoutSessionsInput = {
+  update: Prisma.XOR<Prisma.accountsUpdateWithoutSessionsInput, Prisma.accountsUncheckedUpdateWithoutSessionsInput>
+  create: Prisma.XOR<Prisma.accountsCreateWithoutSessionsInput, Prisma.accountsUncheckedCreateWithoutSessionsInput>
+  where?: Prisma.accountsWhereInput
+}
+
+export type accountsUpdateToOneWithWhereWithoutSessionsInput = {
+  where?: Prisma.accountsWhereInput
+  data: Prisma.XOR<Prisma.accountsUpdateWithoutSessionsInput, Prisma.accountsUncheckedUpdateWithoutSessionsInput>
+}
+
+export type accountsUpdateWithoutSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
+  workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
+}
+
+export type accountsUncheckedUpdateWithoutSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
+  workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 
@@ -540,11 +633,13 @@ export type accountsUncheckedUpdateWithoutWorkspacesInput = {
 export type AccountsCountOutputType = {
   usersAndAccounts: number
   workspaces: number
+  sessions: number
 }
 
 export type AccountsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usersAndAccounts?: boolean | AccountsCountOutputTypeCountUsersAndAccountsArgs
   workspaces?: boolean | AccountsCountOutputTypeCountWorkspacesArgs
+  sessions?: boolean | AccountsCountOutputTypeCountSessionsArgs
 }
 
 /**
@@ -571,6 +666,13 @@ export type AccountsCountOutputTypeCountWorkspacesArgs<ExtArgs extends runtime.T
   where?: Prisma.workspacesWhereInput
 }
 
+/**
+ * AccountsCountOutputType without action
+ */
+export type AccountsCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.sessionsWhereInput
+}
+
 
 export type accountsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -582,6 +684,7 @@ export type accountsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   updatedAt?: boolean
   usersAndAccounts?: boolean | Prisma.accounts$usersAndAccountsArgs<ExtArgs>
   workspaces?: boolean | Prisma.accounts$workspacesArgs<ExtArgs>
+  sessions?: boolean | Prisma.accounts$sessionsArgs<ExtArgs>
   _count?: boolean | Prisma.AccountsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["accounts"]>
 
@@ -619,6 +722,7 @@ export type accountsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type accountsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usersAndAccounts?: boolean | Prisma.accounts$usersAndAccountsArgs<ExtArgs>
   workspaces?: boolean | Prisma.accounts$workspacesArgs<ExtArgs>
+  sessions?: boolean | Prisma.accounts$sessionsArgs<ExtArgs>
   _count?: boolean | Prisma.AccountsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type accountsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -629,6 +733,7 @@ export type $accountsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     usersAndAccounts: Prisma.$usersAndAccountsPayload<ExtArgs>[]
     workspaces: Prisma.$workspacesPayload<ExtArgs>[]
+    sessions: Prisma.$sessionsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1034,6 +1139,7 @@ export interface Prisma__accountsClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   usersAndAccounts<T extends Prisma.accounts$usersAndAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$usersAndAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$usersAndAccountsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workspaces<T extends Prisma.accounts$workspacesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$workspacesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$workspacesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sessions<T extends Prisma.accounts$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$sessionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1508,6 +1614,30 @@ export type accounts$workspacesArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.WorkspacesScalarFieldEnum | Prisma.WorkspacesScalarFieldEnum[]
+}
+
+/**
+ * accounts.sessions
+ */
+export type accounts$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the sessions
+   */
+  select?: Prisma.sessionsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the sessions
+   */
+  omit?: Prisma.sessionsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.sessionsInclude<ExtArgs> | null
+  where?: Prisma.sessionsWhereInput
+  orderBy?: Prisma.sessionsOrderByWithRelationInput | Prisma.sessionsOrderByWithRelationInput[]
+  cursor?: Prisma.sessionsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SessionsScalarFieldEnum | Prisma.SessionsScalarFieldEnum[]
 }
 
 /**

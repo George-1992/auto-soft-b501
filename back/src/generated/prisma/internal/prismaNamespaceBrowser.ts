@@ -55,6 +55,7 @@ export const ModelName = {
   users: 'users',
   usersAndAccounts: 'usersAndAccounts',
   workspaces: 'workspaces',
+  sessions: 'sessions',
   notes: 'notes',
   locations: 'locations',
   customers: 'customers',
@@ -138,6 +139,29 @@ export const WorkspacesScalarFieldEnum = {
 } as const
 
 export type WorkspacesScalarFieldEnum = (typeof WorkspacesScalarFieldEnum)[keyof typeof WorkspacesScalarFieldEnum]
+
+
+export const SessionsScalarFieldEnum = {
+  id: 'id',
+  sessionToken: 'sessionToken',
+  accountId: 'accountId',
+  userId: 'userId',
+  expires: 'expires',
+  deviceName: 'deviceName',
+  deviceType: 'deviceType',
+  deviceOS: 'deviceOS',
+  deviceBrowser: 'deviceBrowser',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
+  country: 'country',
+  lastActiveAt: 'lastActiveAt',
+  revokedAt: 'revokedAt',
+  otherDetails: 'otherDetails',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SessionsScalarFieldEnum = (typeof SessionsScalarFieldEnum)[keyof typeof SessionsScalarFieldEnum]
 
 
 export const NotesScalarFieldEnum = {

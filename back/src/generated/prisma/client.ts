@@ -62,6 +62,11 @@ export type usersAndAccounts = Prisma.usersAndAccountsModel
  */
 export type workspaces = Prisma.workspacesModel
 /**
+ * Model sessions
+ * 
+ */
+export type sessions = Prisma.sessionsModel
+/**
  * Model notes
  * 
  */

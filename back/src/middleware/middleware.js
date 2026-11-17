@@ -1,4 +1,4 @@
-import { clearAuthUnauthorized, setSessionCookie } from '#src/services/appRequest.js';
+import { clearAuthUnauthorized } from '#src/services/session.js';
 import { createJwtToken, verifyJwtToken } from '#src/services/jwt.service.js';
 import { logger } from '#src/utils/logger.js';
 
@@ -48,7 +48,6 @@ const middleware = (req, res, next) => {
         const newVfData = createJwtToken('30d', verifiedData);
         // logger.info('middleware:newVfData:', newVfData);
         // console.log('middleware:newVfData:', newVfData);
-        // setSessionCookie(res, newVfData);
 
         req.body.auth = verifiedData;
       } else {

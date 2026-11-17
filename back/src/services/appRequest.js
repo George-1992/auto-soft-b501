@@ -12,16 +12,11 @@ import { createPartsSearchTool, createVinSearchTool } from '#src/services/ai/too
 import { generateText, Output, stepCountIs } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
+import { setSessionCookie, clearAuthUnauthorized, clearAuthSuccess, getSessionFromRequest, createSession } from '#src/services/session.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
-const authCookieOptions = {
-    httpOnly: true,
-    secure: IS_PROD,
-    sameSite: IS_PROD ? 'none' : 'lax',
-    path: '/',
-};
 
 const getIdsFromData = (data) => {
     try {
@@ -226,59 +221,35 @@ export const handleAppRequest = async (req, res) => {
         let account = null;
         let user = null;
         let workspace = null;
+        let session = null;
 
         // optional vars
         const offset = reqObj.offset || 0;
         const limit = reqObj.limit || 50;
 
+
+        // validate required fields
         if (!itsFor) {
             resObj.message = 'Missing itsFor in request';
             resObj.status = 'error';
             return res.json(resObj);
         };
         if (!isAuthRequest) {
-            if (!accountId) {
-                resObj.message = 'Missing accountId in request';
-                resObj.status = 'error';
-                return res.json(resObj);
+            const sessionRes = await getSessionFromRequest(req, res);
+            // logger.info('handleAppRequest: sessionRes:', sessionRes);
+
+            if (!sessionRes.success) {
+                logger.warn('Session not found:', { accountId, userId });
+                return clearAuthUnauthorized(res);
             }
-            if (!userId) {
-                resObj.message = 'Missing userId in request';
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-
-            account = await Prisma.accounts.findUnique({
-                where: { id: accountId },
-                include: {
-                    workspaces: true,
-                },
-            });
-
-            if (!account) {
-                resObj.message = 'Account not found';
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-
-            user = await Prisma.users.findUnique({
-                where: { id: userId },
-                include: {
-                    usersAndAccounts: {
-                        where: { accountId },
-                    },
-                },
-            });
-
-
-            if (!user) {
-                resObj.message = 'User not found';
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-            user.role = user.usersAndAccounts?.[0]?.role || null;
-            workspace = account?.workspaces?.[0] || null;
+            session = sessionRes?.data || null;
+            account = session?.account || null;
+            user = session?.user || null;
+            workspace = session?.workspace || null;
         }
+
+
+
         if (!isAuthRequest && (!account || !account?.id)) {
             resObj.message = 'Account not found';
             resObj.status = 'error';
@@ -491,7 +462,21 @@ export const handleAppRequest = async (req, res) => {
                 resObj.token = token;
                 resObj.data = toSendData;
 
-                setSessionCookie(res, token);
+
+                const signinSession = await createSession(req, res, {
+                    accountId: user.usersAndAccounts[0].accountId,
+                    userId: user.id,
+                    token: token
+                });
+                if (!signinSession.success) {
+                    // logger.error('handleAppRequest: signinSession creation failed:', signinSession);
+                    resObj.success = false;
+                    resObj.message = 'Signin session creation failed';
+                    resObj.status = 'error';
+                    return res.json(resObj);
+                } else {
+                    setSessionCookie(res, token);
+                }
             }
 
         } else if (itsFor === 'signout') {
@@ -688,28 +673,96 @@ export const handleAppRequest = async (req, res) => {
             }
         } else if (itsFor === 'settings') {
             if (action === 'get') {
+
+                const thisAccount = await Prisma.accounts.findFirst({
+                    where: { id: account.id },
+                    select: {
+                        id: true,
+                        name: true,
+                        country: true,
+                        currency: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        sessions: {
+                            where: {
+                                userId: user.id,
+                            },
+                            omit: {
+                                sessionToken: true,
+                            },
+                        },
+                    },
+                });
+
                 // get user.config.settings 
                 resObj.success = true;
                 resObj.message = 'Settings config retrieved successfully';
-                resObj.data = account;
+                resObj.data = thisAccount;
                 resObj.status = 'success';
             } else if (action === 'update' || action === 'create') {
                 // update user.config.settings
-                await Prisma.accounts.update({
+                const thisAccount = await Prisma.accounts.update({
                     where: { id: account.id },
                     data: {
                         name: data.name || account.name,
                         country: data.country || account.country,
                         currency: data.currency || account.currency,
                     },
+                    include: {
+                        sessions: true,
+                    }
                 });
 
                 resObj.success = true;
                 resObj.message = 'Settings config updated successfully';
                 resObj.data = {
-                    ...account,
+                    ...thisAccount,
                     ...data,
                 };
+                resObj.status = 'success';
+            }
+
+        } else if (itsFor === 'sessions') {
+
+            if (action === 'get') {
+                const sessions = await Prisma.sessions.findMany({
+                    where: {
+                        accountId: account.id,
+                        userId: user.id,
+                    },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                    select: {
+                        id: true,
+                        userId: true,
+                        accountId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        expiresAt: true,
+                        ipAddress: true,
+                        userAgent: true,
+                    },
+                });
+
+                resObj.success = true;
+                resObj.message = 'Sessions retrieved successfully';
+                resObj.data = sessions;
+                resObj.status = 'success';
+            } else if (action === 'delete') {
+                const idsToDelete = itemsIds.length > 0 ? itemsIds : [session.id];
+
+                const deleted = await Prisma.sessions.deleteMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        accountId: account.id,
+                        userId: user.id,
+                    },
+                });
+
+                resObj.success = true;
+                resObj.message = 'Sessions deleted successfully';
+                resObj.data = deleted;
                 resObj.status = 'success';
             }
 
@@ -912,7 +965,7 @@ export const handleAppRequest = async (req, res) => {
                     '  - NEVER mention missing data, unconfirmed details, or rejected search results (e.g., do NOT write `"Years and engine not confirmed"`, `"Box label dimensions not used"`, or `"other MKD-numbered results were not treated as cross-references"`).',
                     '- **`name`:** `[Make Model Year-Range] [Official Part Name]` (e.g., `"Lexus RX300 2002-2003 Front Disc Brake Pad Set"`). If years are unknown, use `[Make Model] [Part Name]` or just `[Part Name]`. Never put part numbers or notes in `name`.',
                     '- **`brand`:** Manufacturer/brand name (e.g., `"Friction Master"`). Leave `""` only if completely unknown.',
-                    '- **`description`:** Clean 1–2 sentence product summary stating vehicle application, position (Front/Rear), material/specs, and key interchange references.',
+                    '- **`description`:** Clean 1-2 sentence product summary stating vehicle application, position (Front/Rear), material/specs, and key interchange references.',
                     '- **`partNumber`:** Exact searched part number.',
                     '- **`partNumbers`:** Array of all OEM and aftermarket interchange/cross-reference numbers (e.g., `["D930", "ACT930", "NAD930", "102.09300"]`).',
                     '- **`otherNames`:** Array of clean, generic catalog search terms (e.g., `["Front Disc Brake Pads", "Front Brake Pad Set", "Semi-Metallic Brake Pads"]`). Do NOT include part numbers or brand names inside `otherNames`.',
@@ -1949,6 +2002,9 @@ export const handleAppRequest = async (req, res) => {
                             { name: { contains: searchQuery, mode: 'insensitive' } },
                             { brand: { contains: searchQuery, mode: 'insensitive' } },
                             { description: { contains: searchQuery, mode: 'insensitive' } },
+                            { partNumber: { contains: searchQuery, mode: 'insensitive' } },
+                            { partNumbers: { has: searchQuery } },
+                            { otherNames: { has: searchQuery } },
                         ],
                     } : {}),
                     ...(filters.length ? filtersToPrismaWhere(filters) : {}),
@@ -2189,10 +2245,6 @@ export const handleAppRequest = async (req, res) => {
         }
 
 
-
-
-
-
         // resObj.account = {
         //     id: account.id,
         //     name: account.name,
@@ -2224,32 +2276,7 @@ export const handleAppRequest = async (req, res) => {
 };
 
 
-export const setSessionCookie = (res, data) => {
-    res.cookie(AUTH_COOKIE_NAME, data, {
-        ...authCookieOptions,
-        maxAge: 86400 * 1000 * 30, // 30 days  
-    });
-};
-export const clearAuthUnauthorized = (res) => {
-    res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
-
-    return res.status(401).json({
-        success: false,
-        status: 'unauthorized',
-        message: 'Authentication required',
-        data: null,
-    });
-};
-export const clearAuthSuccess = (res) => {
-    res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
-
-    return res.status(200).json({
-        success: true,
-        status: 'success',
-        message: 'Signed out',
-        data: null,
-    });
-};
+;
 const dummyCustomersCreation = async ({ count, workspaceId }) => {
     try {
         const dummyCustomers = [];

@@ -11,9 +11,13 @@ import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
 import { fileToBase64, toDisplayNumber } from "@/src/services/other";
-import { BadgeInfoIcon, BookmarkIcon, CircleDollarSignIcon, ClipboardPenIcon, FolderPenIcon, HashIcon, InfoIcon, Package2Icon, PlusIcon, RulerDimensionLineIcon, ScanBarcodeIcon, SearchIcon, TagIcon, TruckIcon, WarehouseIcon, XIcon } from "lucide-react";
-import { use, useEffect } from "react";
-import { useRef, useState } from "react";
+import {
+    BadgeInfoIcon, BookmarkIcon, CircleDollarSignIcon, ClipboardPenIcon,
+    FolderPenIcon, HashIcon, InfoIcon, Package2Icon, PlusIcon,
+    RulerDimensionLineIcon, ScanBarcodeIcon, SearchIcon, TagIcon,
+    TruckIcon, WarehouseIcon, XIcon
+} from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 const dummyEditItemsParts = [

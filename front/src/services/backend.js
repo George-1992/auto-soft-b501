@@ -41,6 +41,7 @@ export const sendBackRequest = async ({
             method: method,
             headers: {
                 'Content-Type': 'application/json',
+                'X-Client-Url': window.location.href,
             },
             body: {
                 itsFor: itsFor,

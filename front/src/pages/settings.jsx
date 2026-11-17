@@ -1,5 +1,6 @@
 import { CURRENCIES } from "@/data/currency";
 import { updateSession } from "@/src/components/auth";
+import Sessions from "@/src/components/sessions";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import Card from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/inputs";
@@ -108,6 +109,39 @@ export default function Settings() {
         }
     };
 
+    const handleDeleteSession = async (sessionItem) => {
+        if (!sessionItem?.id) return;
+
+        try {
+            const response = await sendBackRequest({
+                action: 'delete',
+                itsFor: 'sessions',
+                data: { id: sessionItem.id },
+            });
+
+            if (!response?.success) {
+                notify({
+                    type: 'error',
+                    message: response?.message || 'Error deleting session',
+                });
+                throw new Error(response?.message || 'Error deleting session');
+            }
+
+            _setData((prev) => ({
+                ...(prev || {}),
+                sessions: (prev?.sessions || []).filter((item) => item.id !== sessionItem.id),
+            }));
+
+            notify({
+                type: 'success',
+                message: 'Session deleted successfully',
+            });
+        } catch (error) {
+            logger.error("Settings delete session error", error);
+            throw error;
+        }
+    };
+
     // logger.info("Settings _data", _data);
 
     return (
@@ -115,7 +149,7 @@ export default function Settings() {
             <h1 className="text-2xl font-bold mb-4">
                 Settings
             </h1>
-            <Card   className="p-5">
+            <Card className="p-5">
                 <div className="md:w-96 flex flex-col gap-5">
                     <div>
                         <label htmlFor="name">Name</label>
@@ -164,6 +198,11 @@ export default function Settings() {
                 </div>
             </Card>
 
+
+            <Sessions
+                sessions={_data?.sessions || []}
+                onDeleteSession={handleDeleteSession}
+            />
         </div>
     );
 }

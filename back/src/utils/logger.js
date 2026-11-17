@@ -2,6 +2,7 @@ import pino from 'pino';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Writable } from 'node:stream';
+import { format } from 'node:util';
 
 const requestContext = new AsyncLocalStorage();
 
@@ -70,17 +71,26 @@ const logger = pino({
     return { ...(requestContext.getStore() || {}) };
   },
   hooks: {
-    // Allows logger.info('msg', { foo: 1 }) as well as pino's native logger.info({ foo: 1 }, 'msg')
+    // Supports console-style logger.info('msg', value) and keeps object logs structured.
     logMethod(args, method) {
+      const [firstArg, secondArg, ...restArgs] = args;
+      const hasPrintfPlaceholders =
+        typeof firstArg === 'string' && /%[sdifjoO%]/.test(firstArg);
+
       if (
         args.length >= 2 &&
-        typeof args[0] === 'string' &&
-        args[1] !== null &&
-        typeof args[1] === 'object'
+        typeof firstArg === 'string' &&
+        !hasPrintfPlaceholders &&
+        secondArg !== null &&
+        typeof secondArg === 'object'
       ) {
-        const [msg, obj, ...rest] = args;
-        return method.call(this, obj, msg, ...rest);
+        return method.call(this, secondArg, firstArg, ...restArgs);
       }
+
+      if (args.length >= 2 && typeof firstArg === 'string') {
+        return method.call(this, format(firstArg, secondArg, ...restArgs));
+      }
+
       return method.apply(this, args);
     },
   },

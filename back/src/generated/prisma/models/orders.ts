@@ -985,10 +985,6 @@ export type EnumWorkOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.WorkOrderStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type EnumDiscountTypeFieldUpdateOperationsInput = {
   set?: $Enums.DiscountType
 }

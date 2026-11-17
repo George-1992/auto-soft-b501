@@ -19,6 +19,7 @@ model accounts {
 
   usersAndAccounts usersAndAccounts[]
   workspaces       workspaces[]
+  sessions         sessions[]
 
   @@index([name])
   @@index([status])
@@ -38,6 +39,7 @@ model users {
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
   usersAndAccounts usersAndAccounts[]
+  sessions         sessions[]
 
   @@index([firstName])
   @@index([lastName])
@@ -83,6 +85,41 @@ model workspaces {
 
   @@index([name])
   @@index([accountId])
+}
+
+model sessions {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique @map("session_token") // store a SHA-256 hash, not the raw token
+  accountId    String   @map("account_id")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  deviceName    String?   @map("device_name")
+  deviceType    String?   @map("device_type")
+  deviceOS      String?   @map("device_os")
+  deviceBrowser String?   @map("device_browser")
+  userAgent     String?   @map("user_agent")
+  ipAddress     String?   @map("ip_address")
+  country       String?
+  lastActiveAt  DateTime  @default(now()) @map("last_active_at") @db.Timestamp(6)
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamp(6)
+  otherDetails  Json?     @default("{}") @map("other_details")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  account   accounts @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([expires])
+  @@index([deviceName])
+  @@index([deviceType])
+  @@index([deviceOS])
+  @@index([deviceBrowser])
+  @@index([userAgent])
+  @@index([ipAddress])
+  @@index([country])
 }
 
 model notes {
