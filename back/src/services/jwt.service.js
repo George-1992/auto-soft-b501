@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { logger } from '#src/utils/logger.js';
+import { nanoid } from 'nanoid';
 
 
 const apiSecret = process.env.AUTH_TOKEN_SECRET;
@@ -8,18 +9,16 @@ const apiSecret = process.env.AUTH_TOKEN_SECRET;
 const createJwtToken = (expires, data) => {
   if (!apiSecret) {
     logger.error('Error creating token: API_SECRET is not defined in environment variables');
-    // logger.info(process.env);
     return null;
   }
-  if (data.exp) {
-    delete data.exp; // Remove exp if it exists in the data object
-  }
-  if (data.iat) {
-    delete data.iat; // Remove iat if it exists in the data object
-  }
 
-  const payload = data || {};
+  // Clone data so we don't mutate the original object, and strip old JWT claims
+  const { exp, iat, jti, ...cleanData } = data || {};
 
+  const payload = {
+    ...cleanData,
+    jti: nanoid(15)
+  };
 
   return jwt.sign(payload, apiSecret, { expiresIn: expires });
 };
@@ -34,7 +33,7 @@ const verifyJwtToken = (token, secret) => {
   }
 };
 
-const createJwtTokenOther =  (secret, expires, data) => {
+const createJwtTokenOther = (secret, expires, data) => {
   const resolvedSecret = secret;
 
   if (!resolvedSecret) {

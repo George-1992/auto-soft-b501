@@ -29,6 +29,7 @@ export const getSessionFromRequest = async (req, res) => {
         //check if the request has a valid auth token in cookies
         const token = req.cookies?.[AUTH_COOKIE_NAME];
         const incomingTokenData = verifyJwtToken(token);
+        const itsFor = req?.body?.itsFor || '';
 
 
         const accountId = incomingTokenData?.accountId || null;
@@ -119,14 +120,26 @@ export const getSessionFromRequest = async (req, res) => {
         if (incomingTokenData) {
             const newToken = extendSessionCookie(res, incomingTokenData);
             //update session's lastActiveAt and expires in the database
-            await Prisma.sessions.update({
-                where: { id: sessionFromDb.id },
-                data: {
-                    sessionToken: newToken,
-                    lastActiveAt: new Date(),
-                    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
-                },
-            });
+            // logger.info('token >>> ', token);
+            // logger.info('newToken >>> ', newToken);
+            // logger.info('itsFor >>> ', itsFor);
+            // logger.info('isTheSameToken >>> ', token === newToken);
+
+            try {
+                const randomDelay = Math.floor(Math.random() * 100); // random delay between 0 and 1000 ms
+                setTimeout(async () => {
+                    await Prisma.sessions.update({
+                        where: { id: sessionFromDb.id },
+                        data: {
+                            sessionToken: newToken,
+                            lastActiveAt: new Date(),
+                            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
+                        },
+                    });
+                }, randomDelay);
+            } catch (error) {
+                logger.error('Error updating session in database:', error?.message || error);
+            }
         }
         // update session's lastActiveAt in the database
         await Prisma.sessions.update({
@@ -144,7 +157,6 @@ export const getSessionFromRequest = async (req, res) => {
         const xClientUrl = req.headers?.['x-client-url'] || '';
 
         const reqObj = req.body || {};
-        const itsFor = reqObj.itsFor || '';
         const action = reqObj.action || '';
         const searchQuery = reqObj.searchQuery || '';
         const isAuthRequest = ['signup', 'signin', 'signout'].includes(itsFor);

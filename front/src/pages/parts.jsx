@@ -148,10 +148,10 @@ function ThisEditComponent({
     const [_searchTerm, _setSearchTerm] = useState('');
     const [_isLoading, _setIsLoading] = useState(false);
 
-    // const [_editItems, _setEditItems] = useState([]);
-    // const [_editItem, _setEditItem] = useState(data || null);
-    const [_editItems, _setEditItems] = useState(dummyEditItemsParts);
-    const [_editItem, _setEditItem] = useState(_editItems[0]);
+    const [_editItems, _setEditItems] = useState([]);
+    const [_editItem, _setEditItem] = useState(data || null);
+    // const [_editItems, _setEditItems] = useState(dummyEditItemsParts);
+    // const [_editItem, _setEditItem] = useState(_editItems[0]);
     const formId = 'new-part-form';
 
     const handleFormSubmit = async (e) => {
