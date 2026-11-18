@@ -8,11 +8,12 @@ import { nanoid } from 'nanoid';
 import { TestFunc } from '#src/services/test.js';
 import { getRandomSku, getRandomString } from '#src/services/other.js';
 import { aiStream } from '#src/services/ai/streamV2.js';
-import { createPartsSearchTool, createVinSearchTool } from '#src/services/ai/tools.js';
+import { createInventoryPartsSearchTool, createVinSearchTool } from '#src/services/ai/tools.js';
 import { generateText, Output, stepCountIs } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { setSessionCookie, clearAuthUnauthorized, clearAuthSuccess, getSessionFromRequest, createSession } from '#src/services/session.js';
+import { google } from '@ai-sdk/google';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -877,53 +878,102 @@ export const handleAppRequest = async (req, res) => {
             return HandleAiChatRequest(req, res, account, user, workspace);
         } else if (itsFor === 'ai-search') {
 
-            return aiStream(req, res, {
-                account, user, workspace,
-                messages: reqObj.data?.messages || [],
-                tools: {
-                    partsSearchTool: createPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }),
-                    vinSearchTool: createVinSearchTool({ vin: '' }),
-                },
-                system: [
-                    'You are a concise parts search assistant inside garage management software.',
-                    '',
-                    'The vehicle must be fully identified before anything else. Do not discuss, ask about, or search for any part until the vehicle is confirmed.',
-                    '',
-                    'STEP 1: Identify the vehicle (mandatory, always first).',
-                    '- Read ALL previous messages first and extract anything already stated (including any VIN, make, model, yearFrom, yearTo, generation, trim, bodyType, doors, or fuelType). Never ask for something already given.',
-                    '- VIN Priority: If a 17-character VIN is available in the conversation and make, model, or yearFrom is not populated, use available tools such as vinSearchTool or web_search to decode it and populate vehicle data before asking the user any questions.',
-                    '- Record the tool name in vehicle.sources. Do not ask for the VIN if it is already present in the conversation. Do not call tools already listed in vehicle.sources.',
-                    '- Required: make, model, yearFrom. Also required: trim or fuelType when the part could depend on it.',
-                    '- If anything required is still missing (and no VIN was provided to decode it), ask ONE short question for the single most important missing field only. When the answer is a known set, return it as an options block.',
-                    '- The vehicle counts as identified only when make, model, and yearFrom are all set in the app.vehicle block.',
-                    '- Do not move to Step 2 until the vehicle is identified.',
-                    '',
-                    'STEP 2: Part.',
-                    '- Only start this step after make, model, and yearFrom are set in app.vehicle.',
-                    '- Identify which part the user needs. If the user already named it earlier, use it and do not ask again.',
-                    '- If unclear, ask ONE question. If the part needs a variant (front/rear, left/right), ask the question.',
-                    '- return genuine/orginal part numbers first then aftermarket part numbers if available clearly state which is which.',
-                    '',
-                    'STEP 3: Part numbers.',
-                    '- ALWAYS call web_search first to find OEM part numbers for the exact vehicle and part. Never rely on memory alone.',
-                    '- Search for the yearFrom, make, model, trim, part, and variant, for example: "2016 Mercedes CLS550 W218 rear brake pads OEM part number".',
-                    '- Only use numbers that appear in search results. If search finds nothing, say so in one line, ask for the 17-character VIN (if not already provided), and stop.',
-                    '- If OEM numbers are found, proceed immediately to Step 4 in the same turn without asking for confirmation.',
-                    '',
-                    'STEP 4: Search.',
-                    '- In the same turn, call partsSearchTool with all verified candidate numbers in the partNumbers array.',
-                    '- Never pass dummy values (like "00000000").',
-                    '- Only report inventory results that come from a partsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
-                    '- Once partsSearchTool returns, write the candidate numbers in one short line ("Candidate OEM numbers: X, Y, Z") followed immediately by the inventory results.',
-                    '',
-                    'Rules:',
-                    '- If the user changes the vehicle at any point, reset app.vehicle fields to the new vehicle and return to Step 1 before searching again.',
-                    '- Maximum 2 clarifying questions in total. After that, state your best assumption in one short phrase and proceed.',
-                    '- Never ask more than one question per message.',
-                    '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, call partsSearchTool, list the candidate part numbers, and present the inventory results.',
-                    '- Dont use mention/expose any naming used for tools or internal functions in your responses to the user. Only use generalized descriptions that are relevant.',
-                ].join('\n'),
-            });
+            const messages = reqObj.data?.messages || [];
+            const searchType = reqObj.data?.type || 'vehicle'; //vehicle or part
+            if (searchType === 'vehicle') {
+
+                return aiStream(req, res, {
+                    account, user, workspace,
+                    messages: messages,
+                    tools: {
+                        inventoryPartsSearchTool: createInventoryPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }),
+                        vinSearchTool: createVinSearchTool({ vin: '' }),
+                        web_search: anthropic.tools.webSearch_20260318({ maxUses: 3 }),
+                    },
+                    system: [
+                        'You are a concise parts search assistant inside garage management software.',
+                        '',
+                        'The vehicle must be fully identified before anything else. Do not discuss, ask about, or search for any part until the vehicle is confirmed.',
+                        '',
+                        'STEP 1: Identify the vehicle (mandatory, always first).',
+                        '- Read ALL previous messages first and extract anything already stated (including any VIN, make, model, yearFrom, yearTo, generation, trim, bodyType, doors, or fuelType). Never ask for something already given.',
+                        '- VIN Priority: If a 17-character VIN is available in the conversation and make, model, or yearFrom is not populated, use available tools such as vinSearchTool or web_search to decode it and populate vehicle data before asking the user any questions.',
+                        '- Record the tool name in vehicle.sources. Do not ask for the VIN if it is already present in the conversation. Do not call tools already listed in vehicle.sources.',
+                        '- Required: make, model, yearFrom. Also required: trim or fuelType when the part could depend on it.',
+                        '- If anything required is still missing (and no VIN was provided to decode it), ask ONE short question for the single most important missing field only. When the answer is a known set, return it as an options block.',
+                        '- The vehicle counts as identified only when make, model, and yearFrom are all set in the app.vehicle block.',
+                        '- Do not move to Step 2 until the vehicle is identified.',
+                        '',
+                        'STEP 2: Part.',
+                        '- Only start this step after make, model, and yearFrom are set in app.vehicle.',
+                        '- Identify which part the user needs. If the user already named it earlier, use it and do not ask again.',
+                        '- If unclear, ask ONE question. If the part needs a variant (front/rear, left/right), ask the question.',
+                        '- return genuine/orginal part numbers first then aftermarket part numbers if available clearly state which is which.',
+                        '',
+                        'STEP 3: Part numbers.',
+                        '- ALWAYS call web_search first to find OEM part numbers for the exact vehicle and part. Never rely on memory alone. Unless already called and you already have part numbers, do not call web_search again unless the user asks to search again or changes the vehicle.',
+                        '- Search for the yearFrom, make, model, trim, part, and variant, for example: "2016 Mercedes CLS550 W218 rear brake pads OEM part number".',
+                        '- Only use numbers that appear in search results. If search finds nothing, say so in one line, ask for the 17-character VIN (if not already provided), and stop.',
+                        '- If OEM numbers are found, proceed immediately to Step 4 in the same turn without asking for confirmation.',
+                        '',
+                        'STEP 4: Search.',
+                        '- In the same turn, call inventoryPartsSearchTool with all verified candidate numbers in the partNumbers array.',
+                        '- Never pass dummy values (like "00000000").',
+                        '- Only report inventory results that come from an inventoryPartsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
+                        '- Once inventoryPartsSearchTool returns, write the candidate numbers in one short line ("Candidate OEM numbers: X, Y, Z") followed immediately by the inventory results.',
+                        '',
+                        'Rules:',
+                        '- If the user changes the vehicle at any point, reset app.vehicle fields to the new vehicle and return to Step 1 before searching again.',
+                        '- Maximum 2 clarifying questions in total. After that, state your best assumption in one short phrase and proceed.',
+                        '- Never ask more than one question per message.',
+                        '- Never chat, explain, or offer extras. Every message must either ask the next missing field, or run web_search, call inventoryPartsSearchTool, list the candidate part numbers, and present the inventory results.',
+                        '- Dont use mention/expose any naming used for tools or internal functions in your responses to the user. Only use generalized descriptions that are relevant.',
+                    ].join('\n'),
+                });
+            } else if (searchType === 'part') {
+
+                return aiStream(req, res, {
+                    account, user, workspace,
+                    messages: messages,
+                    tools: {
+                        inventoryPartsSearchTool: createInventoryPartsSearchTool({ accountId: account.id, workspaceId: workspace.id }),
+                        web_search: anthropic.tools.webSearch_20260318({ maxUses: 3 }),
+                    },
+                    system: [
+                        'You are a concise parts cross-reference assistant inside garage management software.',
+                        '',
+                        'The user has submitted a part number. Your goal is to identify the part, cross-reference its OE/OEM numbers first, find aftermarket alternatives second, and check internal inventory for matches.',
+                        '',
+                        'STEP 1: Extract the part number.',
+                        '- Read ALL previous messages and extract the submitted part number (clean up formatting/spaces only when needed for search, while keeping the original reference).',
+                        '- If no part number is present or it is too incomplete/ambiguous to look up, ask ONE short question requesting the part number. Do not proceed until a part number is provided.',
+                        '',
+                        'STEP 2: Cross-reference via web_search.',
+                        '- ALWAYS call web_search first to identify the part and cross-reference OEM and aftermarket equivalent part numbers. Never rely on memory alone.',
+                        '- Do not call web_search again for the same part number unless the user provides a new part number or asks to search again.',
+                        '- Search using queries like: "<part_number> cross reference OEM" or "<part_number> equivalent part numbers".',
+                        '- Separate verified numbers strictly into two groups:',
+                        '  1. Genuine / OE / OEM part numbers (list these FIRST, including superseded/interchange OE numbers if verified).',
+                        '  2. Aftermarket cross-reference part numbers (include brand + part number, e.g., Bosch, Mann, Brembo, TRW, etc.).',
+                        '- Only use part numbers that explicitly appear in search results. Never guess or fabricate cross-references.',
+                        '- If web_search finds no valid cross-references, still run Step 3 with the user-submitted part number alone before reporting that no cross-references were found.',
+                        '- Always send partNumber findings to the user and then move to the next step.',
+                        '',
+                        'STEP 3: Internal inventory search.',
+                        '- Call inventoryPartsSearchTool passing the submitted part number plus ALL verified OE and aftermarket cross-reference numbers in the partNumbers array.',
+                        '- Never pass dummy values (like "00000000").',
+                        '- Only report inventory results that come from an inventoryPartsSearchTool result in this turn. If the tool was not called, never state search outcomes.',
+                        '',
+                        'Rules:',
+                        '- If the user submits a new part number at any point, discard the previous part numbers and restart from Step 1.',
+                        '- Never ask for vehicle details unless web_search returns conflicting parts for the exact same number and requires disambiguation (maximum 1 clarifying question).',
+                        '- Never chat, explain, or offer extras. Every message must either ask for the missing/ambiguous part number, or run web_search, call inventoryPartsSearchTool, list the OE and aftermarket numbers, and present the inventory results.',
+                        '- Do not mention or expose any internal tool names or function names in your responses to the user. Only use generalized descriptions when necessary.',
+                    ].join('\n'),
+                });
+
+
+            }
 
         } else if (itsFor === 'ai-partNumber-search') {
 
@@ -945,9 +995,12 @@ export const handleAppRequest = async (req, res) => {
 
             const response = await generateText({
                 // model: openai('gpt-6-luna'),
-                // model: google('gemini-3.8-flash'),
-                model: anthropic('claude-haiku-5-5'),
+                model: google('gemini-3.8-flash'),
+                // model: anthropic('claude-haiku-5-5'),
                 messages: msgs,
+                tools: {
+                    // web_search: anthropic.tools.webSearch_20260318({ maxUses: 3 }),
+                },
                 system: [
                     'You are a vehicle parts search assistant inside parts store management software.',
                     'Your goal is to retrieve complete vehicle fitment, OEM/interchange part numbers, and clean catalog product descriptions.',
@@ -2035,12 +2088,14 @@ export const handleAppRequest = async (req, res) => {
                     quantity: Number(item.quantity ?? 0),
                 }));
 
+
                 const existingParts = await Prisma.parts.findMany({
                     where: {
                         workspaceId: workspace.id,
                         partNumber: { in: itemsWithIds.map(item => item.partNumber).filter(Boolean) },
                     },
                 });
+
 
                 const existingByPartNumber = new Map();
                 for (const part of existingParts) {
@@ -2051,7 +2106,6 @@ export const handleAppRequest = async (req, res) => {
 
                 const itemsToCreate = [];
                 const incrementsById = new Map();
-
                 for (const item of itemsWithIds) {
                     if (item.partNumber && existingByPartNumber.has(item.partNumber)) {
                         const existing = existingByPartNumber.get(item.partNumber);

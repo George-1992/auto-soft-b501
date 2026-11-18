@@ -81,7 +81,7 @@ export const createDbRequestTool = ({ accountId, workspaceId }) => tool({
     },
 });
 
-export const createPartsSearchTool = ({ workspaceId }) => tool({
+export const createInventoryPartsSearchTool = ({ workspaceId }) => tool({
     description: 'Search parts in the database by part numbers. Only call this with real part numbers found by findPartNumbers. Never call it with a part name or a guess.',
     inputSchema: z.object({
         partNumbers: z.array(z.string()).min(1).describe('Real OEM or aftermarket part numbers returned by findPartNumbers.'),
@@ -90,21 +90,45 @@ export const createPartsSearchTool = ({ workspaceId }) => tool({
     }),
     execute: async ({ partNumbers, limit, offset }) => {
         try {
-            logger.info('=======  TOOL START: partsSearchTool ======');
+            logger.info('=======  TOOL START: inventoryPartsSearchTool ======');
             logger.info({ partNumbers, limit, offset });
-
+            const statTime = Date.now();
+            // 1. Define the string fields you want to search with "contains"
+            const searchableFields = [
+                'sku',
+                'partNumber',
+                'name',
+                'description',
+                'brand',
+                'supplier',
+                'barcode',
+            ];
+            // 2. Build the dynamic OR conditions for every partNumber + field combination
+            const containsConditions = partNumbers.flatMap((term) =>
+                searchableFields.map((field) => ({
+                    [field]: {
+                        contains: term,
+                        mode: 'insensitive',
+                    },
+                }))
+            );
+            // 3. Run the query
             const result = await Prisma.parts.findMany({
                 where: {
                     workspaceId,
                     OR: [
+                        ...containsConditions,
+                        // Note: Prisma does not support partial/case-insensitive matching on String[] (hasSome) natively.
+                        // If partNumbers in DB is a String[], you have to match exact strings or use raw SQL.
                         { partNumbers: { hasSome: partNumbers } },
-                        { sku: { in: partNumbers } },
                     ],
                 },
                 take: limit,
                 skip: offset,
                 orderBy: { updatedAt: 'desc' },
             });
+            const endTime = Date.now();
+            logger.info(`Inventory Parts Search Tool Duration: ${endTime - statTime} ms`);
 
             // console.log('result from partsSearchTool:', result);
             return result;
@@ -114,7 +138,6 @@ export const createPartsSearchTool = ({ workspaceId }) => tool({
         }
     },
 });
-
 export const createFindPartNumbersTool = ({ workspaceId }) => tool({
     description: 'Find OEM and aftermarket part numbers for a specific vehicle and part. Call this first, before searching parts.',
     inputSchema: z.object({
@@ -136,9 +159,15 @@ export const createVinSearchTool = ({ vin = '' }) => tool({
     }),
     execute: async ({ vin }) => {
         try {
+            console.log('VIN Search ================================================================');
             logger.info('=======  TOOL START: vinSearchTool ======');
             logger.info({ vin });
+            const startTimestamp = Date.now();
             const result = await fetchFromNHTSA({ vin });
+            const endTimestamp = Date.now();
+
+            logger.info(`VIN Search Tool Duration: ${endTimestamp - startTimestamp} ms`);
+
             return result;
         } catch (error) {
             logger.error('VIN Search Tool Error:', error?.message || error);

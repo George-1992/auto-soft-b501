@@ -62,6 +62,76 @@ const dummyEditItemsParts = [
             "Disc Brake Pads",
             "Brake Pad Set"
         ]
+    },
+    {
+        "name": "Honda Civic 2006-2011 Rear Ceramic Brake Pad Set",
+        "brand": "Akebono",
+        "description": "Rear ultra-quiet ceramic disc brake pad set for Honda Civic models. Interchange references include ACT1374, MGD1374CH, and 105.13740.",
+        "partNumber": "ACT1374",
+        "barcode": "084752193842",
+        "quantity": 4,
+        "partNumbers": [
+            "ACT1374",
+            "D1374",
+            "MGD1374CH",
+            "105.13740"
+        ],
+        "otherNames": [
+            "Rear Brake Pads",
+            "Ceramic Disc Pads"
+        ]
+    },
+    {
+        "name": "Toyota Camry 2012-2017 Front Ceramic Brake Pad Set",
+        "brand": "Bosch",
+        "description": "QuietCast premium ceramic disc brake pads with hardware included for Toyota Camry and Avalon front axles.",
+        "partNumber": "BC1222",
+        "barcode": "890403829102",
+        "quantity": 2,
+        "partNumbers": [
+            "BC1222",
+            "D1222",
+            "ACT1222",
+            "BP1222C"
+        ],
+        "otherNames": [
+            "Front Ceramic Pads",
+            "QuietCast Brake Pads"
+        ]
+    },
+    {
+        "name": "Ford F-150 2010-2014 Heavy Duty Front Brake Pad Set",
+        "brand": "Wagner",
+        "description": "ThermoQuiet semi-metallic formulation designed for heavy-duty truck stopping power and reduced vibration.",
+        "partNumber": "MX1414",
+        "barcode": "079156048291",
+        "quantity": 1,
+        "partNumbers": [
+            "MX1414",
+            "D1414",
+            "QC1414"
+        ],
+        "otherNames": [
+            "Truck Front Brake Pads",
+            "Semi-Metallic Truck Pads"
+        ]
+    },
+    {
+        "name": "Subaru Outback 2015-2019 Rear Brake Pad Set",
+        "brand": "Brembo",
+        "description": "Low-metallic OE replacement rear brake pad set offering reliable performance and consistent pedal feel.",
+        "partNumber": "P78020",
+        "barcode": "802058401928",
+        "quantity": 3,
+        "partNumbers": [
+            "P78020",
+            "D1843",
+            "ACT1843"
+        ],
+        "otherNames": [
+            "Rear OE Pads",
+            "Subaru Disc Brake Set"
+        ]
     }
 ];
 
@@ -78,13 +148,11 @@ function ThisEditComponent({
     const [_searchTerm, _setSearchTerm] = useState('');
     const [_isLoading, _setIsLoading] = useState(false);
 
-    const [_editItems, _setEditItems] = useState([]);
-    const [_editItem, _setEditItem] = useState(data || null);
-    // const [_editItems, _setEditItems] = useState(dummyEditItemsParts);
-    // const [_editItem, _setEditItem] = useState(_editItems[0]);
-
+    // const [_editItems, _setEditItems] = useState([]);
+    // const [_editItem, _setEditItem] = useState(data || null);
+    const [_editItems, _setEditItems] = useState(dummyEditItemsParts);
+    const [_editItem, _setEditItem] = useState(_editItems[0]);
     const formId = 'new-part-form';
-
 
     const handleFormSubmit = async (e) => {
         e?.preventDefault?.();
@@ -98,22 +166,14 @@ function ThisEditComponent({
             unit: _editItem?.unit ?? data?.unit ?? 'piece',
             status: _editItem?.status ?? data?.status ?? 'active',
         };
-        // logger.info('payload >>> ', payload);
+        logger.info('payload >>> ', payload);
+        // return
         const response = await onSubmit(payload);
 
         if (response.success) {
             if (_editItems.length === 0) {
-                notify({
-                    type: 'success',
-                    message: t('Part saved successfully'),
-                })
-                onClose({ isRefetch: false });
+                onClose();
             } else {
-                // notify({
-                //     type: 'success',
-                //     message: t('Part saved successfully. You can continue editing the next part.'),
-                // });
-
                 // remove saved part from _editItems and set the next one as _editItem
                 _setEditItems(prev => {
                     const newItems = prev.filter(item => item.partNumber !== _editItem.partNumber);
@@ -135,7 +195,6 @@ function ThisEditComponent({
             });
         }
     };
-
     const handleThisInputChange = (field, value) => {
         // onInputChange(field, value);
         _setEditItem(prev => ({
@@ -193,32 +252,6 @@ function ThisEditComponent({
     };
 
 
-    // const handleNameInputUnfocus = (e) => {
-    //     try {
-    //         const tagName = e.target.tagName.toLowerCase();
-    //         const inputName = e.target.name;
-    //         logger.info('handleNameInputUnfocus:', tagName, inputName);
-
-    //         if (tagName === 'input' && ['name', 'otherNames'].includes(inputName)) {
-    //             handleAiFetch();
-    //         }
-
-    //     } catch (error) {
-    //         logger.error('Error in handleNameInputUnfocus:', error);
-    //     }
-    // };
-    // useEffect(() => {
-    //     const onFocusIn = e => logger.info('Focused:', e.target.tagName, e.target.id);
-    //     const onFocusOut = e => handleNameInputUnfocus(e);
-
-    //     document.addEventListener('focusin', onFocusIn);
-    //     document.addEventListener('focusout', onFocusOut);
-
-    //     return () => {
-    //         document.removeEventListener('focusin', onFocusIn);
-    //         document.removeEventListener('focusout', onFocusOut);
-    //     };
-    // }, []);
 
 
     const handleSearchInputChange = (e) => {
@@ -319,7 +352,6 @@ function ThisEditComponent({
         }
     };
 
-
     const handleFilesAdded = (files = []) => {
         try {
             // logger.info('Files added:', files);
@@ -334,6 +366,27 @@ function ThisEditComponent({
         } catch (error) {
             logger.error('Error in handleFilesAdded:', error);
         }
+    };
+
+
+    // edit items
+    const handleChangeEditItem = (item) => {
+        _setEditItem(item);
+    };
+    const handleRemoveEditItem = (itemToRemove) => {
+        const newItems = _editItems.filter(
+            (item) => item.partNumber !== itemToRemove.partNumber
+        );
+
+        _setEditItems(newItems);
+
+        if (newItems.length > 0) {
+            _setEditItem(newItems[0]);
+        } else {
+            _setEditItem(null);
+            // refetch the list after all parts are saved, so no duplicated lines remain
+            onClose();
+        };
     };
 
 
@@ -386,6 +439,7 @@ function ThisEditComponent({
                 placeholder: 'Leave blank to auto-generate',
                 value: _editItem?.sku ?? data?.sku ?? '',
                 required: false,
+                disabled: true,
                 onChange: (e) => handleThisInputChange('sku', e.target.value),
                 icon: <TagIcon className="w-5 h-5 text-gray-500" />,
             },
@@ -532,7 +586,49 @@ function ThisEditComponent({
                         <BulkPartsFromFiles onChange={handleFilesAdded} />
                     </div>
                 </div>
-                <div className="h-7"></div>
+                {
+                    _editItems.length > 1 && (
+                        <div className="w-full justify-between my-3 flex flex-col md:flex-row gap-2">
+                            <div className="w-fit flex items-center gap-2 bg-amber-100 border border-amber-300 rounded-md px-2 py-1">
+                                <InfoIcon className=" text-gray-500" />
+                                <div className="text-sm  text-gray-600">
+                                    {t('Editing part')}
+                                    <span className="mx-1 font-semibold">
+                                        {_editItems.length > 1 ? `(${_editItems.length} parts remaining)` : ''}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-1 justify-center overflow-x-auto px-3">
+                                {_editItems.map((item, index) => {
+                                    const isSelected = _editItem?.partNumber === item.partNumber;
+
+                                    return (
+                                        <div key={'knt_' + index + item.partNumber} className={`flex items-center gap-2 px-1 py-0.5 rounded-md text-sm font-medium ${isSelected ? 'bg-gray-800 text-white' : 'border border-gray-400/80 bg-gray-50 text-gray-700'}`}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    handleChangeEditItem(item);
+                                                }}
+                                            >
+                                                {item.partNumber || item.name || `Part ${index + 1}`}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    handleRemoveEditItem(item);
+                                                }}
+                                            >
+                                                <XIcon className="size-4 text-red-500 hover:text-red-700" />
+                                            </button>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                }
+                <div className="h-5"></div>
                 <form id={formId} className="flex flex-col gap-5 overflow-y-auto max-h-[clamp(300px,55dvh,800px)] md:max-h-[clamp(300px,80dvh,800px)]" onSubmit={handleFormSubmit}>
 
                     {inputs.map((row, rowIndex) => (
@@ -563,6 +659,7 @@ function ThisEditComponent({
                                             required={Boolean(field.required)}
                                             value={field.value}
                                             onChange={field.onChange}
+                                            disabled={Boolean(field.disabled)}
                                         />
                                     )}
                                 </div>
@@ -662,22 +759,6 @@ function ThisEditComponent({
                 </form>
 
                 <div className="w-full flex flex-col md:flex-row justify-end gap-3 mt-3 border-t border-gray-300 pt-3">
-                    {
-                        _editItems.length > 1 && (
-                            <div className="w-full justify-start">
-                                <div className="w-fit flex items-center gap-2 mb-2 bg-amber-100 border border-amber-300 rounded-md px-2 py-1">
-                                    <InfoIcon className=" text-gray-500" />
-                                    <div className="text-sm  text-gray-600">
-                                        {t('Editing part')}
-                                        <span className="mx-1 font-semibold">
-                                            {_editItems.length > 1 ? `(${_editItems.length} parts remaining)` : ''}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    }
-
                     <div className="flex justify-end gap-3 shrink-0">
 
                         <PrimaryButton

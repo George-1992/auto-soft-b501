@@ -183,7 +183,7 @@ export const aiRequest = async ({
             system: modelSystem,
             tools: {
                 ...tools,
-                web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
+                // web_search: anthropic.tools.webSearch_20250305({ maxUses: 3 }),
             },
             stopWhen: stepCountIs(5),
             abortSignal: signal || undefined,

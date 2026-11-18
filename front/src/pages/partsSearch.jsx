@@ -8,8 +8,9 @@ import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { fileToBase64 } from "@/src/services/other";
 import _ from "lodash";
-import { CarIcon, Link2Icon } from "lucide-react";
+import { BoxIcon, CarIcon, Link2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const dummyMessages = [
     {
@@ -215,7 +216,9 @@ export default function PartsSearchPage() {
     const [_messages, _setMessages] = useState([]);
     const [_vehicleInfo, _setVehicleInfo] = useState(getVehicleFromMessages(_messages) || null);
     const [_streamStatus, _setStreamStatus] = useState('');
+    const [_searchType, _setSearchType] = useState('vehicle'); // 'vehicle' or 'part'
 
+    const { t } = useTranslation();
 
     const mediasToMessageObject = async (medias = []) => {
         return await Promise.all(
@@ -261,6 +264,7 @@ export default function PartsSearchPage() {
                 itsFor: 'ai-search',
                 action: 'searchParts',
                 data: {
+                    type: _searchType,
                     messages: [...newMessages],
                 },
             });
@@ -303,6 +307,11 @@ export default function PartsSearchPage() {
             text: option?.value || option?.label || '',
         });
     };
+    const handleSearchTypeChange = (type) => {
+        if (type === 'vehicle' || type === 'part') {
+            _setSearchType(type);
+        }
+    };
 
 
 
@@ -317,7 +326,6 @@ export default function PartsSearchPage() {
                     </div>
                 )
             }
-
             <MessagesRenderer
                 isLoading={_isLoading}
                 messages={_messages}
@@ -325,7 +333,7 @@ export default function PartsSearchPage() {
                 streamStatus={_streamStatus}
             />
 
-            <div className="w-full flex">
+            <div className="w-full flex flex-col gap-1 justify-center items-center">
                 <AiInput
                     // onChange={handleInputChange}
                     // onSubmit={handleSearch}
@@ -339,6 +347,16 @@ export default function PartsSearchPage() {
                         handleSearch(data);
                     }}
                 />
+                <div className="flex gap-2">
+                    <button onClick={(e) => { handleSearchTypeChange('vehicle'); }} className={`flex items-center gap-1 px-3 py-1 rounded-md ${_searchType === 'vehicle' ? 'bg-gray-800 text-white' : 'border border-gray-400/80 bg-gray-50 text-gray-700'}`}>
+                        <CarIcon className="size-5 mr-1" />
+                        <span>{t('By VIN')}</span>
+                    </button>
+                    <button onClick={(e) => { handleSearchTypeChange('part'); }} className={`flex items-center gap-1 px-3 py-1 rounded-md ${_searchType === 'part' ? 'bg-gray-800 text-white' : 'border border-gray-400/80 bg-gray-50 text-gray-700'}`}>
+                        <BoxIcon className="size-5 mr-1" />
+                        <span>{t('By Part Number')}</span>
+                    </button>
+                </div>
             </div>
         </div>
     );
