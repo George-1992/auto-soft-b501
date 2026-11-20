@@ -79,7 +79,8 @@ export const getSessionFromRequest = async (req, res) => {
         const workspace = account?.workspaces?.[0] || null;
 
         const requestData = getRequestData(req);
-        logger.info('requestData >>> ', requestData);
+        // logger.info('requestData >>> ', requestData);
+        console.log('requestData >>> ', requestData);
         // logger.info('incomingTokenData >>> ', incomingTokenData);
 
         const sessionFromDb = await Prisma.sessions.findFirst({
