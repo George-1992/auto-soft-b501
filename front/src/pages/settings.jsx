@@ -14,6 +14,7 @@ import { getCurrencyDisplayName } from "@/src/services/other";
 import { useEffect, useState } from "react";
 import { useRouteLoaderData } from "react-router";
 
+const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
 
 export default function Settings() {
@@ -150,6 +151,7 @@ export default function Settings() {
                 Settings
             </h1>
             <Card className="p-5">
+
                 <div className="md:w-96 flex flex-col gap-5">
                     <div>
                         <label htmlFor="name">Name</label>
@@ -195,6 +197,9 @@ export default function Settings() {
                     >
                         Save
                     </PrimaryButton>
+                </div>
+                <div className="w-full flex justify-end text-sm opacity-50">
+                    <span className="font-semibold">Version: {appVersion}</span>
                 </div>
             </Card>
 

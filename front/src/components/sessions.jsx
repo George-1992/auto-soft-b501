@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { PopupModal } from "@/src/components/modals";
 import { DangerButton, SecondaryButton } from "@/src/components/ui/buttons";
 
+
+
+
 const formatDateTime = (value) => {
     if (!value) return "-";
     const date = new Date(value);
@@ -67,8 +70,16 @@ export default function Sessions({ sessions = [], onDeleteSession = null }) {
                             className="rounded-md border border-gray-200 p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
                         >
                             <div className="min-w-0">
-                                <p className="font-medium text-gray-900 truncate">
-                                    {item?.deviceName || "Unknown Device"}
+                                <p className="font-medium text-gray-900 truncate flex flex-col md:flex-row md:items-center gap-2">
+                                    <span>
+                                        {item?.deviceName || "Unknown Device"}
+                                    </span>
+                                    <span className="rounded-md bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
+                                        {item?.ipAddress || 'Unknown IP'}
+                                    </span>
+                                    <span className="rounded-md bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
+                                        {item?.country || 'Unknown Country'}
+                                    </span>
                                 </p>
                                 <p className="text-sm text-gray-600">
                                     {[item?.deviceType, item?.deviceOS, item?.deviceBrowser].filter(Boolean).join(" | ") || "Unknown platform"}
