@@ -80,7 +80,7 @@ export const getSessionFromRequest = async (req, res) => {
 
         const requestData = getRequestData(req);
         // logger.info('requestData >>> ', requestData);
-        logger.log('requestData >>> ', JSON.stringify(requestData, null, 2));
+        logger.info('requestData >>> ', JSON.stringify(requestData, null, 2));
         // logger.info('incomingTokenData >>> ', incomingTokenData);
 
         const sessionFromDb = await Prisma.sessions.findFirst({
