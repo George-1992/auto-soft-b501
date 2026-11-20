@@ -1,4 +1,5 @@
-import { AiInput, MessagesRenderer, streamToData } from "@/src/components/ai/parts";
+import { AiInput, MessagesRenderer } from "@/src/components/ai/parts";
+import { streamToData } from "@/src/components/ai/util";
 import PartnerLogo from "@/src/components/render/partnerLogo";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import CopyEl from "@/src/components/ui/copyEl";

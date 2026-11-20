@@ -49,13 +49,7 @@ export const getRequestData = (req) => {
 
         // 2. Network & IP Resolution (handles proxies, Cloudflare, Vercel, AWS)
         const forwardedFor = getHeader('x-forwarded-for');
-        const ip =
-            getHeader('cf-connecting-ip') ||
-            getHeader('x-real-ip') ||
-            (forwardedFor ? forwardedFor.split(',')[0].trim() : '') ||
-            req.socket?.remoteAddress ||
-            req.ip ||
-            'unknown';
+        const ip = getClientIp(req) || forwardedFor?.split(',')[0]?.trim() || 'unknown';
 
         // 3. URL, Protocol & Host Breakdown
         const protocol =
@@ -74,7 +68,7 @@ export const getRequestData = (req) => {
             parsedUrl = new URL(`http://localhost/`);
         }
 
-        return {
+        let d = {
             request: {
                 method: req.method || 'GET',
                 url: parsedUrl.href,
@@ -111,6 +105,21 @@ export const getRequestData = (req) => {
             },
             timestamp: new Date().toISOString(),
         };
+
+
+        // add cloudflare-specific headers if present
+        const ray = getHeader('cf-ray');
+        if (ray) {
+            const parts = ray.split('-');
+            d.cloudflare = {
+                ray,
+                colo: parts[1] || null, // e.g. 'FRA', 'LHR', 'EVN'
+                country: getHeader('cf-ipcountry') || null,
+                asn: getHeader('cf-asn') || null,
+                asnOrg: getHeader('cf-asn-org') || null,
+            };
+        };
+        return d;
     } catch (error) {
         logger.error('getRequestData error:', error);
         return {}
@@ -216,4 +225,83 @@ export const getDeviceName = (req) => {
         logger?.error?.('getDeviceName error:', error);
         return 'unknown';
     }
+};
+
+
+export const getClientIp = (req) => {
+    // 1. Unified case-insensitive header lookup (supports Node req.headers & Web Headers)
+    const getHeader = (name) => {
+        if (!req?.headers) return undefined;
+        if (typeof req.headers.get === 'function') {
+            return req.headers.get(name) || undefined;
+        }
+        const lower = name.toLowerCase();
+        const val = req.headers[lower] ?? req.headers[name];
+        return Array.isArray(val) ? val[0] : val;
+    };
+
+    // 2. Clean IP string (strips IPv6-mapped IPv4 prefix "::ffff:" & accidental ports)
+    const normalizeIp = (raw) => {
+        if (!raw || typeof raw !== 'string') return '';
+        let ip = raw.trim();
+        if (!ip || ip.toLowerCase() === 'unknown') return '';
+
+        // Strip IPv4-mapped IPv6 prefix (e.g., "::ffff:203.0.113.5" -> "203.0.113.5")
+        if (ip.startsWith('::ffff:')) {
+            ip = ip.slice(7);
+        }
+
+        // Strip port from IPv4 (e.g., "203.0.113.5:54321" -> "203.0.113.5")
+        if (ip.includes('.') && ip.includes(':')) {
+            ip = ip.split(':')[0];
+        }
+
+        // Strip brackets/port from IPv6 (e.g., "[2001:db8::1]:54321" -> "2001:db8::1")
+        if (ip.startsWith('[')) {
+            const endBracket = ip.indexOf(']');
+            if (endBracket !== -1) ip = ip.slice(1, endBracket);
+        }
+
+        return ip;
+    };
+
+    // 3. Parse RFC 7239 standard "Forwarded" header (e.g., 'for=192.0.2.60;proto=http')
+    const parseStandardForwarded = (headerVal) => {
+        if (!headerVal) return '';
+        const match = headerVal.match(/for=(?:"?\[?)([^;,"\]]+)/i);
+        return match ? match[1] : '';
+    };
+
+    // 4. Priority list of headers (most specific/trusted CDN headers first)
+    const headerCandidates = [
+        getHeader('cf-connecting-ip'),      // Cloudflare standard
+        getHeader('true-client-ip'),        // Cloudflare Enterprise / Akamai
+        getHeader('x-real-ip'),             // Nginx / Caddy / Traefik
+        getHeader('x-client-ip'),           // Apache / general proxies
+        getHeader('fastly-client-ip'),      // Fastly CDN
+        getHeader('x-cluster-client-ip'),   // Rackspace / GCP / load balancers
+        getHeader('x-forwarded-for')?.split(',')[0], // Standard proxy chain (leftmost = original client)
+        parseStandardForwarded(getHeader('forwarded')), // RFC 7239 standard
+    ];
+
+    for (const candidate of headerCandidates) {
+        const cleaned = normalizeIp(candidate);
+        if (cleaned) return cleaned;
+    }
+
+    // 5. Fallback to direct socket / framework IP (when not behind a proxy)
+    const socketCandidates = [
+        req?.ip,                            // Express / Fastify (when trust proxy is set)
+        req?.socket?.remoteAddress,         // Node.js HTTP/HTTPS standard
+        req?.connection?.remoteAddress,     // Older Node.js versions
+        req?.info?.remoteAddress,           // Hapi.js
+        req?.requestContext?.identity?.sourceIp, // AWS API Gateway / Lambda
+    ];
+
+    for (const candidate of socketCandidates) {
+        const cleaned = normalizeIp(candidate);
+        if (cleaned) return cleaned;
+    }
+
+    return 'unknown';
 };
