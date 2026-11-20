@@ -1,55 +1,10 @@
 import pino from 'pino';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { Writable } from 'node:stream';
 import { format } from 'node:util';
 
 const requestContext = new AsyncLocalStorage();
-
-const handlePinoLog = (log) => {
-  // no-op placeholder
-};
-
-const createLogStream = (onLog) => {
-  let buffer = '';
-
-  return new Writable({
-    write(chunk, _encoding, callback) {
-      buffer += chunk.toString();
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line) continue;
-
-        try {
-          onLog(JSON.parse(line));
-        } catch (error) {
-          console.error('Failed to parse pino log:', error.message);
-        }
-      }
-
-      callback();
-    },
-  });
-};
-
-const prettyStream = pino.transport({
-  target: 'pino-pretty',
-  options: {
-    colorize: true,
-    translateTime: 'SYS:standard',
-    ignore: 'type,env,service,correlation_id,ip',
-  },
-});
-
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-
-// multistream filters per stream, so each stream needs the level too
-const streams = pino.multistream([
-  { level: LOG_LEVEL, stream: prettyStream },
-  { level: LOG_LEVEL, stream: createLogStream(handlePinoLog) },
-]);
 
 const logger = pino({
   level: LOG_LEVEL,
@@ -71,7 +26,6 @@ const logger = pino({
     return { ...(requestContext.getStore() || {}) };
   },
   hooks: {
-    // Supports console-style logger.info('msg', value) and keeps object logs structured.
     logMethod(args, method) {
       const [firstArg, secondArg, ...restArgs] = args;
       const hasPrintfPlaceholders =
@@ -95,7 +49,7 @@ const logger = pino({
     },
   },
   redact: ['password', 'token', 'authorization', '*.credit_card'],
-}, streams);
+});
 
 const attachLogger = (req, res, next) => {
   const correlationId = req.headers['x-correlation-id'] || randomUUID();
@@ -116,6 +70,5 @@ const attachLogger = (req, res, next) => {
     next();
   });
 };
-
 
 export { logger, attachLogger };

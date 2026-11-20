@@ -80,7 +80,7 @@ export const getSessionFromRequest = async (req, res) => {
 
         const requestData = getRequestData(req);
         // logger.info('requestData >>> ', requestData);
-        logger.info('requestData >>> ', JSON.stringify(requestData, null, 2));
+        logger.info('requestData >>> ', requestData);
         // logger.info('incomingTokenData >>> ', incomingTokenData);
 
         const sessionFromDb = await Prisma.sessions.findFirst({
@@ -192,7 +192,7 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
         };
 
         const requestData = getRequestData(req);
-        logger.info('createSession requestData >>> ', JSON.stringify(requestData, null, 2));
+        logger.info('createSession requestData >>> ', requestData);
 
         // create a new session in the database
         const newSession = await Prisma.sessions.upsert({
