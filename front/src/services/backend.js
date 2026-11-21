@@ -25,6 +25,7 @@ export const sendBackRequest = async ({
     limit = 50,
     filters = [],
     include = {},
+    formData = null,
 }) => {
     let resObj = {
         success: false,
@@ -37,42 +38,52 @@ export const sendBackRequest = async ({
         //dummy await
         // await new Promise(resolve => setTimeout(resolve, 10000));
 
-        let toSendData = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Client-Url': window.location.href,
-            },
-            body: {
-                itsFor: itsFor,
-                action: action,
-                offset: offset,
-                limit: limit,
-                filters: filters,
-                include: include,
-            }
+        const meta = {
+            itsFor: itsFor,
+            action: action,
+            offset: offset,
+            limit: limit,
+            filters: filters,
+            include: include,
         };
 
         if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-            toSendData.body.data = data;
+            meta.data = data;
         }
         if (searchQuery) {
-            toSendData.body.searchQuery = searchQuery;
+            meta.searchQuery = searchQuery;
         }
+
+        const headers = {
+            'X-Client-Url': window.location.href,
+        };
+
+        let body;
+        if (formData instanceof FormData) {
+            // do not set Content Type, the browser adds it with the multipart boundary
+            formData.set('payload', JSON.stringify(meta));
+            body = formData;
+        } else {
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify(meta);
+        }
+
+        const toSendData = {
+            method: method,
+            headers: headers,
+            body: body,
+        };
 
         // check if there is internet connection before sending the request
         const inetConnection = await internetConnection();
         // logger.info('sendBackRequest: internetConnection:', inetConnection);
         // logger.info('sendBackRequest: toSendData:', toSendData);
 
-
-
         if (inetConnection) {
             // get data from backend and then 
             let response = await fetch(endpoint(), {
                 credentials: 'include',
                 ...toSendData,
-                body: JSON.stringify(toSendData.body),
             });
             const isStream = response.headers.get('Content-Type')?.includes('text/event-stream');
             if (isStream) {
@@ -96,6 +107,14 @@ export const sendBackRequest = async ({
             }
 
         } else {
+            if (formData) {
+                // files cannot be synced to the local db
+                return {
+                    ...resObj,
+                    message: 'No internet connection, file upload requires being online',
+                    status: 'offline',
+                };
+            }
             // logger.info('sendBackRequest: action is not get, so adding dataSync to thisActions');
             resObj = await localDataSync({
                 itsFor: itsFor,

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import express from 'express';
+import multer from 'multer';
 import cors from 'cors';
 import routes from './routes.js';
 import { attachLogger, logger } from '#src/utils/logger.js';
@@ -13,11 +14,17 @@ const corsOptions = {
     credentials: true,
 };
 
+const appRequestUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+});
+
 const app = express();
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
+app.use('/api/v1/app', appRequestUpload.any());
 app.use(middleware);
 app.use(attachLogger);
 app.use('/api/v1', routes);

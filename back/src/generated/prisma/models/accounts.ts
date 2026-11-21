@@ -201,6 +201,7 @@ export type accountsWhereInput = {
   usersAndAccounts?: Prisma.UsersAndAccountsListRelationFilter
   workspaces?: Prisma.WorkspacesListRelationFilter
   sessions?: Prisma.SessionsListRelationFilter
+  signinAttempts?: Prisma.SigninAttemptsListRelationFilter
 }
 
 export type accountsOrderByWithRelationInput = {
@@ -214,6 +215,7 @@ export type accountsOrderByWithRelationInput = {
   usersAndAccounts?: Prisma.usersAndAccountsOrderByRelationAggregateInput
   workspaces?: Prisma.workspacesOrderByRelationAggregateInput
   sessions?: Prisma.sessionsOrderByRelationAggregateInput
+  signinAttempts?: Prisma.signinAttemptsOrderByRelationAggregateInput
 }
 
 export type accountsWhereUniqueInput = Prisma.AtLeast<{
@@ -230,6 +232,7 @@ export type accountsWhereUniqueInput = Prisma.AtLeast<{
   usersAndAccounts?: Prisma.UsersAndAccountsListRelationFilter
   workspaces?: Prisma.WorkspacesListRelationFilter
   sessions?: Prisma.SessionsListRelationFilter
+  signinAttempts?: Prisma.SigninAttemptsListRelationFilter
 }, "id">
 
 export type accountsOrderByWithAggregationInput = {
@@ -269,6 +272,7 @@ export type accountsCreateInput = {
   usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateInput = {
@@ -282,6 +286,7 @@ export type accountsUncheckedCreateInput = {
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUpdateInput = {
@@ -295,6 +300,7 @@ export type accountsUpdateInput = {
   usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateInput = {
@@ -308,6 +314,7 @@ export type accountsUncheckedUpdateInput = {
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsCreateManyInput = {
@@ -375,6 +382,11 @@ export type AccountsScalarRelationFilter = {
   isNot?: Prisma.accountsWhereInput
 }
 
+export type AccountsNullableScalarRelationFilter = {
+  is?: Prisma.accountsWhereInput | null
+  isNot?: Prisma.accountsWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -433,6 +445,22 @@ export type accountsUpdateOneRequiredWithoutSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.accountsUpdateToOneWithWhereWithoutSessionsInput, Prisma.accountsUpdateWithoutSessionsInput>, Prisma.accountsUncheckedUpdateWithoutSessionsInput>
 }
 
+export type accountsCreateNestedOneWithoutSigninAttemptsInput = {
+  create?: Prisma.XOR<Prisma.accountsCreateWithoutSigninAttemptsInput, Prisma.accountsUncheckedCreateWithoutSigninAttemptsInput>
+  connectOrCreate?: Prisma.accountsCreateOrConnectWithoutSigninAttemptsInput
+  connect?: Prisma.accountsWhereUniqueInput
+}
+
+export type accountsUpdateOneWithoutSigninAttemptsNestedInput = {
+  create?: Prisma.XOR<Prisma.accountsCreateWithoutSigninAttemptsInput, Prisma.accountsUncheckedCreateWithoutSigninAttemptsInput>
+  connectOrCreate?: Prisma.accountsCreateOrConnectWithoutSigninAttemptsInput
+  upsert?: Prisma.accountsUpsertWithoutSigninAttemptsInput
+  disconnect?: Prisma.accountsWhereInput | boolean
+  delete?: Prisma.accountsWhereInput | boolean
+  connect?: Prisma.accountsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.accountsUpdateToOneWithWhereWithoutSigninAttemptsInput, Prisma.accountsUpdateWithoutSigninAttemptsInput>, Prisma.accountsUncheckedUpdateWithoutSigninAttemptsInput>
+}
+
 export type accountsCreateWithoutUsersAndAccountsInput = {
   id?: string
   name?: string
@@ -443,6 +471,7 @@ export type accountsCreateWithoutUsersAndAccountsInput = {
   updatedAt?: Date | string
   workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateWithoutUsersAndAccountsInput = {
@@ -455,6 +484,7 @@ export type accountsUncheckedCreateWithoutUsersAndAccountsInput = {
   updatedAt?: Date | string
   workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsCreateOrConnectWithoutUsersAndAccountsInput = {
@@ -483,6 +513,7 @@ export type accountsUpdateWithoutUsersAndAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateWithoutUsersAndAccountsInput = {
@@ -495,6 +526,7 @@ export type accountsUncheckedUpdateWithoutUsersAndAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsCreateWithoutWorkspacesInput = {
@@ -507,6 +539,7 @@ export type accountsCreateWithoutWorkspacesInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateWithoutWorkspacesInput = {
@@ -519,6 +552,7 @@ export type accountsUncheckedCreateWithoutWorkspacesInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
   sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsCreateOrConnectWithoutWorkspacesInput = {
@@ -547,6 +581,7 @@ export type accountsUpdateWithoutWorkspacesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateWithoutWorkspacesInput = {
@@ -559,6 +594,7 @@ export type accountsUncheckedUpdateWithoutWorkspacesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
   sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsCreateWithoutSessionsInput = {
@@ -571,6 +607,7 @@ export type accountsCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsCreateNestedManyWithoutAccountInput
 }
 
 export type accountsUncheckedCreateWithoutSessionsInput = {
@@ -583,6 +620,7 @@ export type accountsUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
   workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedCreateNestedManyWithoutAccountInput
 }
 
 export type accountsCreateOrConnectWithoutSessionsInput = {
@@ -611,6 +649,7 @@ export type accountsUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUpdateManyWithoutAccountNestedInput
 }
 
 export type accountsUncheckedUpdateWithoutSessionsInput = {
@@ -623,6 +662,75 @@ export type accountsUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
   workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
+  signinAttempts?: Prisma.signinAttemptsUncheckedUpdateManyWithoutAccountNestedInput
+}
+
+export type accountsCreateWithoutSigninAttemptsInput = {
+  id?: string
+  name?: string
+  status?: $Enums.AccountStatus
+  country?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsCreateNestedManyWithoutAccountInput
+  workspaces?: Prisma.workspacesCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsCreateNestedManyWithoutAccountInput
+}
+
+export type accountsUncheckedCreateWithoutSigninAttemptsInput = {
+  id?: string
+  name?: string
+  status?: $Enums.AccountStatus
+  country?: string | null
+  currency?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUncheckedCreateNestedManyWithoutAccountInput
+  workspaces?: Prisma.workspacesUncheckedCreateNestedManyWithoutAccountInput
+  sessions?: Prisma.sessionsUncheckedCreateNestedManyWithoutAccountInput
+}
+
+export type accountsCreateOrConnectWithoutSigninAttemptsInput = {
+  where: Prisma.accountsWhereUniqueInput
+  create: Prisma.XOR<Prisma.accountsCreateWithoutSigninAttemptsInput, Prisma.accountsUncheckedCreateWithoutSigninAttemptsInput>
+}
+
+export type accountsUpsertWithoutSigninAttemptsInput = {
+  update: Prisma.XOR<Prisma.accountsUpdateWithoutSigninAttemptsInput, Prisma.accountsUncheckedUpdateWithoutSigninAttemptsInput>
+  create: Prisma.XOR<Prisma.accountsCreateWithoutSigninAttemptsInput, Prisma.accountsUncheckedCreateWithoutSigninAttemptsInput>
+  where?: Prisma.accountsWhereInput
+}
+
+export type accountsUpdateToOneWithWhereWithoutSigninAttemptsInput = {
+  where?: Prisma.accountsWhereInput
+  data: Prisma.XOR<Prisma.accountsUpdateWithoutSigninAttemptsInput, Prisma.accountsUncheckedUpdateWithoutSigninAttemptsInput>
+}
+
+export type accountsUpdateWithoutSigninAttemptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUpdateManyWithoutAccountNestedInput
+  workspaces?: Prisma.workspacesUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUpdateManyWithoutAccountNestedInput
+}
+
+export type accountsUncheckedUpdateWithoutSigninAttemptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usersAndAccounts?: Prisma.usersAndAccountsUncheckedUpdateManyWithoutAccountNestedInput
+  workspaces?: Prisma.workspacesUncheckedUpdateManyWithoutAccountNestedInput
+  sessions?: Prisma.sessionsUncheckedUpdateManyWithoutAccountNestedInput
 }
 
 
@@ -634,12 +742,14 @@ export type AccountsCountOutputType = {
   usersAndAccounts: number
   workspaces: number
   sessions: number
+  signinAttempts: number
 }
 
 export type AccountsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usersAndAccounts?: boolean | AccountsCountOutputTypeCountUsersAndAccountsArgs
   workspaces?: boolean | AccountsCountOutputTypeCountWorkspacesArgs
   sessions?: boolean | AccountsCountOutputTypeCountSessionsArgs
+  signinAttempts?: boolean | AccountsCountOutputTypeCountSigninAttemptsArgs
 }
 
 /**
@@ -673,6 +783,13 @@ export type AccountsCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.sessionsWhereInput
 }
 
+/**
+ * AccountsCountOutputType without action
+ */
+export type AccountsCountOutputTypeCountSigninAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.signinAttemptsWhereInput
+}
+
 
 export type accountsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -685,6 +802,7 @@ export type accountsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   usersAndAccounts?: boolean | Prisma.accounts$usersAndAccountsArgs<ExtArgs>
   workspaces?: boolean | Prisma.accounts$workspacesArgs<ExtArgs>
   sessions?: boolean | Prisma.accounts$sessionsArgs<ExtArgs>
+  signinAttempts?: boolean | Prisma.accounts$signinAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.AccountsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["accounts"]>
 
@@ -723,6 +841,7 @@ export type accountsInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   usersAndAccounts?: boolean | Prisma.accounts$usersAndAccountsArgs<ExtArgs>
   workspaces?: boolean | Prisma.accounts$workspacesArgs<ExtArgs>
   sessions?: boolean | Prisma.accounts$sessionsArgs<ExtArgs>
+  signinAttempts?: boolean | Prisma.accounts$signinAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.AccountsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type accountsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -734,6 +853,7 @@ export type $accountsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     usersAndAccounts: Prisma.$usersAndAccountsPayload<ExtArgs>[]
     workspaces: Prisma.$workspacesPayload<ExtArgs>[]
     sessions: Prisma.$sessionsPayload<ExtArgs>[]
+    signinAttempts: Prisma.$signinAttemptsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1140,6 +1260,7 @@ export interface Prisma__accountsClient<T, Null = never, ExtArgs extends runtime
   usersAndAccounts<T extends Prisma.accounts$usersAndAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$usersAndAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$usersAndAccountsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workspaces<T extends Prisma.accounts$workspacesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$workspacesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$workspacesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.accounts$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$sessionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  signinAttempts<T extends Prisma.accounts$signinAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.accounts$signinAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$signinAttemptsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1638,6 +1759,30 @@ export type accounts$sessionsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.SessionsScalarFieldEnum | Prisma.SessionsScalarFieldEnum[]
+}
+
+/**
+ * accounts.signinAttempts
+ */
+export type accounts$signinAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the signinAttempts
+   */
+  select?: Prisma.signinAttemptsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the signinAttempts
+   */
+  omit?: Prisma.signinAttemptsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.signinAttemptsInclude<ExtArgs> | null
+  where?: Prisma.signinAttemptsWhereInput
+  orderBy?: Prisma.signinAttemptsOrderByWithRelationInput | Prisma.signinAttemptsOrderByWithRelationInput[]
+  cursor?: Prisma.signinAttemptsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SigninAttemptsScalarFieldEnum | Prisma.SigninAttemptsScalarFieldEnum[]
 }
 
 /**

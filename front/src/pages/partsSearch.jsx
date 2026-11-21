@@ -4,6 +4,7 @@ import PartnerLogo from "@/src/components/render/partnerLogo";
 import { PrimaryButton } from "@/src/components/ui/buttons";
 import CopyEl from "@/src/components/ui/copyEl";
 import { Input } from "@/src/components/ui/inputs";
+import { notify } from "@/src/components/ui/sonnar/sonnar";
 import Image from "@/src/components/wraps/image";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
@@ -12,6 +13,7 @@ import _ from "lodash";
 import { BoxIcon, CarIcon, Link2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
 const dummyMessages = [
     {
@@ -218,19 +220,27 @@ export default function PartsSearchPage() {
     const [_vehicleInfo, _setVehicleInfo] = useState(getVehicleFromMessages(_messages) || null);
     const [_streamStatus, _setStreamStatus] = useState('');
     const [_searchType, _setSearchType] = useState('vehicle'); // 'vehicle' or 'part'
-
     const { t } = useTranslation();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const conversationId = searchParams.get('cid') || '';
+    logger.info('conversationId:', conversationId);
 
     const mediasToMessageObject = async (medias = []) => {
-        return await Promise.all(
+        logger.info('mediasToMessageObject called with medias:', medias);
+        // return []
+        const d = await Promise.all(
             medias.map(async (file) => ({
                 type: 'file',
-                data: await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
-                mediaType: file.type || 'image/jpeg', // Uses the File's MIME type (e.g., 'image/png') with a fallback
+                // data: await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
+                data: file.url || await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
+                mediaType: file?.type || file?.file?.type || 'image/jpeg', // Uses the File's MIME type (e.g., 'image/png') with a fallback
             }))
         );
+        logger.info('mediasToMessageObject returning:', d);
+        return d;
     };
-    const handleSearch = async (aiInput = { type: "text", text: '', files: [] }) => {
+    const handleSearch = async (aiInput = { type: "text", text: '', files: [], conversationId: '' }) => {
         // e?.preventDefault?.();
 
         try {
@@ -242,6 +252,7 @@ export default function PartsSearchPage() {
             if (aiInput.files && aiInput.files.length > 0) {
                 newMessages.push({
                     role: 'user',
+                    conversationId: aiInput.conversationId || '',
                     content: await mediasToMessageObject(aiInput.files),
                 });
             };
@@ -249,6 +260,7 @@ export default function PartsSearchPage() {
             if (aiInput?.text && aiInput.text.trim()) {
                 newMessages.push({
                     role: 'user',
+                    conversationId: aiInput.conversationId || '',
                     content: [{
                         type: 'text',
                         text: aiInput.text.trim(),
@@ -315,6 +327,68 @@ export default function PartsSearchPage() {
     };
 
 
+    // if conversationId is defined fetch the conversation messages from backend and set them to _messages state
+    useEffect(() => {
+        const fetchConversationMessages = async () => {
+            if (!conversationId) return;
+
+            try {
+                _setIsLoading(true);
+                _setStreamStatus('Fetching conversation messages...');
+
+                const response = await sendBackRequest({
+                    itsFor: 'conversations',
+                    action: 'get',
+                    include: {
+                        messages: true,
+                    },
+                    filters: [{
+                        key: 'id',
+                        operator: 'equals',
+                        value: conversationId,
+                    }]
+                });
+
+                if (!response?.success) {
+                    notify({
+                        type: 'error',
+                        message: `Failed to fetch conversation messages: ${response?.message || 'Unknown error'}`,
+                    });
+                    logger.error('Failed to fetch conversation messages:', response);
+                    return;
+                }
+
+                const conversation = response.data[0] || null;
+                const messages = conversation?.messages || [];
+                const vehicleInfo = conversation?.vehicle || getVehicleFromMessages(messages);
+                // logger.info("conversation:", conversation);
+                // logger.info("messages:", messages);
+                // logger.info("conversation:", conversation);
+
+                if (messages && Array.isArray(messages)) {
+                    _setMessages(messages);
+                    const lastVehicle = getVehicleFromMessages(messages);
+                    if (lastVehicle) {
+                        _setVehicleInfo(lastVehicle);
+                    }
+                } else {
+                    logger.warn('No messages found in conversation:', conversationId);
+                }
+
+                if (vehicleInfo) {
+                    _setVehicleInfo(vehicleInfo);
+                }
+            } catch (error) {
+                logger.error('Error fetching conversation messages:', error);
+            }
+            finally {
+                _setIsLoading(false);
+                _setStreamStatus('');
+            }
+        };
+        fetchConversationMessages();
+    }, [conversationId]);
+
 
     logger.info('Current messages:', _isLoading, _messages);
 
@@ -339,7 +413,7 @@ export default function PartsSearchPage() {
                     // onChange={handleInputChange}
                     // onSubmit={handleSearch}
                     // onMediaAdd={onMediaAdd}
-
+                    messages={_messages}
                     isLoading={_isLoading}
                     isCamera={true}
                     isUpload={true}

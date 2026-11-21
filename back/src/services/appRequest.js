@@ -14,6 +14,9 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { setSessionCookie, clearAuthUnauthorized, clearAuthSuccess, getSessionFromRequest, createSession } from '#src/services/session.js';
 import { google } from '@ai-sdk/google';
+import { handleSignin } from '#src/services/app/auth.js';
+import { getRequestContext } from '#src/services/app/getRequestContext.js';
+import { handleFileRequest } from '#src/services/app/handleFiles.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -198,7 +201,7 @@ const toOrderLineNestedWriteData = (line) => {
     };
 };
 
-const getIncludeObject = (includ = {}) => { }
+
 
 export const handleAppRequest = async (req, res) => {
 
@@ -212,22 +215,22 @@ export const handleAppRequest = async (req, res) => {
 
         // logger.info('handleAppRequest: req.body:', req.body);
 
-        const reqObj = req.body || {};
-        const itsFor = reqObj.itsFor || '';
-        const action = reqObj.action || '';
-        const searchQuery = reqObj.searchQuery || '';
-        const accountId = reqObj?.auth?.accountId || null;
-        const userId = reqObj?.auth?.userId || null;
+        const thisContext = getRequestContext(req);
+        const {
+            reqObj,
+            itsFor, action, searchQuery, accountId, userId,
+            offset, limit
+        } = thisContext;
         const isAuthRequest = ['signup', 'signin', 'signout'].includes(itsFor);
         let account = null;
         let user = null;
         let workspace = null;
         let session = null;
 
-        // optional vars
-        const offset = reqObj.offset || 0;
-        const limit = reqObj.limit || 50;
-
+        // logger.info({
+        //     itsFor, action, searchQuery, accountId, userId,
+        //     offset, limit
+        // })
 
         // validate required fields
         if (!itsFor) {
@@ -370,116 +373,7 @@ export const handleAppRequest = async (req, res) => {
             }
 
         } else if (itsFor === 'signin') {
-
-            if (!singleItem) {
-                resObj.message = 'Missing data';
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-            const requiredFields = ['email', 'password'];
-            let failed = '';
-            for (const field of requiredFields) {
-                if (!singleItem[field]) {
-                    failed = `Missing required field: ${field}`;
-                    break;
-                }
-            };
-
-            if (failed) {
-                resObj.message = failed;
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-
-            // see if user exists
-            const user = await Prisma.users.findFirst({
-                where: {
-                    email: singleItem.email,
-                    status: 'active',
-                },
-                include: {
-                    usersAndAccounts: {
-                        include: {
-                            account: {
-                                include: {
-                                    workspaces: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-
-            // logger.info('handleAppRequest: signin user found:', user);
-
-            if (!user) {
-                resObj.message = 'User not found or Inactive account';
-                resObj.status = 'error';
-                return res.json(resObj);
-            }
-
-            // if no account linked to user, return error
-            if (!user.usersAndAccounts || user.usersAndAccounts.length === 0) {
-                resObj.message = 'No account linked to this user, please contact support';
-                resObj.status = 'error';
-                return res.json(resObj);
-            };
-
-            // check password
-            const isPasswordValid = bcrypt.compareSync(singleItem.password, user.password);
-
-            if (!isPasswordValid) {
-                resObj.message = 'Invalid password';
-                resObj.status = 'error';
-            } else {
-                const token = createJwtToken(
-                    '7d', // 7 days expiration
-                    {
-                        accountId: user.usersAndAccounts[0].accountId,
-                        userId: user.id,
-                        email: user.email,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                    }
-                );
-                // console.log('token: ', token);
-
-                // delete password from user object before sending response
-                delete user.password;
-
-
-                const { usersAndAccounts, ...userWithoutRelation } = user;
-                const toSendData = {
-                    ...userWithoutRelation,
-                    role: usersAndAccounts?.[0]?.role || null,
-                    account: usersAndAccounts?.[0]?.account || null,
-                    workspaces: usersAndAccounts?.[0]?.account?.workspaces || [],
-                }
-
-                // test
-                resObj.success = true;
-                resObj.message = 'Signin successful';
-                resObj.status = 'success';
-                resObj.token = token;
-                resObj.data = toSendData;
-
-
-                const signinSession = await createSession(req, res, {
-                    accountId: user.usersAndAccounts[0].accountId,
-                    userId: user.id,
-                    token: token
-                });
-                if (!signinSession.success) {
-                    // logger.error('handleAppRequest: signinSession creation failed:', signinSession);
-                    resObj.success = false;
-                    resObj.message = 'Signin session creation failed';
-                    resObj.status = 'error';
-                    return res.json(resObj);
-                } else {
-                    setSessionCookie(res, token);
-                }
-            }
-
+            resObj = await handleSignin({ data: singleItem, res });
         } else if (itsFor === 'signout') {
             // Clear the auth cookie
             return clearAuthSuccess(res);
@@ -734,15 +628,8 @@ export const handleAppRequest = async (req, res) => {
                     orderBy: {
                         createdAt: 'desc',
                     },
-                    select: {
-                        id: true,
-                        userId: true,
-                        accountId: true,
-                        createdAt: true,
-                        updatedAt: true,
-                        expiresAt: true,
-                        ipAddress: true,
-                        userAgent: true,
+                    omit: {
+                        sessionToken: true,
                     },
                 });
 
@@ -753,6 +640,7 @@ export const handleAppRequest = async (req, res) => {
             } else if (action === 'delete') {
                 const idsToDelete = itemsIds.length > 0 ? itemsIds : [session.id];
 
+                logger.info('Deleting sessions with ids:', idsToDelete);
                 const deleted = await Prisma.sessions.deleteMany({
                     where: {
                         id: { in: idsToDelete },
@@ -883,6 +771,7 @@ export const handleAppRequest = async (req, res) => {
             if (searchType === 'vehicle') {
 
                 return aiStream(req, res, {
+                    context: thisContext,
                     account, user, workspace,
                     messages: messages,
                     tools: {
@@ -933,6 +822,7 @@ export const handleAppRequest = async (req, res) => {
             } else if (searchType === 'part') {
 
                 return aiStream(req, res, {
+                    context: thisContext,
                     account, user, workspace,
                     messages: messages,
                     tools: {
@@ -2288,8 +2178,48 @@ export const handleAppRequest = async (req, res) => {
                 resObj.data = result;
                 resObj.status = 'success';
             }
-        }
-        else if (itsFor === 'test2') {
+        } else if (itsFor === 'files') {
+            return await handleFileRequest({ req, res, context: { ...thisContext, workspace, user, account } });
+        } else if (itsFor === 'conversations') {
+
+            const ids = getIdsFromData(items);
+            if (action === 'get') {
+                const whereClause = {
+                    userId: user.id,
+                    ...(ids.length ? { id: { in: ids } } : {}),
+                    ...(searchQuery ? {
+                        OR: [
+                            { title: { contains: searchQuery, mode: 'insensitive' } },
+                        ],
+                    } : {}),
+                    ...(filters.length ? filtersToPrismaWhere(filters) : {}),
+                };
+                // logger.info("handleAppRequest: whereClause:", whereClause);
+
+                const [result, totalCount] = await Promise.all([
+                    Prisma.conversations.findMany({
+                        where: whereClause,
+                        include: {
+                            messages: {
+                                orderBy: [{ createdAt: 'desc' }],
+                                // take: 1, // Get only the latest message
+                            },
+                        },
+                        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+                        take: limit,
+                        skip: offset,
+                    }),
+                    Prisma.conversations.count({ where: whereClause }),
+                ]);
+                resObj.success = true;
+                resObj.message = 'Conversations retrieved successfully';
+                resObj.data = result;
+                resObj.totalCount = totalCount;
+                resObj.status = 'success';
+            }
+
+
+        } else if (itsFor === 'test2') {
             return await TestFunc({ req, res });
         }
         else {

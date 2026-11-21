@@ -12,7 +12,7 @@ const authCookieOptions = {
     path: '/',
 };
 
-export const getSessionFromRequest = async (req, res) => {
+export const getSessionFromRequest = async (req, res, token) => {
     let resObj = {
         success: false,
         message: '',
@@ -27,8 +27,8 @@ export const getSessionFromRequest = async (req, res) => {
         }
 
         //check if the request has a valid auth token in cookies
-        const token = req.cookies?.[AUTH_COOKIE_NAME];
-        const incomingTokenData = verifyJwtToken(token);
+        const thisToken = req.cookies?.[AUTH_COOKIE_NAME] || token;
+        const incomingTokenData = verifyJwtToken(thisToken);
         const itsFor = req?.body?.itsFor || '';
 
 
@@ -80,23 +80,29 @@ export const getSessionFromRequest = async (req, res) => {
 
         const requestData = getRequestData(req);
         // logger.info('requestData >>> ', requestData);
-        logger.info('requestData >>> ', requestData);
+        // logger.info('getSessionFromRequest requestData >>> ', requestData);
         // logger.info('incomingTokenData >>> ', incomingTokenData);
 
+        const whereClause = {
+            accountId: accountId,
+            userId: userId,
+            deviceName: requestData?.device?.name || null,
+            deviceType: requestData?.device?.type || null,
+            deviceOS: requestData?.device?.os || null,
+            deviceBrowser: requestData?.device?.browser || null,
+            userAgent: requestData?.device?.userAgent || null,
+            ip: requestData?.client?.ip || null,
+            language: requestData?.client?.language || null,
+            city: requestData?.client?.city || null,
+            country: requestData?.client?.country || null,
+        }
+        // logger.info('whereClause >>> ', whereClause);
+
         const sessionFromDb = await Prisma.sessions.findFirst({
-            where: {
-                accountId: accountId,
-                userId: userId,
-                deviceName: requestData?.device?.name || null,
-                deviceType: requestData?.device?.type || null,
-                deviceOS: requestData?.device?.os || null,
-                deviceBrowser: requestData?.device?.browser || null,
-                userAgent: requestData?.userAgent || null,
-                ipAddress: requestData?.ipAddress || null,
-                country: requestData?.country || null,
-            },
+            where: whereClause,
         });
         // logger.info('sessionFromDb >>> ', sessionFromDb);
+
         if (!sessionFromDb) {
             resObj.message = 'Session not found';
             resObj.success = false;
@@ -128,16 +134,14 @@ export const getSessionFromRequest = async (req, res) => {
 
             try {
                 const randomDelay = Math.floor(Math.random() * 100); // random delay between 0 and 1000 ms
-                setTimeout(async () => {
-                    await Prisma.sessions.update({
-                        where: { id: sessionFromDb.id },
-                        data: {
-                            sessionToken: newToken,
-                            lastActiveAt: new Date(),
-                            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
-                        },
-                    });
-                }, randomDelay);
+                await Prisma.sessions.update({
+                    where: { id: sessionFromDb.id },
+                    data: {
+                        sessionToken: newToken,
+                        lastActiveAt: new Date(),
+                        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
+                    },
+                });
             } catch (error) {
                 logger.error('Error updating session in database:', error?.message || error);
             }
@@ -154,20 +158,6 @@ export const getSessionFromRequest = async (req, res) => {
 
         return resObj;
 
-        const requestUrl = req.originalUrl || req.url || '';
-        const xClientUrl = req.headers?.['x-client-url'] || '';
-
-        const reqObj = req.body || {};
-        const action = reqObj.action || '';
-        const searchQuery = reqObj.searchQuery || '';
-        const isAuthRequest = ['signup', 'signin', 'signout'].includes(itsFor);
-        let session = null;
-
-        // logger.info('token >>> ', token);
-        // logger.info('reqObj >>> ', reqObj);
-        // logger.info('requestUrl >>> ', requestUrl);
-        // logger.info('Frontend URL >>> ', xClientUrl);
-
     } catch (error) {
         logger.error('getSessionFromRequest error:', error);
         resObj.success = false;
@@ -175,7 +165,6 @@ export const getSessionFromRequest = async (req, res) => {
         return resObj;
     }
 };
-
 export const createSession = async (req, res, { accountId, userId, token } = {}) => {
     let resObj = {
         success: false,
@@ -183,6 +172,7 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
         data: null,
     }
     try {
+        logger.info('>>> createSession called with accountId:', accountId, 'userId:', userId);
 
         if (!accountId || !userId) {
             resObj.success = false;
@@ -191,8 +181,19 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
             return resObj;
         };
 
+        const existingSession = await getSessionFromRequest(req, res, token);
+        const existingSessionData = existingSession?.data?.session || null;
+        // logger.info('existingSessionData >>> ', existingSessionData);
+
+        if (existingSessionData) {
+            resObj.success = true;
+            resObj.message = 'Session already exists';
+            resObj.data = existingSessionData;
+            return resObj;
+        }
+
         const requestData = getRequestData(req);
-        logger.info('createSession requestData >>> ', requestData);
+        // logger.info('createSession requestData >>> ', requestData);
 
         // create a new session in the database
         const newSession = await Prisma.sessions.upsert({
@@ -205,9 +206,11 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
                 deviceType: requestData?.device?.type || null,
                 deviceOS: requestData?.device?.os || null,
                 deviceBrowser: requestData?.device?.browser || null,
-                userAgent: requestData?.userAgent || null,
-                ipAddress: requestData?.ipAddress || null,
-                country: requestData?.country || null,
+                userAgent: requestData?.device?.userAgent || null,
+                ip: requestData?.client?.ip || null,
+                country: requestData?.client?.country || null,
+                language: requestData?.client?.language || null,
+                city: requestData?.client?.city || null,
                 lastActiveAt: new Date(),
                 expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
             },
@@ -219,13 +222,16 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
                 deviceType: requestData?.device?.type || null,
                 deviceOS: requestData?.device?.os || null,
                 deviceBrowser: requestData?.device?.browser || null,
-                userAgent: requestData?.userAgent || null,
-                ipAddress: requestData?.ipAddress || null,
-                country: requestData?.country || null,
+                userAgent: requestData?.device?.userAgent || null,
+                ip: requestData?.client?.ip || null,
+                country: requestData?.client?.country || null,
+                language: requestData?.client?.language || null,
+                city: requestData?.client?.city || null,
                 lastActiveAt: new Date(),
                 expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // set expiration to 30 days from now
             },
         });
+        // logger.info('createSession newSession >>> ', newSession);
 
 
         resObj.success = true;

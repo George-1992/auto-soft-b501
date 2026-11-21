@@ -75,7 +75,7 @@ export default function Sessions({ sessions = [], onDeleteSession = null }) {
                                         {item?.deviceName || "Unknown Device"}
                                     </span>
                                     <span className="rounded-md bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
-                                        {item?.ipAddress || 'Unknown IP'}
+                                        {item?.ip || 'Unknown IP'}
                                     </span>
                                     <span className="rounded-md bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
                                         {item?.country || 'Unknown Country'}
@@ -90,11 +90,6 @@ export default function Sessions({ sessions = [], onDeleteSession = null }) {
                                 <p className="text-xs text-gray-500">
                                     Expires: {formatDateTime(expiresAt)}
                                 </p>
-                                {(item?.ipAddress || item?.country) && (
-                                    <p className="text-xs text-gray-500">
-                                        {[item?.ipAddress, item?.country].filter(Boolean).join(" | ")}
-                                    </p>
-                                )}
                             </div>
 
                             <div className="flex items-center gap-2">

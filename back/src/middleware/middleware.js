@@ -1,6 +1,7 @@
 import { clearAuthUnauthorized } from '#src/services/session.js';
 import { createJwtToken, verifyJwtToken } from '#src/services/jwt.service.js';
 import { logger } from '#src/utils/logger.js';
+import { getRequestContext } from '#src/services/app/getRequestContext.js';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'auth_token';
 
@@ -24,7 +25,8 @@ const middleware = (req, res, next) => {
   //   });
   // }
 
-  const itsFor = req.body?.itsFor || req.query?.itsFor || '';
+  const { itsFor } = getRequestContext(req);
+
   // console.log('>>>>>>>>>> itsFor: ', itsFor);
   if (allowList.includes(itsFor) || allowListPaths.includes(pathname)) {
     // logger.info('middleware: itsFor is in allowList, skipping auth check');
@@ -49,6 +51,7 @@ const middleware = (req, res, next) => {
         // logger.info('middleware:newVfData:', newVfData);
         // console.log('middleware:newVfData:', newVfData);
 
+        req.body ||= {};
         req.body.auth = verifiedData;
       } else {
         return clearAuthUnauthorized(res);

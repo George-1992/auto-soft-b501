@@ -1,4 +1,3 @@
-
 import {
     generateText,
     streamText, tool, stepCountIs,
@@ -13,6 +12,9 @@ import { responseSchema } from '#src/services/ai/responseTypes.js';
 import { normalizeAiError } from '#src/services/ai/logs.js';
 import fs from 'fs';
 import path from 'path';
+import { processClientMessages } from '#src/services/ai/util.js';
+import Prisma from '#src/db/prisma/index.js';
+
 
 
 const toPublicToolLabel = (toolName = '') => {
@@ -98,6 +100,50 @@ export const toModelMessage = ({ messages = [], system = '' }) => {
     }
 };
 
+const getConversationId = (messages = []) => {
+    try {
+        let id = null;
+        for (const message of messages) {
+            if (message?.conversationId) {
+                id = message.conversationId;
+            }
+        }
+
+        return id;
+    } catch (error) {
+        logger.error('Error in getConversationId:', error?.message || error);
+        return null;
+    }
+};
+
+const getTrailingUserMessages = (messages = []) => {
+    const trailing = [];
+
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+        const message = messages[index];
+        if (message?.role !== 'user') break;
+        trailing.unshift(message);
+    }
+
+    return trailing;
+};
+
+const getTextContent = (content = []) => {
+    if (typeof content === 'string') return content;
+    if (!Array.isArray(content)) return '';
+
+    const text = content.map((part) => {
+        if (part?.type === 'text') return part.text || '';
+        if (part?.type === 'options') return part.prompt || '';
+        if (part?.type === 'partNumber') {
+            return [part.label, part.value, part.description].filter(Boolean).join(' ');
+        }
+        return '';
+    }).filter(Boolean).join('\n');
+
+    return text || JSON.stringify(content);
+};
+
 export const aiRequest = async ({
     system = '',
     messages = [],
@@ -106,9 +152,11 @@ export const aiRequest = async ({
     onProgress = null,
     signal = null,
 }) => {
+    // logger.info('aiRequest messages:', messages);
 
-    const msgs = [...messages];
+    const msgs = await processClientMessages({ messages });
     const addMessage = async (message) => {
+        // logger.info('Adding message to msgs:', message);
         msgs.push(message);
     };
     const safeUrl = (str) => {
@@ -272,14 +320,19 @@ export const aiRequest = async ({
 
 export const aiStream = async (req, res,
     {
+        context = {},
         system = '', messages = [], account = null, tools = {},
         user = null, workspace = null
     } = {}
 ) => {
 
     try {
+        const { searchParams } = context;
+
         // console.log('>>> req.body ... ', req.body);
         // console.log('>>> handleAiSearchRequest ... ', messages);
+        // logger.info('handleAiSearchRequest context:', context);
+        // logger.info('handleAiSearchRequest searchParams:', searchParams);
 
         const dataFromBody = () => {
             const searchQuery = req.body?.data?.query || '';
@@ -324,7 +377,94 @@ export const aiStream = async (req, res,
             },
         });
 
+        if (!user?.id) {
+            throw new Error('Authenticated user is required for AI chat');
+        }
+
+        const requestedConversationId = getConversationId(messages);
+        let conversationId = null;
+        let conversationVehicle = {};
+
+        if (requestedConversationId) {
+            const existingConversation = await Prisma.conversations.findFirst({
+                where: {
+                    id: requestedConversationId,
+                    userId: user.id,
+                },
+                select: { id: true, vehicle: true },
+            });
+
+            if (existingConversation) {
+                conversationId = existingConversation.id;
+                conversationVehicle = existingConversation.vehicle || {};
+            } else {
+                logger.warn('Ignoring stale conversationId:', requestedConversationId);
+            }
+        }
+
+        if (!conversationId) {
+            const finalMessage = aires.at(-1);
+            conversationVehicle = finalMessage?.vehicle ||
+                aires.find((message) => message?.vehicle)?.vehicle ||
+                {};
+
+            const conversation = await Prisma.conversations.create({
+                data: {
+                    title: searchQuery || 'New Conversation',
+                    userId: user.id,
+                    vehicle: conversationVehicle,
+                },
+            });
+
+            conversationId = conversation.id;
+        }
+
+        for (const message of aires) {
+            message.conversationId = conversationId;
+        }
+
         const finalMessage = aires.at(-1);
+        const trailingUserMessages = getTrailingUserMessages(messages);
+
+        await Prisma.$transaction(async (tx) => {
+            if (trailingUserMessages.length > 0) {
+                await tx.messages.createMany({
+                    data: trailingUserMessages.map((message) => {
+                        const content = message.content || [];
+                        return {
+                            conversationId,
+                            role: message.role || 'user',
+                            content,
+                            textContent: getTextContent(content),
+                            parts: message.parts || [],
+                        };
+                    }),
+                });
+            }
+
+            if (finalMessage) {
+                const finalContent = finalMessage.content || [];
+                await tx.messages.create({
+                    data: {
+                        conversationId,
+                        role: finalMessage.role || 'assistant',
+                        content: finalContent,
+                        textContent: getTextContent(finalContent),
+                        parts: finalMessage.parts || [],
+                    },
+                });
+            }
+
+            await tx.conversations.update({
+                where: { id: conversationId },
+                data: {
+                    vehicle: finalMessage?.vehicle || conversationVehicle,
+                },
+            });
+        });
+
+        logger.info('AI Request: conversationId:', conversationId);
+
         if (!controller.signal.aborted && finalMessage) {
             send('delta', finalMessage);
         }

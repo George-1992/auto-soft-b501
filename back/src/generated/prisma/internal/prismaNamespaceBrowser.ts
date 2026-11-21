@@ -56,6 +56,7 @@ export const ModelName = {
   usersAndAccounts: 'usersAndAccounts',
   workspaces: 'workspaces',
   sessions: 'sessions',
+  signinAttempts: 'signinAttempts',
   notes: 'notes',
   locations: 'locations',
   customers: 'customers',
@@ -69,7 +70,9 @@ export const ModelName = {
   parts: 'parts',
   vehicleMakes: 'vehicleMakes',
   vehicleModels: 'vehicleModels',
-  vehicleVariants: 'vehicleVariants'
+  vehicleVariants: 'vehicleVariants',
+  conversations: 'conversations',
+  messages: 'messages'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -152,8 +155,10 @@ export const SessionsScalarFieldEnum = {
   deviceOS: 'deviceOS',
   deviceBrowser: 'deviceBrowser',
   userAgent: 'userAgent',
-  ipAddress: 'ipAddress',
+  ip: 'ip',
   country: 'country',
+  city: 'city',
+  language: 'language',
   lastActiveAt: 'lastActiveAt',
   revokedAt: 'revokedAt',
   otherDetails: 'otherDetails',
@@ -162,6 +167,24 @@ export const SessionsScalarFieldEnum = {
 } as const
 
 export type SessionsScalarFieldEnum = (typeof SessionsScalarFieldEnum)[keyof typeof SessionsScalarFieldEnum]
+
+
+export const SigninAttemptsScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  status: 'status',
+  expires: 'expires',
+  reason: 'reason',
+  otherDetails: 'otherDetails',
+  userId: 'userId',
+  accountId: 'accountId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SigninAttemptsScalarFieldEnum = (typeof SigninAttemptsScalarFieldEnum)[keyof typeof SigninAttemptsScalarFieldEnum]
 
 
 export const NotesScalarFieldEnum = {
@@ -421,6 +444,32 @@ export const VehicleVariantsScalarFieldEnum = {
 export type VehicleVariantsScalarFieldEnum = (typeof VehicleVariantsScalarFieldEnum)[keyof typeof VehicleVariantsScalarFieldEnum]
 
 
+export const ConversationsScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  vehicle: 'vehicle',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationsScalarFieldEnum = (typeof ConversationsScalarFieldEnum)[keyof typeof ConversationsScalarFieldEnum]
+
+
+export const MessagesScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  textContent: 'textContent',
+  content: 'content',
+  parts: 'parts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessagesScalarFieldEnum = (typeof MessagesScalarFieldEnum)[keyof typeof MessagesScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -435,6 +484,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

@@ -279,7 +279,8 @@ function ThisEditComponent({
                 return await Promise.all(
                     medias.map(async (file) => ({
                         type: 'file',
-                        data: await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
+                        // data: await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
+                        data: file.url || await fileToBase64(file), // Accepts data URL ("data:image/jpeg;base64,...") or raw base64
                         mediaType: file.type || 'image/jpeg', // Uses the File's MIME type (e.g., 'image/png') with a fallback
                     }))
                 );

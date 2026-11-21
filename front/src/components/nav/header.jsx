@@ -98,9 +98,11 @@ export default function Header({ items }) {
                                     <LogOutIcon className="size-4" />
                                     <span>Logout</span>
                                 </NavLink>
-                                <SecondaryButton onClick={test} className="px-3 py-1">
-                                    Test-3
-                                </SecondaryButton>
+                                <div className="pt-10 pb-2">
+                                    <SecondaryButton onClick={test} className="px-3 py-1">
+                                        Test-3
+                                    </SecondaryButton>
+                                </div>
                             </div>
                         )}
                     </div>

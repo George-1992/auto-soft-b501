@@ -50,7 +50,7 @@ export const getRequestData = (req) => {
         // 2. Network & IP Resolution (handles proxies, Cloudflare, Vercel, AWS)
         const forwardedFor = getHeader('x-forwarded-for');
         const ip = getClientIp(req) || forwardedFor?.split(',')[0]?.trim() || 'unknown';
-        
+
 
         // 3. URL, Protocol & Host Breakdown
         const protocol =

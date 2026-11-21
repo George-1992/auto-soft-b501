@@ -4,7 +4,7 @@ import { CameraIcon, ChevronRightIcon, ExternalLinkIcon, ImageUpIcon, Link2Icon,
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { LoaderShimmer } from "@/src/components/ui/loader";
 import imageCompression from 'browser-image-compression';
 import CopyEl from "@/src/components/ui/copyEl";
@@ -12,7 +12,9 @@ import PartnerLogo from "@/src/components/render/partnerLogo";
 import { useTranslation } from "react-i18next";
 import CurrencySymbol from "@/src/components/render/currency";
 import { toDisplayNumber } from "@/src/services/other";
-import { normalizeMessageToParts, streamToData, compressFiles } from "@/src/components/ai/util";
+import { normalizeMessageToParts, streamToData, compressFiles, getConversationId } from "@/src/components/ai/util";
+import { sendBackRequest } from "@/src/services/backend";
+import { useSearchParams } from "react-router";
 
 
 
@@ -44,6 +46,7 @@ const markdownComponents = {
         );
     },
 };
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174/api/v1/app';
 
 const MessageRenderItems = ({ parts = [], onOptionClick }) => {
     // logger.info('Rendering message parts:', parts);
@@ -108,7 +111,7 @@ const MessageRenderItems = ({ parts = [], onOptionClick }) => {
                         <div key={rIdx} className="pt-1">
                             {isImage ? (
                                 <Image
-                                    src={part.url}
+                                    src={part.url || part.data || ''}
                                     alt={part.filename || 'attachment'}
                                     className="max-h-56 w-auto rounded-lg border border-gray-200"
                                 />
@@ -261,8 +264,12 @@ const MessageRenderItems = ({ parts = [], onOptionClick }) => {
 };
 
 const SingleMessageRenderer = ({ message = {}, onOptionClick }) => {
-    const parts = normalizeMessageToParts(message);
+    // const parts = normalizeMessageToParts(message);
     // logger.info('Rendering single message with parts:', parts);
+    const parts = message?.content;
+    // logger.info('parts:', parts);
+    // logger.info('normalizeMessageToParts(message):', normalizeMessageToParts(message));
+
     return <>
         {message?.parts &&
             <PartsInMessages
@@ -283,6 +290,7 @@ const SingleMessageRenderer = ({ message = {}, onOptionClick }) => {
 
 // ========  MAIN ======================
 export const MessagesRenderer = ({ messages = [], onOptionClick, isLoading = false, mediaFiles = [], streamStatus = '' }) => {
+    // logger.info('MessagesRenderer messages:', messages);
 
     const scrollContainerRef = useRef(null);
 
@@ -362,7 +370,9 @@ export const AiInput = ({
     isLoading = false,
     isCamera = false,
     isUpload = false,
+    messages = [],
 }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     // Support both uncontrolled (default) and controlled usage
     const [internalValue, setInternalValue] = useState(defaultValue);
     const isControlled = controlledValue !== undefined;
@@ -381,6 +391,25 @@ export const AiInput = ({
     // Keep track of attachments for cleanup on unmount
     const attachmentsRef = useRef(attachments);
     attachmentsRef.current = attachments;
+
+    const searchParamName = "cid";
+    const conversationIdFromUrl = searchParams.get(searchParamName) || '';
+    const conversationIdFromMessages = useMemo(() => getConversationId(messages) || '', [messages]);
+    const conversationId = conversationIdFromUrl || conversationIdFromMessages;
+
+    // logger.info('MessagesRenderer: conversationId:', conversationId);
+
+    useEffect(() => {
+        if (conversationIdFromUrl || !conversationIdFromMessages) return;
+
+        setSearchParams((prev) => {
+            const newSearchParams = new URLSearchParams(prev.toString());
+            newSearchParams.set(searchParamName, conversationIdFromMessages);
+            return newSearchParams;
+        }, { replace: true });
+    }, [conversationIdFromUrl, conversationIdFromMessages, setSearchParams]);
+
+
 
     const stopCameraStream = () => {
         if (cameraStreamRef.current) {
@@ -414,16 +443,75 @@ export const AiInput = ({
         }
         onChange?.(newValue);
     };
-
     const handleAddMedia = (file) => {
         if (!file) return;
         const newAttachment = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
             file,
+            status: 'pending',
             previewUrl: URL.createObjectURL(file),
         };
         setAttachments((prev) => [...prev, newAttachment]);
     };
+    const uploadSingleFile = async (file) => {
+        try {
+            if (!file) return null;
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            const upRes = await sendBackRequest({
+                itsFor: 'files',
+                action: 'create',
+                formData,
+            });
+
+            if (!upRes.success) {
+                logger.error('uploadSingleFile: upload failed:', upRes.message);
+                return null;
+            }
+
+            return upRes.data?.[0] || null;
+        } catch (error) {
+            logger.error('uploadSingleFile: error:', error);
+            return null;
+        }
+    };
+    const handleAddMediaAndUpload = async (file) => {
+        if (!file) return;
+
+        handleAddMedia(file);
+        const uploaded = await uploadSingleFile(file);
+        if (uploaded) {
+            handleFilesUpload([uploaded]);
+        }
+    };
+    const handleFilesUpload = (files = []) => {
+        if (!files.length) return;
+
+        // Map uploaded files by name for O(1) lookup
+        const uploadedByName = new Map(files.map((file) => [file.name, file]));
+
+        setAttachments((prev) =>
+            prev.map((item) => {
+                const fileName = item.file?.name || item.name;
+                const uploaded = uploadedByName.get(fileName);
+
+                if (!uploaded) return item;
+
+                // Return a brand-new object instead of mutating `item`
+                return {
+                    ...item,
+                    s3Key: uploaded.s3Key,
+                    status: 'uploaded',
+                    type: uploaded.type || item.file?.type || item.type,
+                    // Use encodeURIComponent if your backend route expects a single :key param
+                    url: `${VITE_API_URL}/file/${encodeURIComponent(uploaded.s3Key)}`,
+                };
+            })
+        );
+    };
+
 
     const handleRemoveMedia = (id) => {
         setAttachments((prev) => {
@@ -432,7 +520,6 @@ export const AiInput = ({
             return prev.filter((item) => item.id !== id);
         });
     };
-
     const triggerSend = () => {
         const trimmedText = textValue.trim();
         const hasContent = Boolean(trimmedText) || attachments.length > 0;
@@ -441,7 +528,9 @@ export const AiInput = ({
 
         onSend?.({
             text: trimmedText,
-            files: attachments.map((item) => item.file),
+            conversationId: conversationId,
+            // files: attachments.map((item) => item.file),
+            files: attachments,
         });
 
         // Reset text & clean up previews
@@ -453,19 +542,16 @@ export const AiInput = ({
         attachments.forEach((item) => URL.revokeObjectURL(item.previewUrl));
         setAttachments([]);
     };
-
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             triggerSend();
         }
     };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         triggerSend();
     };
-
     const startWebcam = async () => {
         const constraintsList = [
             { video: { facingMode: { ideal: 'environment' } }, audio: false },
@@ -498,7 +584,6 @@ export const AiInput = ({
         console.warn('Webcam access failed:', lastError);
         return false;
     };
-
     const handleCameraClick = async () => {
         if (disabled) return false;
 
@@ -523,7 +608,6 @@ export const AiInput = ({
 
         return true;
     };
-
     const closeCameraModal = () => {
         setIsCameraOpen(false);
         setCameraError('');
@@ -561,7 +645,7 @@ export const AiInput = ({
             lastModified: Date.now(),
         });
 
-        handleAddMedia(file);
+        handleAddMediaAndUpload(file);
         closeCameraModal();
     };
 
@@ -575,7 +659,15 @@ export const AiInput = ({
         }
     };
 
-    const isSubmitDisabled = disabled || (!textValue.trim() && attachments.length === 0);
+    const isUploadedFiles = attachments.every((item) => item.status === 'uploaded');
+    const isSubmitDisabled = (() => {
+        if (disabled || isLoading) return true;
+        if (attachments.length > 0 && !isUploadedFiles) return true;
+        if (!textValue.trim() && attachments.length === 0) return true;
+        return false;
+    })();
+    // logger.info({ isUploadedFiles, isSubmitDisabled, attachments }, 'AiInput state debug');
+    // logger.info({ attachments });
 
     return (
         <form
@@ -589,10 +681,10 @@ export const AiInput = ({
                         {attachments.map((item) => (
                             <div
                                 key={item.id}
-                                className="group relative h-20 w-20 md:h-30 md:w-30 overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
+                                className="group relative h-20 w-20 md:h-30 md:w-30 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm transition-all"
                             >
                                 <Image
-                                    src={item.previewUrl}
+                                    src={item.url || item.previewUrl}
                                     alt={item.file.name}
                                     className="h-full w-full object-cover"
                                 />
@@ -605,6 +697,7 @@ export const AiInput = ({
                                 >
                                     <XIcon className="size-3" />
                                 </button>
+                                <LoaderShimmer isLoading={item.status === 'pending'} />
                             </div>
                         ))}
                     </div>
@@ -642,13 +735,16 @@ export const AiInput = ({
                                 onFilesSelected={(files) => {
                                     files.forEach((file) => handleAddMedia(file));
                                 }}
+                                onFileUploaded={(file) => {
+                                    handleFilesUpload(Array.isArray(file) ? file : [file]);
+                                }}
                             />
                         )}
 
                         {isCamera && (
                             <CameraCaptureButton
                                 disabled={disabled}
-                                onImageCaptured={handleAddMedia}
+                                onImageCaptured={handleAddMediaAndUpload}
                                 onOpenDesktopWebcam={handleCameraClick}
                             />
                         )}
@@ -731,6 +827,9 @@ export const AiInput = ({
         </form>
     );
 };
+
+
+
 export function CameraCaptureButton({
     className = '',
     disabled,
@@ -774,7 +873,7 @@ export function CameraCaptureButton({
         const file = e.target.files?.[0];
         if (file) {
             const [compressedFile] = await compressFiles([file]);
-            onImageCaptured(compressedFile || file);
+            await onImageCaptured?.(compressedFile || file);
         }
         // Reset input so the user can take another photo of the same name/slot
         e.target.value = '';
@@ -805,18 +904,20 @@ export function CameraCaptureButton({
         </>
     );
 };
+
 export function UploadButton({
     className = '',
     disabled,
     onFilesSelected,
+    onFileUploaded,
 }) {
     const fileInputRef = useRef(null);
+    // const [_isLoading, setIsLoading] = useState(false);
 
     const handleUploadClick = () => {
         if (disabled) return;
         fileInputRef.current?.click();
     };
-
     const filesLogTxt = (files) => {
         try {
             const arr = [];
@@ -836,7 +937,64 @@ export function UploadButton({
         }
     };
 
+    const handleFileUpload = async (files = []) => {
+        try {
+            if (!files.length) return;
 
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('files', file);
+                const upRes = await sendBackRequest({
+                    itsFor: 'files',
+                    action: 'create',
+                    formData: formData,
+                });
+
+                if (!upRes.success) {
+                    logger.error('handleFileUpload: upload failed:', upRes.message);
+                    continue;
+                }
+
+                if (upRes.data?.[0]) {
+                    onFileUploaded?.(upRes.data[0]);
+                }
+
+                // const d = upRes.data?.[0] || {};
+                // onFileUploaded?.({
+                //     ...d,
+                //     file: file,
+                // });
+
+            }
+
+            // const formData = new FormData();
+            // Array.from(files).forEach((file) => {
+            //     formData.append('files', file);
+            // });
+
+            // const result = await sendBackRequest({
+            //     itsFor: 'files',
+            //     action: 'create',
+            //     formData: formData,
+            // });
+            // // logger.info('handleFileUpload: upload result:', result);
+
+            // if (!result.success) {
+            //     logger.error('handleFileUpload: upload failed:', result.message);
+            //     return;
+            // }
+
+
+            // if (onFileUploaded) {
+            //     for (const file of (result.data || [])) {
+            //         onFileUploaded?.(file);
+            //     }
+            // }
+
+        } catch (error) {
+            logger.error('Error handling file upload:', error);
+        }
+    };
 
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files || []);
@@ -846,6 +1004,7 @@ export function UploadButton({
             // logger.info('UploadButton compressed files:', filesLogTxt(compressedFiles));
             onFilesSelected?.(compressedFiles);
 
+            handleFileUpload(compressedFiles)
         }
         e.target.value = '';
     };
@@ -878,7 +1037,7 @@ export function UploadButton({
 
 
 export const PartsInMessages = ({ parts = [], onOptionClick }) => {
-    logger.info('Rendering PartsInMessages with parts:', parts);
+    // logger.info('Rendering PartsInMessages with parts:', parts);
 
     const { t } = useTranslation();
 

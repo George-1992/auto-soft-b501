@@ -1,4 +1,5 @@
 import { logger } from "@/src/services/logger";
+import imageCompression from 'browser-image-compression';
 
 
 export const streamToData = async (stream, onData, signal, onStatus) => {
@@ -288,3 +289,18 @@ export const compressFiles = async (files) => {
     );
 };
 
+export const getConversationId = (messages = []) => {
+    try {
+        let id = null;
+        for (const message of messages) {
+            if (message?.conversationId) {
+                id = message.conversationId;
+            }
+        }
+
+        return id;
+    } catch (error) {
+        logger.error('Error in getConversationId:', error?.message || error);
+        return null;
+    }
+};

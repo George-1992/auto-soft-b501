@@ -14,7 +14,7 @@ import { getCurrencyDisplayName } from "@/src/services/other";
 import { useEffect, useState } from "react";
 import { useRouteLoaderData } from "react-router";
 
-const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.1';
+const appVersion = '1.0.2';
 
 
 export default function Settings() {

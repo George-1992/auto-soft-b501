@@ -2,8 +2,9 @@ import Card from "@/src/components/ui/card";
 import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { setMetas } from "@/src/services/metas";
-import { CarFrontIcon, ClipboardListIcon, HomeIcon, UsersIcon } from "lucide-react";
+import { BoxesIcon, CarFrontIcon, ClipboardListIcon, HomeIcon, ScanSearchIcon, UsersIcon, WrenchIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 export default function Home() {
@@ -13,7 +14,7 @@ export default function Home() {
     });
 
     const { t } = useTranslation();
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [orders, setOrders] = useState([]);
     const [customers, setCustomers] = useState([]);
@@ -62,8 +63,7 @@ export default function Home() {
                 setIsLoading(false);
             }
         };
-
-        fetchDashboardData();
+        // fetchDashboardData();
     }, [t]);
 
     const recentOrders = useMemo(() => {
@@ -117,6 +117,52 @@ export default function Home() {
                     >
                         {t('Refresh')}
                     </button>
+                </div>
+            </Card>
+
+            <Card>
+                <div className="space-y-3">
+                    <h2 className="text-sm font-semibold text-gray-700">{t('Quick actions')}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <NavLink
+                            to="/inventory/search"
+                            className="group rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 p-4 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <ScanSearchIcon className="size-6 text-sky-700" />
+                                <div>
+                                    <p className="font-semibold text-sky-900">{t('AI Search')}</p>
+                                    <p className="text-xs text-sky-700/80">{t('Find parts quickly with smart search')}</p>
+                                </div>
+                            </div>
+                        </NavLink>
+
+                        <NavLink
+                            to="/inventory"
+                            className="group rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 p-4 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <BoxesIcon className="size-6 text-emerald-700" />
+                                <div>
+                                    <p className="font-semibold text-emerald-900">{t('Inventory')}</p>
+                                    <p className="text-xs text-emerald-700/80">{t('Open inventory overview')}</p>
+                                </div>
+                            </div>
+                        </NavLink>
+
+                        <NavLink
+                            to="/services/orders"
+                            className="group rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 p-4 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <WrenchIcon className="size-6 text-amber-700" />
+                                <div>
+                                    <p className="font-semibold text-amber-900">{t('Orders')}</p>
+                                    <p className="text-xs text-amber-700/80">{t('Jump to service orders')}</p>
+                                </div>
+                            </div>
+                        </NavLink>
+                    </div>
                 </div>
             </Card>
 

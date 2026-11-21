@@ -402,6 +402,7 @@ export const ModelName = {
   usersAndAccounts: 'usersAndAccounts',
   workspaces: 'workspaces',
   sessions: 'sessions',
+  signinAttempts: 'signinAttempts',
   notes: 'notes',
   locations: 'locations',
   customers: 'customers',
@@ -415,7 +416,9 @@ export const ModelName = {
   parts: 'parts',
   vehicleMakes: 'vehicleMakes',
   vehicleModels: 'vehicleModels',
-  vehicleVariants: 'vehicleVariants'
+  vehicleVariants: 'vehicleVariants',
+  conversations: 'conversations',
+  messages: 'messages'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -431,7 +434,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "accounts" | "users" | "usersAndAccounts" | "workspaces" | "sessions" | "notes" | "locations" | "customers" | "vehicles" | "services" | "orders" | "appointments" | "orderLines" | "pipelines" | "pipelineStages" | "parts" | "vehicleMakes" | "vehicleModels" | "vehicleVariants"
+    modelProps: "accounts" | "users" | "usersAndAccounts" | "workspaces" | "sessions" | "signinAttempts" | "notes" | "locations" | "customers" | "vehicles" | "services" | "orders" | "appointments" | "orderLines" | "pipelines" | "pipelineStages" | "parts" | "vehicleMakes" | "vehicleModels" | "vehicleVariants" | "conversations" | "messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -802,6 +805,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.sessionsCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SessionsCountAggregateOutputType> | number
+        }
+      }
+    }
+    signinAttempts: {
+      payload: Prisma.$signinAttemptsPayload<ExtArgs>
+      fields: Prisma.signinAttemptsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.signinAttemptsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.signinAttemptsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        findFirst: {
+          args: Prisma.signinAttemptsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.signinAttemptsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        findMany: {
+          args: Prisma.signinAttemptsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>[]
+        }
+        create: {
+          args: Prisma.signinAttemptsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        createMany: {
+          args: Prisma.signinAttemptsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.signinAttemptsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>[]
+        }
+        delete: {
+          args: Prisma.signinAttemptsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        update: {
+          args: Prisma.signinAttemptsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        deleteMany: {
+          args: Prisma.signinAttemptsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.signinAttemptsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.signinAttemptsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>[]
+        }
+        upsert: {
+          args: Prisma.signinAttemptsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$signinAttemptsPayload>
+        }
+        aggregate: {
+          args: Prisma.SigninAttemptsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSigninAttempts>
+        }
+        groupBy: {
+          args: Prisma.signinAttemptsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SigninAttemptsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.signinAttemptsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SigninAttemptsCountAggregateOutputType> | number
         }
       }
     }
@@ -1841,6 +1918,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    conversations: {
+      payload: Prisma.$conversationsPayload<ExtArgs>
+      fields: Prisma.conversationsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.conversationsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.conversationsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        findFirst: {
+          args: Prisma.conversationsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.conversationsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        findMany: {
+          args: Prisma.conversationsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>[]
+        }
+        create: {
+          args: Prisma.conversationsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        createMany: {
+          args: Prisma.conversationsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.conversationsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>[]
+        }
+        delete: {
+          args: Prisma.conversationsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        update: {
+          args: Prisma.conversationsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        deleteMany: {
+          args: Prisma.conversationsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.conversationsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.conversationsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>[]
+        }
+        upsert: {
+          args: Prisma.conversationsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$conversationsPayload>
+        }
+        aggregate: {
+          args: Prisma.ConversationsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConversations>
+        }
+        groupBy: {
+          args: Prisma.conversationsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.conversationsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationsCountAggregateOutputType> | number
+        }
+      }
+    }
+    messages: {
+      payload: Prisma.$messagesPayload<ExtArgs>
+      fields: Prisma.messagesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.messagesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.messagesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        findFirst: {
+          args: Prisma.messagesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.messagesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        findMany: {
+          args: Prisma.messagesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>[]
+        }
+        create: {
+          args: Prisma.messagesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        createMany: {
+          args: Prisma.messagesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.messagesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>[]
+        }
+        delete: {
+          args: Prisma.messagesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        update: {
+          args: Prisma.messagesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        deleteMany: {
+          args: Prisma.messagesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.messagesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.messagesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>[]
+        }
+        upsert: {
+          args: Prisma.messagesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$messagesPayload>
+        }
+        aggregate: {
+          args: Prisma.MessagesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessages>
+        }
+        groupBy: {
+          args: Prisma.messagesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessagesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.messagesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessagesCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1944,8 +2169,10 @@ export const SessionsScalarFieldEnum = {
   deviceOS: 'deviceOS',
   deviceBrowser: 'deviceBrowser',
   userAgent: 'userAgent',
-  ipAddress: 'ipAddress',
+  ip: 'ip',
   country: 'country',
+  city: 'city',
+  language: 'language',
   lastActiveAt: 'lastActiveAt',
   revokedAt: 'revokedAt',
   otherDetails: 'otherDetails',
@@ -1954,6 +2181,24 @@ export const SessionsScalarFieldEnum = {
 } as const
 
 export type SessionsScalarFieldEnum = (typeof SessionsScalarFieldEnum)[keyof typeof SessionsScalarFieldEnum]
+
+
+export const SigninAttemptsScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  status: 'status',
+  expires: 'expires',
+  reason: 'reason',
+  otherDetails: 'otherDetails',
+  userId: 'userId',
+  accountId: 'accountId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SigninAttemptsScalarFieldEnum = (typeof SigninAttemptsScalarFieldEnum)[keyof typeof SigninAttemptsScalarFieldEnum]
 
 
 export const NotesScalarFieldEnum = {
@@ -2213,6 +2458,32 @@ export const VehicleVariantsScalarFieldEnum = {
 export type VehicleVariantsScalarFieldEnum = (typeof VehicleVariantsScalarFieldEnum)[keyof typeof VehicleVariantsScalarFieldEnum]
 
 
+export const ConversationsScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  vehicle: 'vehicle',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationsScalarFieldEnum = (typeof ConversationsScalarFieldEnum)[keyof typeof ConversationsScalarFieldEnum]
+
+
+export const MessagesScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  textContent: 'textContent',
+  content: 'content',
+  parts: 'parts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessagesScalarFieldEnum = (typeof MessagesScalarFieldEnum)[keyof typeof MessagesScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2227,6 +2498,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -2716,6 +2994,7 @@ export type GlobalOmitConfig = {
   usersAndAccounts?: Prisma.usersAndAccountsOmit
   workspaces?: Prisma.workspacesOmit
   sessions?: Prisma.sessionsOmit
+  signinAttempts?: Prisma.signinAttemptsOmit
   notes?: Prisma.notesOmit
   locations?: Prisma.locationsOmit
   customers?: Prisma.customersOmit
@@ -2730,6 +3009,8 @@ export type GlobalOmitConfig = {
   vehicleMakes?: Prisma.vehicleMakesOmit
   vehicleModels?: Prisma.vehicleModelsOmit
   vehicleVariants?: Prisma.vehicleVariantsOmit
+  conversations?: Prisma.conversationsOmit
+  messages?: Prisma.messagesOmit
 }
 
 /* Types for Logging */

@@ -5,6 +5,22 @@ import { logger } from '#src/utils/logger.js';
 import { handleAppRequest } from '#src/services/appRequest.js';
 
 const router = express.Router();
+// Configure multer for file uploads
+const storage = multer.memoryStorage() // Store files in memory as Buffer
+const upload = multer({
+    // storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Accept only PDF files
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true)
+        } else {
+            cb(new Error('Only PDF files are allowed!'), false)
+        }
+    }
+})
 
 
 router.get('/app', (req, res) => {
@@ -17,10 +33,18 @@ router.get('/app', (req, res) => {
     })
 })
 
-router.post('/app', async (req, res) => {
+// router.post('/app', async (req, res) => {
+//     return await handleAppRequest(req, res)
+// })
+
+
+router.post('/app', handleAppRequest)
+router.get('/app/file/:path1', async (req, res) => {
+    req.body = req.body || {};
+    req.body.itsFor = 'files';
+    req.body.action = 'get-stream';
     return await handleAppRequest(req, res)
 })
-
 
 // prefix is /api/v1
 router.get('/test', async (req, res) => {
@@ -86,22 +110,6 @@ router.get('/html', (req, res) => {
     `)
 })
 
-// Configure multer for file uploads
-const storage = multer.memoryStorage() // Store files in memory as Buffer
-const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        // Accept only PDF files
-        if (file.mimetype === 'application/pdf') {
-            cb(null, true)
-        } else {
-            cb(new Error('Only PDF files are allowed!'), false)
-        }
-    }
-})
 
 // file requests - use multer middleware to handle single file upload
 router.post('/file', upload.single('file'), (req, res) => {

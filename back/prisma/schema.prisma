@@ -20,6 +20,7 @@ model accounts {
   usersAndAccounts usersAndAccounts[]
   workspaces       workspaces[]
   sessions         sessions[]
+  signinAttempts   signinAttempts[]
 
   @@index([name])
   @@index([status])
@@ -40,6 +41,8 @@ model users {
   updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
   usersAndAccounts usersAndAccounts[]
   sessions         sessions[]
+  signinAttempts   signinAttempts[]
+  conversations    conversations[]
 
   @@index([firstName])
   @@index([lastName])
@@ -99,8 +102,10 @@ model sessions {
   deviceOS      String?   @map("device_os")
   deviceBrowser String?   @map("device_browser")
   userAgent     String?   @map("user_agent")
-  ipAddress     String?   @map("ip_address")
+  ip            String?
   country       String?
+  city          String?
+  language      String?
   lastActiveAt  DateTime  @default(now()) @map("last_active_at") @db.Timestamp(6)
   revokedAt     DateTime? @map("revoked_at") @db.Timestamp(6)
   otherDetails  Json?     @default("{}") @map("other_details")
@@ -118,8 +123,34 @@ model sessions {
   @@index([deviceOS])
   @@index([deviceBrowser])
   @@index([userAgent])
-  @@index([ipAddress])
+  @@index([ip])
   @@index([country])
+}
+
+model signinAttempts {
+  id           String   @id @default(uuid())
+  email        String
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  status       String   @default("pending")
+  expires      DateTime
+  reason       String?
+  otherDetails Json?    @default("{}") @map("other_details")
+
+  userId    String?   @map("user_id")
+  user      users?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  accountId String?   @map("account_id")
+  account   accounts? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@index([email])
+  @@index([ip])
+  @@index([userAgent])
+  @@index([status])
+  @@index([expires])
+  @@map("signin_attempts")
 }
 
 model notes {
@@ -460,6 +491,39 @@ model vehicleVariants {
   @@index([aliases], type: Gin)
   @@index([generation])
   @@map("vehicle_variants")
+}
+
+// ai chat 
+model conversations {
+  id      String  @id @default(uuid())
+  title   String? // Auto-generated summary of the first prompt
+  vehicle Json?   @default("{}")
+
+  userId   String
+  user     users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages messages[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([userId, updatedAt]) // Fast sidebar history sorting
+}
+
+model messages {
+  id             String        @id @default(cuid())
+  conversationId String
+  conversation   conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // system | user | assistant | tool
+
+  // Use String for simple text-only chats, or Json for multimodal/tool-calling payloads
+  textContent String? @map("text_content")
+  content     Json    @default("[]")
+  parts       Json?   @default("[]")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([conversationId, createdAt]) // Fast chronological loading without extra sorting
 }
 
 enum PartUnit {

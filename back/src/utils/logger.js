@@ -2,12 +2,28 @@ import pino from 'pino';
 import { randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { format } from 'node:util';
+import { getClientIp } from '#src/services/other/getRequestData.js';
 
 const requestContext = new AsyncLocalStorage();
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+const DEV_TRANSPORT = {
+  target: 'pino-pretty',
+  options: {
+    colorize: true,
+    translateTime: 'SYS:HH:MM:ss.l',
+    ignore: 'pid,hostname,env,service,type,correlation_id,user_id,ip,method,url',
+    singleLine: false,
+    hideObject: false,
+    messageKey: 'msg',
+    errorLikeObjectKeys: ['err', 'error'],
+  },
+};
 
 const logger = pino({
   level: LOG_LEVEL,
+  transport: IS_PROD ? undefined : DEV_TRANSPORT,
   formatters: {
     level(label, number) {
       return { level: number, type: label };
@@ -15,6 +31,7 @@ const logger = pino({
   },
   serializers: {
     err: pino.stdSerializers.err,
+    error: pino.stdSerializers.err,
     req: pino.stdSerializers.req,
     res: pino.stdSerializers.res,
   },
@@ -58,7 +75,7 @@ const attachLogger = (req, res, next) => {
   const context = {
     correlation_id: correlationId,
     user_id: req.user?.id,
-    ip: req.ip,
+    ip: getClientIp(req),
   };
 
   requestContext.run(context, () => {

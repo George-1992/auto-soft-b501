@@ -43,6 +43,11 @@ export type workspaces = Prisma.workspacesModel
  */
 export type sessions = Prisma.sessionsModel
 /**
+ * Model signinAttempts
+ * 
+ */
+export type signinAttempts = Prisma.signinAttemptsModel
+/**
  * Model notes
  * 
  */
@@ -112,3 +117,13 @@ export type vehicleModels = Prisma.vehicleModelsModel
  * 
  */
 export type vehicleVariants = Prisma.vehicleVariantsModel
+/**
+ * Model conversations
+ * 
+ */
+export type conversations = Prisma.conversationsModel
+/**
+ * Model messages
+ * 
+ */
+export type messages = Prisma.messagesModel
