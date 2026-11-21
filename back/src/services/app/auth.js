@@ -182,7 +182,7 @@ export const handleSignin = async ({ data, req, res }) => {
         delete user.password;
         const { usersAndAccounts, ...userWithoutRelation } = user;
 
-        const signinSession = await createSession(data, res, {
+        const signinSession = await createSession(req, res, {
             accountId,
             userId: user.id,
             token,

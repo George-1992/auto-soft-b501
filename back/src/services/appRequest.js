@@ -373,7 +373,7 @@ export const handleAppRequest = async (req, res) => {
             }
 
         } else if (itsFor === 'signin') {
-            resObj = await handleSignin({ data: singleItem, res });
+            resObj = await handleSignin({ data: singleItem, req, res });
         } else if (itsFor === 'signout') {
             // Clear the auth cookie
             return clearAuthSuccess(res);

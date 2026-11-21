@@ -26,8 +26,8 @@ export const getSessionFromRequest = async (req, res, token) => {
             return resObj;
         }
 
-        //check if the request has a valid auth token in cookies
-        const thisToken = req.cookies?.[AUTH_COOKIE_NAME] || token;
+        // Explicit tokens are used during signin; otherwise authenticate by cookie.
+        const thisToken = token || req.cookies?.[AUTH_COOKIE_NAME];
         const incomingTokenData = verifyJwtToken(thisToken);
         const itsFor = req?.body?.itsFor || '';
 
@@ -83,9 +83,14 @@ export const getSessionFromRequest = async (req, res, token) => {
         // logger.info('getSessionFromRequest requestData >>> ', requestData);
         // logger.info('incomingTokenData >>> ', incomingTokenData);
 
-        const whereClause = {
+        const sessionIdentity = {
             accountId: accountId,
             userId: userId,
+            sessionToken: thisToken,
+            expires: { gt: new Date() },
+            revokedAt: null,
+        };
+        const requestMetadata = {
             deviceName: requestData?.device?.name || null,
             deviceType: requestData?.device?.type || null,
             deviceOS: requestData?.device?.os || null,
@@ -96,10 +101,10 @@ export const getSessionFromRequest = async (req, res, token) => {
             city: requestData?.client?.city || null,
             country: requestData?.client?.country || null,
         }
-        // logger.info('whereClause >>> ', whereClause);
+        logger.info('sessionIdentity >>> ', { accountId, userId });
 
         const sessionFromDb = await Prisma.sessions.findFirst({
-            where: whereClause,
+            where: sessionIdentity,
         });
         // logger.info('sessionFromDb >>> ', sessionFromDb);
 
@@ -122,38 +127,21 @@ export const getSessionFromRequest = async (req, res, token) => {
         };
 
 
-        // extend the session cookie if the session is valid and not expired
-        // by 30 days from now
-        if (incomingTokenData) {
-            const newToken = extendSessionCookie(res, incomingTokenData);
-            //update session's lastActiveAt and expires in the database
-            // logger.info('token >>> ', token);
-            // logger.info('newToken >>> ', newToken);
-            // logger.info('itsFor >>> ', itsFor);
-            // logger.info('isTheSameToken >>> ', token === newToken);
+        const newToken = extendSessionCookie(res, incomingTokenData);
 
-            try {
-                const randomDelay = Math.floor(Math.random() * 100); // random delay between 0 and 1000 ms
-                await Prisma.sessions.update({
-                    where: { id: sessionFromDb.id },
-                    data: {
-                        sessionToken: newToken,
-                        lastActiveAt: new Date(),
-                        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
-                    },
-                });
-            } catch (error) {
-                logger.error('Error updating session in database:', error?.message || error);
-            }
+        try {
+            await Prisma.sessions.update({
+                where: { id: sessionFromDb.id },
+                data: {
+                    ...requestMetadata,
+                    sessionToken: newToken,
+                    lastActiveAt: new Date(),
+                    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
+                },
+            });
+        } catch (error) {
+            logger.error('Error updating session in database:', error?.message || error);
         }
-        // update session's lastActiveAt in the database
-        await Prisma.sessions.update({
-            where: { id: sessionFromDb.id },
-            data: {
-                lastActiveAt: new Date(),
-                expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // extend expiration by 30 days
-            },
-        });
 
 
         return resObj;
@@ -178,6 +166,12 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
             resObj.success = false;
             resObj.message = 'Invalid or missing account or user data';
             logger.warn('Invalid or missing account or user data:', { accountId, userId });
+            return resObj;
+        };
+        if (!token) {
+            resObj.success = false;
+            resObj.message = 'Missing session token';
+            logger.warn('Missing session token while creating session:', { accountId, userId });
             return resObj;
         };
 
@@ -231,7 +225,7 @@ export const createSession = async (req, res, { accountId, userId, token } = {})
                 expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // set expiration to 30 days from now
             },
         });
-        // logger.info('createSession newSession >>> ', newSession);
+        logger.info('createSession newSession >>> ', newSession);
 
 
         resObj.success = true;
