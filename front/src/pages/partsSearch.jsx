@@ -1,7 +1,9 @@
 import { AiInput, MessagesRenderer } from "@/src/components/ai/parts";
 import { streamToData } from "@/src/components/ai/util";
+import { ExpandableModal } from "@/src/components/modals";
+import ConversationsHistory from "@/src/components/render/conversations";
 import PartnerLogo from "@/src/components/render/partnerLogo";
-import { PrimaryButton } from "@/src/components/ui/buttons";
+import { PrimaryButton, SecondaryButton } from "@/src/components/ui/buttons";
 import CopyEl from "@/src/components/ui/copyEl";
 import { Input } from "@/src/components/ui/inputs";
 import { notify } from "@/src/components/ui/sonnar/sonnar";
@@ -10,7 +12,7 @@ import { sendBackRequest } from "@/src/services/backend";
 import { logger } from "@/src/services/logger";
 import { fileToBase64 } from "@/src/services/other";
 import _ from "lodash";
-import { BoxIcon, CarIcon, Link2Icon } from "lucide-react";
+import { BoxIcon, CarIcon, Link2Icon, MessagesCircleIcon, MessageSquarePlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
@@ -220,11 +222,13 @@ export default function PartsSearchPage() {
     const [_vehicleInfo, _setVehicleInfo] = useState(getVehicleFromMessages(_messages) || null);
     const [_streamStatus, _setStreamStatus] = useState('');
     const [_searchType, _setSearchType] = useState('vehicle'); // 'vehicle' or 'part'
+    const [_isConversationHistoryOpen, _setIsConversationHistoryOpen] = useState(false);
     const { t } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
 
+
     const conversationId = searchParams.get('cid') || '';
-    logger.info('conversationId:', conversationId);
+    // logger.info('conversationId:', conversationId);
 
     const mediasToMessageObject = async (medias = []) => {
         logger.info('mediasToMessageObject called with medias:', medias);
@@ -326,6 +330,14 @@ export default function PartsSearchPage() {
         }
     };
 
+    const handleNewConversation = () => {
+        _setMessages([]);
+        _setVehicleInfo(null);
+        setSearchParams({});
+    };
+    const handleOpenHistory = () => {
+        _setIsConversationHistoryOpen(true);
+    };
 
     // if conversationId is defined fetch the conversation messages from backend and set them to _messages state
     useEffect(() => {
@@ -393,7 +405,7 @@ export default function PartsSearchPage() {
     logger.info('Current messages:', _isLoading, _messages);
 
     return (
-        <div className="w-full h-[calc(100dvh-5rem)] md:h-[calc(100dvh-8rem)] flex flex-col items-center justify-center p-2 md:p-4">
+        <div className="relative w-full h-[calc(100dvh-5rem)] md:h-[calc(100dvh-8rem)] flex flex-col items-center justify-center p-2 md:p-4">
             {
                 _vehicleInfo && (
                     <div className="w-full mb-4">
@@ -401,6 +413,7 @@ export default function PartsSearchPage() {
                     </div>
                 )
             }
+
             <MessagesRenderer
                 isLoading={_isLoading}
                 messages={_messages}
@@ -423,17 +436,49 @@ export default function PartsSearchPage() {
                     }}
                 />
                 <div className="flex gap-2">
-                    <button onClick={(e) => { handleSearchTypeChange('vehicle'); }} className={`flex items-center gap-1 px-3 py-1 rounded-md ${_searchType === 'vehicle' ? 'bg-gray-800 text-white' : 'border border-gray-400/80 bg-gray-50 text-gray-700'}`}>
+                    <SecondaryButton isLoading={_isLoading} onClick={(e) => { handleSearchTypeChange('vehicle'); }} style={_searchType === 'vehicle' ? { backgroundColor: '#1f2937', color: '#fff' } : {}}>
                         <CarIcon className="size-5 mr-1" />
-                        <span>{t('By VIN')}</span>
-                    </button>
-                    <button onClick={(e) => { handleSearchTypeChange('part'); }} className={`flex items-center gap-1 px-3 py-1 rounded-md ${_searchType === 'part' ? 'bg-gray-800 text-white' : 'border border-gray-400/80 bg-gray-50 text-gray-700'}`}>
+                        <span className="hidden md:block">{t('By VIN')}</span>
+                    </SecondaryButton>
+                    <SecondaryButton isLoading={_isLoading} onClick={(e) => { handleSearchTypeChange('part'); }} style={_searchType === 'part' ? { backgroundColor: '#1f2937', color: '#fff' } : {}}>
                         <BoxIcon className="size-5 mr-1" />
-                        <span>{t('By Part Number')}</span>
-                    </button>
+                        <span className="hidden md:block">{t('By Part Number')}</span>
+                    </SecondaryButton>
+                    {
+                        _messages.length > 0 && (
+                            <div className="">
+                                <SecondaryButton
+                                    isLoading={_isLoading}
+                                    onClick={handleNewConversation}
+                                >
+                                    <MessageSquarePlusIcon className="size-5 mr-1" />
+                                    <span className="hidden md:block"> {t('New conversation')} </span>
+                                </SecondaryButton>
+                            </div>
+                        )
+                    }
+                    <SecondaryButton
+                        isLoading={_isLoading}
+                        onClick={handleOpenHistory}
+                    >
+                        <MessagesCircleIcon className="size-5 mr-1" />
+                        <span className="hidden md:block">{t('History')}</span>
+                    </SecondaryButton>
+
                 </div>
             </div>
-        </div>
+
+
+            <ExpandableModal isOpen={_isConversationHistoryOpen} onClose={() => { _setIsConversationHistoryOpen(false); }} title={t('Conversations History')}>
+                <ConversationsHistory
+                    activeConversationId={conversationId}
+                    onSelect={(conversation) => {
+                        setSearchParams({ cid: conversation.id });
+                        _setIsConversationHistoryOpen(false);
+                    }}
+                />
+            </ExpandableModal>
+        </div >
     );
 };
 

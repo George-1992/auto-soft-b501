@@ -2201,7 +2201,7 @@ export const handleAppRequest = async (req, res) => {
                         where: whereClause,
                         include: {
                             messages: {
-                                orderBy: [{ createdAt: 'desc' }],
+                                orderBy: [{ createdAt: 'asc' }],
                                 // take: 1, // Get only the latest message
                             },
                         },

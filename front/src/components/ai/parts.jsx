@@ -1141,7 +1141,6 @@ export const PartsInMessages = ({ parts = [], onOptionClick }) => {
         </div>
     );
 };
-
 export const BulkPartsFromFiles = ({ files = [], onChange = () => { }, className = "" }) => {
 
     // const [_files, _setFiles] = useState(files || []);

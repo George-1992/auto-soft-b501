@@ -144,6 +144,36 @@ const getTextContent = (content = []) => {
     return text || JSON.stringify(content);
 };
 
+const getTextFromMessages = (messages = [], length = 20) => {
+    try {
+        const texts = [];
+        for (let i = messages.length - 1; i >= 0 && texts.length < length; i -= 1) {
+            const content = messages[i]?.content;
+            let text = '';
+
+            if (typeof content === 'string') {
+                const trimmed = content.trim();
+                // Skip raw stringified JSON arrays/objects like '[{"type":"file"...}]'
+                if (!trimmed.startsWith('[{') && !trimmed.startsWith('{"type"')) {
+                    text = trimmed;
+                }
+            } else if (Array.isArray(content)) {
+                // Extract only text parts, ignore { type: 'file', ... } or { type: 'image', ... }
+                text = content
+                    .filter((part) => part?.type === 'text' && typeof part.text === 'string')
+                    .map((part) => part.text.trim())
+                    .filter(Boolean)
+                    .join(' ');
+            }
+
+            if (text) texts.unshift(text);
+        }
+        return texts.join('\n');
+    } catch (error) {
+        logger.error('Error in getTextFromMessages:', error?.message || error);
+        return '';
+    }
+};
 export const aiRequest = async ({
     system = '',
     messages = [],
@@ -327,17 +357,14 @@ export const aiStream = async (req, res,
 ) => {
 
     try {
-        const { searchParams } = context;
+        const { searchParams, searchQuery = "" } = context;
 
         // console.log('>>> req.body ... ', req.body);
         // console.log('>>> handleAiSearchRequest ... ', messages);
         // logger.info('handleAiSearchRequest context:', context);
         // logger.info('handleAiSearchRequest searchParams:', searchParams);
 
-        const dataFromBody = () => {
-            const searchQuery = req.body?.data?.query || '';
-            return searchQuery;
-        };
+
 
         res.status(200);
         res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -360,7 +387,6 @@ export const aiStream = async (req, res,
             at: new Date().toISOString(),
         });
 
-        const searchQuery = dataFromBody();
         // logger.info('AI Search Query:', searchQuery);
 
         const aires = await aiRequest({
@@ -410,7 +436,7 @@ export const aiStream = async (req, res,
 
             const conversation = await Prisma.conversations.create({
                 data: {
-                    title: searchQuery || 'New Conversation',
+                    title: getTextFromMessages(messages, 50),
                     userId: user.id,
                     vehicle: conversationVehicle,
                 },
